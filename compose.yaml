@@ -34,6 +34,11 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    command: npm start # This starts the React development server
+    volumes:
+      - ./frontend:/app # Ensure volume is mounted for live updates
+    networks:
+      - spring-network
 
 volumes:
   db-data:
