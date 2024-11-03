@@ -1,7 +1,7 @@
 import React from 'react';
 
-const UserAccount = () => {
-    return <h1>Welcome to the User Account Page</h1>;
+const Login = () => {
+    return <h1>Welcome to Login Page</h1>;
 };
 
-export default UserAccount;
+export default Login;

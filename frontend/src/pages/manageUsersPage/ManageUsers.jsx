@@ -1,7 +1,5 @@
 import React from 'react';
-
-const Settings = () => {
+const ManageUsers = () => {
     return <h1>Welcome to the Settings Page</h1>;
 };
-
-export default Settings;
+export default ManageUsers;
