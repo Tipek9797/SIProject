@@ -45,4 +45,3 @@ volumes:
 
 networks:
   spring-network:
-    driver: bridge
