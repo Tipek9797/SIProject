@@ -1,10 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
 import Home from './pages/homePage/Home';
 import LoginPage from './pages/loginPage/Login';
 import AllWorks from './pages/allWorksPage/AllWorks';
 import Event from './pages/eventsPage/Event';
 // Pridaj ďalšie importy pre ostatné stránky podľa potreby
+import Navbar from "./components/navigation/Navbar";
+import ManageUsers from "./pages/manageUsersPage/ManageUsers";
 
 function App() {
     return (
