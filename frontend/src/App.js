@@ -7,6 +7,7 @@ import Event from './pages/eventsPage/Event';
 // Pridaj ďalšie importy pre ostatné stránky podľa potreby
 import Navbar from "./components/navigation/Navbar";
 import ManageUsers from "./pages/manageUsersPage/ManageUsers";
+import Register from './pages/registerPage/Register';
 
 function App() {
     return (
@@ -17,6 +18,7 @@ function App() {
                     <Route path="/" element={<Navigate to="/auth/login" replace />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/auth/login" element={<LoginPage />} />
+                    <Route path="/auth/register" element={<Register />} />
                     <Route path="/manageusers" element={<ManageUsers />} />
                     <Route path="/all-works" element={<AllWorks />} />
                     <Route path="/events" element={<Event />} />
