@@ -9,6 +9,7 @@ import Event from './pages/eventsPage/Event';
 // Pridaj ďalšie importy pre ostatné stránky podľa potreby
 import Navbar from "./components/navigation/Navbar";
 import ManageUsers from "./pages/manageUsersPage/ManageUsers";
+import Register from './pages/registerPage/Register';
 
 function App() {
     return (
