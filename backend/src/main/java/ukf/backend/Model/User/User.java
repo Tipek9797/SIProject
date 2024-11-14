@@ -2,7 +2,9 @@ package ukf.backend.Model.User;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import ukf.backend.Model.Faculty.Faculty;
 import ukf.backend.Model.Role.Role;
+import ukf.backend.Model.School.School;
 
 import java.util.Collection;
 
@@ -26,4 +28,12 @@ public class User {
             inverseJoinColumns = @JoinColumn(
                     name = "role_id", referencedColumnName = "id"))
     private Collection<Role> roles;
+
+    @ManyToOne
+    @JoinColumn(name = "school_id")
+    private School school;
+
+    @ManyToOne
+    @JoinColumn(name = "faculty_id")
+    private Faculty faculty;
 }
