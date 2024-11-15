@@ -1,15 +1,13 @@
-package ukf.backend.Model.Role;
+package ukf.backend.Model.Faculty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import ukf.backend.Model.User.User;
+import ukf.backend.Model.School.School;
 
-import java.util.Collection;
-
-@Data
 @Entity
-public class Role {
+@Data
+public class Faculty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -17,8 +15,8 @@ public class Role {
 
     private String name;
 
-    @ManyToMany(mappedBy = "roles")
+    @ManyToOne
+    @JoinColumn(name = "school_id")
     @JsonIgnore
-    private Collection<User> users;
-
+    private School school;
 }
