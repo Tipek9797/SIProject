@@ -15,10 +15,10 @@ function App() {
             <Router>
                 <Navbar />
                 <Routes>
-                    <Route path="/" element={<Navigate to="/auth/login" replace />} />
+                    <Route path="/" element={<Navigate to="/api/login" replace />} />
                     <Route path="/home" element={<Home />} />
-                    <Route path="/auth/login" element={<LoginPage />} />
-                    <Route path="/auth/register" element={<Register />} />
+                    <Route path="/api/login" element={<LoginPage />} />
+                    <Route path="/api/register" element={<Register />} />
                     <Route path="/manageusers" element={<ManageUsers />} />
                     <Route path="/my-works" element={<MyWorks />} />
                     <Route path="/all-works" element={<AllWorks />} />

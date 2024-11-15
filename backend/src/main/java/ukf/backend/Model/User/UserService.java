@@ -31,7 +31,4 @@ public class UserService implements UserDetailsService{
             throw new UsernameNotFoundException(email);
         }
     }
-    
-    
-    
 }

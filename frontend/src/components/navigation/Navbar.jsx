@@ -94,7 +94,7 @@ export default function Navbar() {
     const handleLogout = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('jwtToken');
-        navigate('/auth/login');
+        navigate('/api/login');
     };
 
     // Render the Menubar with navigation items
@@ -115,7 +115,7 @@ export default function Navbar() {
                     label="Login"
                     icon="pi pi-sign-in"
                     className="p-button-success"
-                    onClick={() => navigate('/auth/login')}
+                    onClick={() => navigate('/api/login')}
                 />
             )}
         </div>

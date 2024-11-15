@@ -23,7 +23,7 @@ export default function LoginPage() {
     };
 
     const handleRegister = () => {
-        navigate("/auth/register");
+        navigate("/api/register");
     };
 
     return (
@@ -38,14 +38,17 @@ export default function LoginPage() {
                 </div>
                 <div className="login-form">
                     <h1>Študentská Vedecká Konferencia</h1>
-                    <p>Prihláste sa do svojho účtu</p><br/>
+                    <p>Prihláste sa do svojho účtu</p><br />
                     <InputText
                         id="email"
                         value={email}
                         placeholder="Email"
-                        onChange={() => setErrorFields((prev) => ({...prev, email: false}))}
+                        onChange={(e) => {
+                            setErrorFields((prev) => ({ ...prev, email: false }));
+                            setEmail(e.target.value);
+                        }}
                         onBlur={() => {
-                            if (!email || !validateEmail(email)) setErrorFields((prev) => ({...prev, email: true}));
+                            if (!email || !validateEmail(email)) setErrorFields((prev) => ({ ...prev, email: true }));
                         }}
                         className={errorFields.email ? "p-invalid" : ""}
                     />
@@ -54,14 +57,17 @@ export default function LoginPage() {
                         type="password"
                         value={password}
                         placeholder="Password"
-                        onChange={() => setErrorFields((prev) => ({...prev, password: false}))}
+                        onChange={(e) => {
+                            setErrorFields((prev) => ({ ...prev, password: false }));
+                            setPassword(e.target.value);
+                        }}
                         onBlur={() => {
-                            if (!password) setErrorFields((prev) => ({...prev, password: true}));
+                            if (!password) setErrorFields((prev) => ({ ...prev, password: true }));
                         }}
                         className={errorFields.password ? "p-invalid" : ""}
                     />
-                    <Button label="Login" icon="pi pi-sign-in" onClick={handleLogin} className="p-button-success"/>
-                    <Button label="Register" icon="pi pi-user" onClick={handleRegister} className="p-button-info"/>
+                    <Button label="Login" icon="pi pi-sign-in" onClick={handleLogin} className="p-button-success" />
+                    <Button label="Register" icon="pi pi-user" onClick={handleRegister} className="p-button-info" />
                 </div>
             </div>
         </div>
