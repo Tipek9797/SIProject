@@ -1,21 +1,23 @@
+body, html, #root {
+  height: 100%;
+  margin: 0;
+}
+
 .App {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Zabezpečí, že aplikácia pokryje celú výšku */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.content-wrapper {
+  flex: 1; /* Flex 1 zabezpečí, že tento kontajner pokryje zostávajúci priestor */
+  display: flex;
+  flex-direction: column;
 }
 
 .App-header {
+  flex: 1; /* Rozšíri túto časť, aby footer zostal na spodku */
   background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,15 +26,67 @@
   color: white;
 }
 
+
 .App-link {
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.footer {
+  margin-top: auto; /* Posunie footer na spodok stránky */
+  background-color: #00203FFF;
+  color: #ADEFD1FF;
+  padding: 2rem;
+  text-align: center; /* Zarovnanie textu do stredu */
+  width: 100%; /* Zabezpečí, že footer pokryje celú šírku stránky */
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-left {
+  max-width: 50%;
+}
+
+.footer-left h2 {
+  margin-bottom: 1rem;
+}
+
+.footer-left p {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.project-button {
+  background-color: #28a745;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.project-button:hover {
+  background-color: #218838;
+}
+
+.footer-right h3 {
+  margin-bottom: 1rem;
+}
+
+.footer-right p {
+  margin-bottom: 0.5rem;
+}
+
+.footer-right a {
+  color: #ADEFD1FF;
+  text-decoration: none;
+}
+
+.footer-right a:hover {
+  text-decoration: underline;
 }
