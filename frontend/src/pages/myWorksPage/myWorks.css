@@ -1,0 +1,126 @@
+/*html {
+    font-size: 14px;
+}*/
+
+.workbox {
+    font-weight: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    margin-inline: 0.5rem;
+    margin-block: 1rem;
+    border-radius: 20px;
+    font-size: 50px;
+    padding: 0.5rem;
+}
+
+.workcard {
+    padding: 0.5rem;
+    border-radius: 10px;
+    text-align: left;
+    background-color: #02925f;
+}
+
+.workcard p{
+    text-align: center;
+}
+
+.work-card{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.work-btn{
+    padding: 1.5rem;
+}
+
+.workdivider {
+    font-size: 30px;
+}
+
+.workupload {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.workuploadbtn {
+    font-size: 50px;
+    font-weight: bold;
+    border-radius: 20px;
+    border-color: white;
+    border-width: 0.5rem;
+}
+
+.workdialog {
+    text-align: center;
+}
+
+.worktext{
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.work-details-text{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.work-details-row{
+    display: flex;
+    align-items: center;
+}
+
+.work-details-row h2 {
+    min-width: 150px;
+    margin: 0;
+    text-align: left;
+}
+
+.work-details-row label {
+    text-align: left;
+    flex: 1;
+}
+
+.worktext input{
+    width:50%;
+}
+
+.large-icon .pi-upload {
+    font-size: 50px;
+}
+
+.work-dialog-details{
+    background-color: #02925f;
+    padding: 1rem;
+}
+
+.work-dialog-details .p-dialog-title {
+    font-size: 25px;
+    margin-bottom: -1.5rem;
+}
+
+.work-dialog-upload{
+    background-color: #02925f;
+    padding: 1rem;
+}
+
+.work-dialog-upload .p-dialog-title {
+    font-size: 50px;
+    margin-bottom: -1.5rem;
+}
+
+.rating-table-container {
+    margin-top: 1rem;
+}
+
+.rating-colum{
+    width: 30rem;
+}
+
+.rating-table-container .p-column-title{
+    font-size: 20px;
+}
