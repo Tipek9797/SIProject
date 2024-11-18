@@ -1,0 +1,10 @@
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-name {
+    font-weight: bold;
+    margin-right: 20px;
+    color: black;
+}

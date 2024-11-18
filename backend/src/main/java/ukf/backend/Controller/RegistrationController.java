@@ -3,18 +3,27 @@ package ukf.backend.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import ukf.backend.Model.AllowedEmailDomain.AllowedEmailDomainRepository;
+import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.Role.RoleRepository;
 import ukf.backend.Model.User.User;
 import ukf.backend.Model.User.UserRepository;
+import ukf.backend.Security.JwtService;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 @RestController
 public class RegistrationController {
@@ -30,7 +39,12 @@ public class RegistrationController {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtService jwtService;
+
     @PostMapping(value = "/api/register", consumes = "application/json")
     public ResponseEntity<String> createUser(@RequestBody User user){
 
@@ -45,5 +59,41 @@ public class RegistrationController {
         userRepository.save(user);
         return new ResponseEntity<>("User registered successfully." ,HttpStatus.OK);
     }
-    
+
+    @PostMapping(value = "/api/login", consumes = "application/json")
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody User user) {
+        try {
+            if (user.getEmail() == null || user.getPassword() == null) {
+                return new ResponseEntity<>(Map.of("message", "Email or password must not be null"), HttpStatus.BAD_REQUEST);
+            }
+
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            User authenticatedUser = userRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
+
+            Collection<Role> roles = authenticatedUser.getRoles();
+            String jwt = jwtService.generateToken(authenticatedUser.getEmail(), roles.toString());
+
+            Map<String, Object> response = Map.of(
+                    "token", jwt,
+                    "user", Map.of(
+                            "name", authenticatedUser.getName(),
+                            "surname", authenticatedUser.getSurname(),
+                            "roles", roles
+                    )
+            );
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(Map.of("message", "Invalid credentials"), HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+
 }

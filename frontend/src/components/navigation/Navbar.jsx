@@ -7,14 +7,28 @@ import './navbar.css';
 export default function Navbar() {
     const navigate = useNavigate();
 
-    //user based controll and tokens will work after implementing jwt
-    const user = JSON.parse(localStorage.getItem('user'));
-    console.log('User roles:', user ? user.roles : 'No user logged in');
-    const token = localStorage.getItem('jwtToken');
+    const getUserFromLocalStorage = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            return user ? user : null;
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    };
 
-    const isAdmin = user && user.roles.includes('ROLE_ADMIN');
-    const isReviewer = user && user.roles.includes('ROLE_REVIEWER');
-    const isStudent = user && user.roles.includes('ROLE_STUDENT');
+    const extractRoleNames = (roles) => {
+        return roles.map(role => role.name);
+    };
+
+    const user = getUserFromLocalStorage();
+
+    const token = localStorage.getItem('jwtToken');
+    const roleNames = user ? extractRoleNames(user.roles) : [];
+
+    const isAdmin = roleNames.includes('ROLE_ADMIN');
+    const isReviewer = roleNames.includes('ROLE_REVIEWER');
+    const isStudent = roleNames.includes('ROLE_USER');
 
     const items = [
         {
@@ -28,30 +42,6 @@ export default function Navbar() {
             icon: 'pi pi-calendar',
             command: () => navigate('/events'),
             visible: true
-        },
-        {
-            label: 'My Work',
-            icon: 'pi pi-folder',
-            command: () => navigate('/my-work'),
-            visible: true
-        },
-        {
-            label: 'Works To Review',
-            icon: 'pi pi-folder',
-            command: () => navigate('/works-to-review'),
-            visible: true
-        },
-        {
-            label: 'All Works',
-            icon: 'pi pi-folder',
-            command: () => navigate('/all-works'),
-            visible: true
-        },
-        {
-            label: 'Manage Users',
-            icon: 'pi pi-cog',
-            command: () => navigate('/manage-users'),
-            visible: true
         }
     ];
 
@@ -60,7 +50,7 @@ export default function Navbar() {
             items.push({
                 label: 'My Work',
                 icon: 'pi pi-star',
-                command: () => navigate('/my-work'),
+                command: () => navigate('/my-works'),
                 visible: true
             });
         }
@@ -90,23 +80,21 @@ export default function Navbar() {
         }
     }
 
-    // Logout function
     const handleLogout = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('jwtToken');
         navigate('/api/login');
     };
 
-    // Render the Menubar with navigation items
     const end = (
         <div className="user-info">
             {token ? (
                 <>
-                    <span className="user-name">{`${user.name} ${user.lastName}`}</span>
-                    <Button
+                    <span className="user-name">{`${user.name} ${user.surname}`}</span>
+                    <Button 
                         label="Logout"
                         icon="pi pi-sign-out"
-                        className="p-button-danger p-ml-2"
+                        className="p-button-danger"
                         onClick={handleLogout}
                     />
                 </>

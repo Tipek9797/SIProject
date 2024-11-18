@@ -8,7 +8,8 @@ import MyWorks from './pages/myWorksPage/MyWorks';
 import LoginPage from './pages/loginPage/Login';
 import Event from './pages/eventsPage/Event';
 import Home from './pages/homePage/Home';
-import Footer from './components/footer/Footer'; // Import Footer komponentu aby sa zobrazoval na každej strane.
+import Footer from './components/footer/Footer';
+import PrivateRoute from './components/PrivateRoute';
 import './App.css';
 
 function App() {
@@ -20,12 +21,17 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Navigate to="/api/login" replace />} />
                         <Route path="/home" element={<Home />} />
+                        <Route path="/events" element={<Event />} />
                         <Route path="/api/login" element={<LoginPage />} />
                         <Route path="/api/register" element={<Register />} />
-                        <Route path="/manageusers" element={<ManageUsers />} />
-                        <Route path="/my-works" element={<MyWorks />} />
-                        <Route path="/all-works" element={<AllWorks />} />
-                        <Route path="/events" element={<Event />} />
+                        <Route path="/manage-users"
+                            element={<PrivateRoute roles={['ROLE_ADMIN']}><ManageUsers /></PrivateRoute>} />
+                        <Route path="/all-works"
+                            element={<PrivateRoute roles={['ROLE_ADMIN']}><AllWorks /></PrivateRoute>}/>
+                        <Route path="/my-works"
+                            element={<PrivateRoute roles={['ROLE_USER', 'ROLE_ADMIN']}><MyWorks /></PrivateRoute>}/>
+                        <Route  path="/works-to-review"
+                            element={<PrivateRoute roles={['ROLE_REVIEWER', 'ROLE_ADMIN']}><MyWorks /></PrivateRoute>}/>
                     </Routes>
                 </div>
                 <Footer />
