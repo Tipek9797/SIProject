@@ -55,3 +55,21 @@
 .footer-right a:hover {
     text-decoration: underline;
 }
+
+/* Nové štýly pre ikony */
+.social-icons {
+    display: flex;
+    justify-content: center;  /* Zarovná ikony do stredu */
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.social-icons a {
+    color: #ADEFD1FF;
+    text-decoration: none;
+}
+
+.social-icons a:hover {
+    color: #28a745;  /* Zmena farby pri hover */
+}
+
