@@ -1,0 +1,104 @@
+.manage-users-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+}
+
+.flex {
+    display: flex;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.gap-2 {
+    gap: 8px;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.table-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.p-input-icon-left {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 300px;
+}
+
+.p-input-icon-left input {
+    padding-left: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    height: 35px;
+}
+
+.p-datatable {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+    text-align: left;
+    vertical-align: middle;
+    font-size: 14px;
+    padding: 10px;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+    background-color: #f0f8ff;
+}
+
+.p-datatable .p-paginator {
+    margin-top: 10px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 0 0 10px 10px;
+}
+
+button {
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+button:focus {
+    outline: none;
+}
+
+button.outlined {
+    border: 1px solid #ccc;
+    background-color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+button.outlined:hover {
+    background-color: #e6e6e6;
+}
+
+input[type="search"] {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
