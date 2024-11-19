@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ManageUsers from "./pages/manageUsersPage/ManageUsers";
 import AllWorks from './pages/allWorksPage/AllWorks';
 import Register from './pages/registerPage/Register';
@@ -25,13 +25,13 @@ function App() {
                         <Route path="/api/login" element={<LoginPage />} />
                         <Route path="/api/register" element={<Register />} />
                         <Route path="/manage-users"
-                            element={<PrivateRoute roles={['ROLE_ADMIN']}><ManageUsers /></PrivateRoute>} />
+                            element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ManageUsers />} />} />
                         <Route path="/all-works"
-                            element={<PrivateRoute roles={['ROLE_ADMIN']}><AllWorks /></PrivateRoute>}/>
+                            element={<PrivateRoute roles={['ROLE_ADMIN']} page={<AllWorks />} />} />
                         <Route path="/my-works"
-                            element={<PrivateRoute roles={['ROLE_USER', 'ROLE_ADMIN']}><MyWorks /></PrivateRoute>}/>
-                        <Route  path="/works-to-review"
-                            element={<PrivateRoute roles={['ROLE_REVIEWER', 'ROLE_ADMIN']}><MyWorks /></PrivateRoute>}/>
+                            element={<PrivateRoute roles={['ROLE_USER', 'ROLE_ADMIN']} page={<MyWorks />} />} />
+                        <Route path="/works-to-review"
+                            element={<PrivateRoute roles={['ROLE_REVIEWER']} page={<AllWorks />} />} />
                     </Routes>
                 </div>
                 <Footer />
