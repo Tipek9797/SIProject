@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
-//import { Panel } from "primereact/panel";
 import { useNavigate } from "react-router-dom";
+import { handleLogin, handleRegister } from "../../services/handleLogin";
 import "./login.css";
 
 export default function LoginPage() {
@@ -16,14 +16,6 @@ export default function LoginPage() {
     const validateEmail = (email) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
-    };
-
-    const handleLogin = () => {
-        navigate("/my-works");
-    };
-
-    const handleRegister = () => {
-        navigate("/api/register");
     };
 
     return (
@@ -56,7 +48,7 @@ export default function LoginPage() {
                         id="password"
                         type="password"
                         value={password}
-                        placeholder="Password"
+                        placeholder="Heslo"
                         onChange={(e) => {
                             setErrorFields((prev) => ({ ...prev, password: false }));
                             setPassword(e.target.value);
@@ -66,8 +58,8 @@ export default function LoginPage() {
                         }}
                         className={errorFields.password ? "p-invalid" : ""}
                     />
-                    <Button label="Login" icon="pi pi-sign-in" onClick={handleLogin} className="p-button-success" />
-                    <Button label="Register" icon="pi pi-user" onClick={handleRegister} className="p-button-info" />
+                    <Button label="Prihlásenie" icon="pi pi-sign-in" onClick={() => handleLogin({ email, password, toast, navigate })} className="p-button-success" />
+                    <Button label="Registrácia" icon="pi pi-user" onClick={() => handleRegister(navigate)} className="p-button-info" />
                 </div>
             </div>
         </div>

@@ -3,8 +3,10 @@ package ukf.backend.Security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,16 +29,16 @@ import java.util.List;
 @AllArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
-    
+
     @Autowired
     private final UserService appUserService;
-    
-    
+
+
     @Bean
     public UserDetailsService userDetailsService(){
         return appUserService;
     }
-    
+
     @Bean
     public AuthenticationProvider authenticationProvider(){
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -44,25 +46,37 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
-    
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
-    
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .formLogin(formLogin -> formLogin.loginProcessingUrl("/login"))
-
-                .authorizeHttpRequests(registry ->{
-                    registry.requestMatchers("/**").permitAll();
-                    registry.anyRequest().authenticated();
-                })
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/login", "/api/register").permitAll()
+                        .requestMatchers("/home", "/events").hasAnyRole("USER", "REVIEWER", "ADMIN")
+                        .requestMatchers("/my-works").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/works-to-review").hasAnyRole("REVIEWER", "ADMIN")
+                        .requestMatchers("/manage-users", "/all-works").hasRole("ADMIN")
+                        //change when testing is done
+                        .requestMatchers("/api/users").permitAll()
+                        .requestMatchers("/api/users/{id}").permitAll()
+                        .requestMatchers("/api/schools").permitAll()
+                        .requestMatchers("/api/faculties").permitAll()
+                        .anyRequest().authenticated()
+                )
                 .build();
-
     }
 
     @Bean

@@ -1,5 +1,3 @@
-// components/Register/Register.js
-
 import React, { useState, useEffect } from "react";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
@@ -23,7 +21,7 @@ export default function Register() {
     const [faculty, setFaculty] = useState(null);
     const [schools, setSchools] = useState([]);
     const [filteredFaculties, setFilteredFaculties] = useState([]);
-    const [errorFields, setErrorFields] = useState({
+    const [touchedFields, setTouchedFields] = useState({
         name: false,
         surname: false,
         email: false,
@@ -39,51 +37,58 @@ export default function Register() {
     }, []);
 
     useEffect(() => {
-        handleSchoolChange(school, setFaculty, setFilteredFaculties, setErrorFields);
+        handleSchoolChange(school, setFaculty, setFilteredFaculties);
     }, [school]);
 
     const handleRegister = () => {
         const fields = { name, surname, email, password, school, faculty };
-        handleRegisterSubmit(fields, setErrorFields, navigate);
+        const errors = validateFields(fields);
+        if (Object.values(errors).every(error => !error)) {
+            handleRegisterSubmit(fields, navigate);
+        } else {
+            setTouchedFields({ 
+                name: true, 
+                surname: true, 
+                email: true, 
+                password: true, 
+                school: true, 
+                faculty: true 
+            });
+        }
     };
 
-    const handleBlur = () => {
-        const fields = { name, surname, email, password, school, faculty };
-        setErrorFields(validateFields(fields));
+    const handleBlur = (field) => {
+        setTouchedFields(prev => ({ ...prev, [field]: true }));
     };
+
+    const errors = validateFields({ name, surname, email, password, school, faculty });
 
     return (
         <div className="register-container">
             <Panel header="Register">
                 <div className="p-field">
-                    <label htmlFor="name">First Name</label>
+                    <label htmlFor="name">Meno</label>
                     <InputText
                         id="name"
                         value={name}
-                        placeholder="Name"
-                        onChange={(e) => {
-                            setName(e.target.value);
-                            setErrorFields(prev => ({ ...prev, name: false }));
-                        }}
-                        onBlur={handleBlur}
-                        className={errorFields.name ? 'p-invalid' : ''}
+                        placeholder="Meno"
+                        onChange={(e) => setName(e.target.value)}
+                        onBlur={() => handleBlur('name')}
+                        className={touchedFields.name && errors.name ? 'p-invalid' : ''}
                     />
-                    {errorFields.name && <small className="p-error">Name is required.</small>}
+                    {touchedFields.name && errors.name && <small className="p-error">Name is required.</small>}
                 </div>
                 <div className="p-field">
-                    <label htmlFor="surname">Last Name</label>
+                    <label htmlFor="surname">Priezvisko</label>
                     <InputText
                         id="surname"
                         value={surname}
-                        placeholder="Surname"
-                        onChange={(e) => {
-                            setSurname(e.target.value);
-                            setErrorFields(prev => ({ ...prev, surname: false }));
-                        }}
-                        onBlur={handleBlur}
-                        className={errorFields.surname ? 'p-invalid' : ''}
+                        placeholder="Priezvisko"
+                        onChange={(e) => setSurname(e.target.value)}
+                        onBlur={() => handleBlur('surname')}
+                        className={touchedFields.surname && errors.surname ? 'p-invalid' : ''}
                     />
-                    {errorFields.surname && <small className="p-error">Surname is required.</small>}
+                    {touchedFields.surname && errors.surname && <small className="p-error">Surname is required.</small>}
                 </div>
                 <div className="p-field">
                     <label htmlFor="email">Email</label>
@@ -91,69 +96,64 @@ export default function Register() {
                         id="email"
                         value={email}
                         placeholder="Email"
-                        onChange={(e) => {
-                            setEmail(e.target.value);
-                            setErrorFields(prev => ({ ...prev, email: false }));
-                        }}
-                        onBlur={handleBlur}
-                        className={errorFields.email ? 'p-invalid' : ''}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onBlur={() => handleBlur('email')}
+                        tooltip="Allowed email domains: @student.ukf.sk, @stu.sk"
+                        className={touchedFields.email && errors.email ? 'p-invalid' : ''}
                     />
-                    {errorFields.email && <small className="p-error">Valid email is required.</small>}
+                    {touchedFields.email && errors.email && <small className="p-error">Valid email is required.</small>}
                 </div>
                 <div className="p-field">
-                    <label htmlFor="password">Password</label>
+                    <label htmlFor="password">Heslo</label>
                     <InputText
                         id="password"
                         type="password"
                         value={password}
-                        placeholder="Password"
-                        onChange={(e) => {
-                            setPassword(e.target.value);
-                            setErrorFields(prev => ({ ...prev, password: false }));
-                        }}
-                        onBlur={handleBlur}
-                        className={errorFields.password ? 'p-invalid' : ''}
+                        placeholder="Heslo"
+                        onChange={(e) => setPassword(e.target.value)}
+                        onBlur={() => handleBlur('password')}
+                        className={touchedFields.password && errors.password ? 'p-invalid' : ''}
                     />
-                    {errorFields.password && <small className="p-error">Password is required.</small>}
+                    {touchedFields.password && errors.password && <small className="p-error">Password is required.</small>}
                 </div>
                 <div className="p-field">
-                    <label htmlFor="school">School</label>
+                    <label htmlFor="school">Škola</label>
                     <Dropdown
                         id="school"
                         value={school}
                         options={schools}
                         onChange={(e) => setSchool(e.value)}
                         optionLabel="name"
-                        placeholder="Select a School"
-                        className={errorFields.school ? 'p-invalid' : ''}
-                        onBlur={handleBlur}
+                        placeholder="Vyber Školu"
+                        className={touchedFields.school && errors.school ? 'p-invalid' : ''}
+                        onBlur={() => handleBlur('school')}
                     />
-                    {errorFields.school && <small className="p-error">School is required.</small>}
+                    {touchedFields.school && errors.school && <small className="p-error">Škola je povinná.</small>}
                 </div>
                 <div className="p-field">
-                    <label htmlFor="faculty">Faculty</label>
+                    <label htmlFor="faculty">Fakulta</label>
                     <Dropdown
                         id="faculty"
                         value={faculty}
                         options={filteredFaculties}
                         onChange={(e) => setFaculty(e.value)}
                         optionLabel="name"
-                        placeholder="Select a Faculty"
-                        className={errorFields.faculty ? 'p-invalid' : ''}
+                        placeholder="Vyber Fakultu"
+                        className={touchedFields.faculty && errors.faculty ? 'p-invalid' : ''}
                         disabled={!school}
-                        onBlur={handleBlur}
+                        onBlur={() => handleBlur('faculty')}
                     />
-                    {errorFields.faculty && <small className="p-error">Faculty is required.</small>}
+                    {touchedFields.faculty && errors.faculty && <small className="p-error">Fakulta je povinná.</small>}
                 </div>
                 <div className="button-group">
                     <Button 
-                        label="Register" 
+                        label="Registrovať sa" 
                         icon="pi pi-user" 
                         onClick={handleRegister} 
                         className="p-button-success button-spacing"
                     />
                     <Button 
-                        label="Cancel" 
+                        label="Zrušiť" 
                         icon="pi pi-times" 
                         onClick={() => navigate('/api/login')} 
                         className="p-button-secondary"

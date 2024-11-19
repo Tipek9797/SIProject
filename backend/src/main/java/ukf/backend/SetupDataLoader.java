@@ -55,6 +55,7 @@ public class SetupDataLoader implements
         createDomainIfNotFound("stu.sk");
 
         createRoleIfNotFound("ROLE_ADMIN");
+        createRoleIfNotFound("ROLE_REVIEWER");
         createRoleIfNotFound("ROLE_USER");
 
         createSchoolIfNotFound("UKF");

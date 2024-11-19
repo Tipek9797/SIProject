@@ -3,6 +3,7 @@ package ukf.backend.Model.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import ukf.backend.Model.User.User;
 
 import java.util.Collection;
@@ -19,6 +20,7 @@ public class Role {
 
     @ManyToMany(mappedBy = "roles")
     @JsonIgnore
+    @ToString.Exclude
     private Collection<User> users;
 
 }

@@ -2,6 +2,7 @@ package ukf.backend.Model.User;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import ukf.backend.Model.Faculty.Faculty;
 import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.School.School;
@@ -20,7 +21,7 @@ public class User {
     private String email;
     private String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(
@@ -35,5 +36,6 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "faculty_id")
+    @ToString.Exclude
     private Faculty faculty;
 }
