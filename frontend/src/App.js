@@ -23,7 +23,7 @@ function App() {
                         <Route path="/home" element={<Home />} />
                         <Route path="/events" element={<Event />} />
                         <Route path="/api/login" element={<LoginPage />} />
-                        <Route path="/api/register" element={<Register />} />
+                        <Route path="/api/register" element={<Register />} 
                         <Route path="/manage-users"
                             element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ManageUsers />} />} />
                         <Route path="/all-works"
