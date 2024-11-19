@@ -67,11 +67,11 @@ export default function Register() {
         <div className="register-container">
             <Panel header="Register">
                 <div className="p-field">
-                    <label htmlFor="name">First Name</label>
+                    <label htmlFor="name">Meno</label>
                     <InputText
                         id="name"
                         value={name}
-                        placeholder="Name"
+                        placeholder="Meno"
                         onChange={(e) => setName(e.target.value)}
                         onBlur={() => handleBlur('name')}
                         className={touchedFields.name && errors.name ? 'p-invalid' : ''}
@@ -79,11 +79,11 @@ export default function Register() {
                     {touchedFields.name && errors.name && <small className="p-error">Name is required.</small>}
                 </div>
                 <div className="p-field">
-                    <label htmlFor="surname">Last Name</label>
+                    <label htmlFor="surname">Priezvisko</label>
                     <InputText
                         id="surname"
                         value={surname}
-                        placeholder="Surname"
+                        placeholder="Priezvisko"
                         onChange={(e) => setSurname(e.target.value)}
                         onBlur={() => handleBlur('surname')}
                         className={touchedFields.surname && errors.surname ? 'p-invalid' : ''}
@@ -104,12 +104,12 @@ export default function Register() {
                     {touchedFields.email && errors.email && <small className="p-error">Valid email is required.</small>}
                 </div>
                 <div className="p-field">
-                    <label htmlFor="password">Password</label>
+                    <label htmlFor="password">Heslo</label>
                     <InputText
                         id="password"
                         type="password"
                         value={password}
-                        placeholder="Password"
+                        placeholder="Heslo"
                         onChange={(e) => setPassword(e.target.value)}
                         onBlur={() => handleBlur('password')}
                         className={touchedFields.password && errors.password ? 'p-invalid' : ''}
@@ -117,43 +117,43 @@ export default function Register() {
                     {touchedFields.password && errors.password && <small className="p-error">Password is required.</small>}
                 </div>
                 <div className="p-field">
-                    <label htmlFor="school">School</label>
+                    <label htmlFor="school">Škola</label>
                     <Dropdown
                         id="school"
                         value={school}
                         options={schools}
                         onChange={(e) => setSchool(e.value)}
                         optionLabel="name"
-                        placeholder="Select a School"
+                        placeholder="Vyber Školu"
                         className={touchedFields.school && errors.school ? 'p-invalid' : ''}
                         onBlur={() => handleBlur('school')}
                     />
-                    {touchedFields.school && errors.school && <small className="p-error">School is required.</small>}
+                    {touchedFields.school && errors.school && <small className="p-error">Škola je povinná.</small>}
                 </div>
                 <div className="p-field">
-                    <label htmlFor="faculty">Faculty</label>
+                    <label htmlFor="faculty">Fakulta</label>
                     <Dropdown
                         id="faculty"
                         value={faculty}
                         options={filteredFaculties}
                         onChange={(e) => setFaculty(e.value)}
                         optionLabel="name"
-                        placeholder="Select a Faculty"
+                        placeholder="Vyber Fakultu"
                         className={touchedFields.faculty && errors.faculty ? 'p-invalid' : ''}
                         disabled={!school}
                         onBlur={() => handleBlur('faculty')}
                     />
-                    {touchedFields.faculty && errors.faculty && <small className="p-error">Faculty is required.</small>}
+                    {touchedFields.faculty && errors.faculty && <small className="p-error">Fakulta je povinná.</small>}
                 </div>
                 <div className="button-group">
                     <Button 
-                        label="Register" 
+                        label="Registrovať sa" 
                         icon="pi pi-user" 
                         onClick={handleRegister} 
                         className="p-button-success button-spacing"
                     />
                     <Button 
-                        label="Cancel" 
+                        label="Zrušiť" 
                         icon="pi pi-times" 
                         onClick={() => navigate('/api/login')} 
                         className="p-button-secondary"

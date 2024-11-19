@@ -32,13 +32,13 @@ export default function Navbar() {
 
     const items = [
         {
-            label: 'Home',
+            label: 'Domov',
             icon: 'pi pi-home',
             command: () => navigate('/home'),
             visible: true
         },
         {
-            label: 'Events',
+            label: 'Konferencie',
             icon: 'pi pi-calendar',
             command: () => navigate('/events'),
             visible: true
@@ -48,7 +48,7 @@ export default function Navbar() {
     if (token) {
         if (isStudent) {
             items.push({
-                label: 'My Work',
+                label: 'Moja Práca',
                 icon: 'pi pi-star',
                 command: () => navigate('/my-works'),
                 visible: true
@@ -57,7 +57,7 @@ export default function Navbar() {
 
         if (isReviewer) {
             items.push({
-                label: 'Works To Review',
+                label: 'Práce na hodnotenie',
                 icon: 'pi pi-envelope',
                 command: () => navigate('/works-to-review'),
                 visible: true
@@ -66,13 +66,13 @@ export default function Navbar() {
 
         if (isAdmin) {
             items.push({
-                label: 'Manage Users',
+                label: 'Spravovať Používateľov',
                 icon: 'pi pi-users',
                 command: () => navigate('/manage-users'),
                 visible: true
             });
             items.push({
-                label: 'All Works',
+                label: 'Spravovať Práce',
                 icon: 'pi pi-file',
                 command: () => navigate('/all-works'),
                 visible: true
@@ -92,7 +92,7 @@ export default function Navbar() {
                 <>
                     <span className="user-name">{`${user.name} ${user.surname}`}</span>
                     <Button 
-                        label="Logout"
+                        label="Odhlásiť Sa"
                         icon="pi pi-sign-out"
                         className="p-button-danger"
                         onClick={handleLogout}
@@ -100,7 +100,7 @@ export default function Navbar() {
                 </>
             ) : (
                 <Button
-                    label="Login"
+                    label="Prihlásenie"
                     icon="pi pi-sign-in"
                     className="p-button-success"
                     onClick={() => navigate('/api/login')}

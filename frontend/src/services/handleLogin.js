@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export const handleLogin = async ({ email, password, toast, navigate }) => {
     if (!email || !password) {
-        toast.current.show({ severity: 'error', summary: 'Error', detail: 'Please fill all fields' });
+        toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Prosím vyplnte všetky polia' });
         return;
     }
 
@@ -15,8 +15,7 @@ export const handleLogin = async ({ email, password, toast, navigate }) => {
 
         navigate('/home');
     } catch (error) {
-        console.error("Login error:", error);
-        toast.current.show({ severity: 'error', summary: 'Error', detail: error.response?.data?.message ?? 'Login failed' });
+        toast.current.show({ severity: 'error', summary: 'Chyba', detail: error.response?.data?.message ?? 'Prihlásenie sa nepodarilo' });
     }
 };
 

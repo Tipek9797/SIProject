@@ -1,5 +1,6 @@
 import React from 'react';
-import { PiGlobe, PiFacebookLogo, PiInstagramLogo } from 'react-icons/pi';  // Import ikony glóbusu a ostatných ikon
+import { PrimeIcons } from 'primereact/api';
+import { Button } from 'primereact/button';
 
 import './footer.css';
 
@@ -10,7 +11,7 @@ const Footer = () => {
                 <div className="footer-left">
                     <h2>Vitajte na našej stránke</h2>
                     <p>Na tejto stránke môžu školy pridávať svoje práce, zúčastňovať sa udalostí a sledovať priebeh hodnotenia. Sme radi, že ste tu a tešíme sa na vaše príspevky.</p>
-                    <button className="project-button">Povedzte nám o vašom projekte</button>
+                    <Button label="Povedzte nám o vašom projekte" className="project-button"/>
                 </div>
                 <div className="footer-right">
                     <h3>Kontakt</h3>
@@ -18,16 +19,17 @@ const Footer = () => {
                     <p>Telefón: <a href="tel:+421123456789">+421 123 456 789</a></p>
                     <p>Adresa: Tr. A. Hlinku 1, 949 01 Nitra, Slovensko</p>
                     <div className="social-icons">
-                        {/* Zmenená ikona Discordu na PiGlobe */}
+                        {/* Globe Icon */}
                         <a href="https://www.fpvai.ukf.sk/sk/" target="_blank" rel="noopener noreferrer">
-                            <PiGlobe size={30} />
+                            <i className={`pi ${PrimeIcons.GLOBE}`} style={{ fontSize: '30px' }}></i>
                         </a>
-                        {/* Facebook a Instagram ikony */}
+                        {/* Facebook Icon */}
                         <a href="https://www.facebook.com/fpvai.ukf" target="_blank" rel="noopener noreferrer">
-                            <PiFacebookLogo size={30} />
+                            <i className={`pi pi-facebook`} style={{ fontSize: '30px' }}></i>
                         </a>
+                        {/* Instagram Icon */}
                         <a href="https://www.instagram.com/fpvai.ukf/" target="_blank" rel="noopener noreferrer">
-                            <PiInstagramLogo size={30} />
+                            <i className={`pi pi-instagram`} style={{ fontSize: '30px' }}></i>
                         </a>
                     </div>
                 </div>

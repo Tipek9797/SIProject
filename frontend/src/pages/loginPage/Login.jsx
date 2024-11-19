@@ -48,7 +48,7 @@ export default function LoginPage() {
                         id="password"
                         type="password"
                         value={password}
-                        placeholder="Password"
+                        placeholder="Heslo"
                         onChange={(e) => {
                             setErrorFields((prev) => ({ ...prev, password: false }));
                             setPassword(e.target.value);
@@ -58,8 +58,8 @@ export default function LoginPage() {
                         }}
                         className={errorFields.password ? "p-invalid" : ""}
                     />
-                    <Button label="Login" icon="pi pi-sign-in" onClick={() => handleLogin({ email, password, toast, navigate })} className="p-button-success" />
-                    <Button label="Register" icon="pi pi-user" onClick={() => handleRegister(navigate)} className="p-button-info" />
+                    <Button label="Prihlásenie" icon="pi pi-sign-in" onClick={() => handleLogin({ email, password, toast, navigate })} className="p-button-success" />
+                    <Button label="Registrácia" icon="pi pi-user" onClick={() => handleRegister(navigate)} className="p-button-info" />
                 </div>
             </div>
         </div>
