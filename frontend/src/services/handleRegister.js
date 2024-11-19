@@ -14,10 +14,9 @@ export const initializeSchools = async (setSchools) => {
     }
 };
 
-export const handleSchoolChange = (school, setFaculty, setFilteredFaculties, setErrorFields) => {
+export const handleSchoolChange = (school, setFaculty, setFilteredFaculties) => {
     setFilteredFaculties(school ? school.faculties : []);
     setFaculty(null);
-    setErrorFields(prev => ({ ...prev, school: false }));
 };
 
 export const validateFields = ({ name, surname, email, password, school, faculty }) => {
@@ -31,18 +30,11 @@ export const validateFields = ({ name, surname, email, password, school, faculty
     };
 };
 
-export const handleRegisterSubmit = async (fields, setErrorFields, navigate) => {
-    const errors = validateFields(fields);
-    setErrorFields(errors);
-
-    const isValid = Object.values(errors).every(error => !error);
-
-    if (isValid) {
-        try {
-            await axios.post('http://localhost:8080/api/register', fields);
-            navigate('/api/login');
-        } catch (error) {
-            console.error('Error registering user:', error);
-        }
+export const handleRegisterSubmit = async (fields, navigate) => {
+    try {
+        await axios.post('http://localhost:8080/api/register', fields);
+        navigate('/api/login');
+    } catch (error) {
+        console.error('Error registering user:', error);
     }
 };
