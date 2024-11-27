@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
@@ -83,8 +83,24 @@ export default function Navbar() {
     const handleLogout = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('jwtToken');
+        localStorage.removeItem('tokenExpiration');
         navigate('/api/login');
     };
+
+    useEffect(() => {
+        const checkTokenExpiration = () => {
+            const expDate = new Date(localStorage.getItem('tokenExpiration'));
+            if (expDate) {
+                if (new Date() >= expDate) {
+                    handleLogout();
+                }
+            }
+        };
+    
+        const interval = setInterval(checkTokenExpiration, 300000);
+    
+        return () => clearInterval(interval);
+    }, []);
 
     const end = (
         <div className="user-info">
