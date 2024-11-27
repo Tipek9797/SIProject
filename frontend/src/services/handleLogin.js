@@ -13,6 +13,12 @@ export const handleLogin = async ({ email, password, toast, navigate }) => {
         localStorage.setItem('jwtToken', token);
         localStorage.setItem('user', JSON.stringify(user));
 
+        const decodedToken = checkExpJwt(token);
+        const expirationDate = new Date(decodedToken.exp * 1000);
+        localStorage.setItem('tokenExpiration', expirationDate.toString());
+
+        console.log('token exp:', expirationDate);
+
         navigate('/home');
     } catch (error) {
         toast.current.show({ severity: 'error', summary: 'Chyba', detail: error.response?.data?.message ?? 'Prihlásenie sa nepodarilo' });
@@ -22,3 +28,8 @@ export const handleLogin = async ({ email, password, toast, navigate }) => {
 export const handleRegister = (navigate) => {
     navigate("/api/register");
 };
+
+function checkExpJwt(token) {
+    const arrayToken = token.split('.');
+    return JSON.parse(atob(arrayToken[1]));
+}
