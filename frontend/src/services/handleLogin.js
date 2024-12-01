@@ -12,6 +12,7 @@ export const handleLogin = async ({ email, password, toast, navigate }) => {
 
         localStorage.setItem('jwtToken', token);
         localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('userId', user.id);
 
         const decodedToken = checkExpJwt(token);
         const expirationDate = new Date(decodedToken.exp * 1000);

@@ -64,16 +64,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
+                        //update when the testing is done
+                        .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/api/login", "/api/register").permitAll()
                         .requestMatchers("/home", "/events").hasAnyRole("USER", "REVIEWER", "ADMIN")
                         .requestMatchers("/my-works").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/works-to-review").hasAnyRole("REVIEWER", "ADMIN")
                         .requestMatchers("/manage-users", "/all-works").hasRole("ADMIN")
-                        //change when testing is done
-                        .requestMatchers("/api/users").permitAll()
-                        .requestMatchers("/api/users/{id}").permitAll()
-                        .requestMatchers("/api/schools").permitAll()
-                        .requestMatchers("/api/faculties").permitAll()
                         .anyRequest().authenticated()
                 )
                 .build();
@@ -83,7 +80,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
 

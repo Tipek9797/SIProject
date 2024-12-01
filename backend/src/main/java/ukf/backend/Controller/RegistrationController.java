@@ -78,11 +78,12 @@ public class RegistrationController {
                     .orElseThrow(() -> new IllegalStateException("User not found"));
 
             Collection<Role> roles = authenticatedUser.getRoles();
-            String jwt = jwtService.generateToken(authenticatedUser.getEmail(), roles.toString());
+            String jwt = jwtService.generateToken(authenticatedUser.getEmail(), roles.toString(), authenticatedUser.getId());
 
             Map<String, Object> response = Map.of(
                     "token", jwt,
                     "user", Map.of(
+                            "id", authenticatedUser.getId(),
                             "name", authenticatedUser.getName(),
                             "surname", authenticatedUser.getSurname(),
                             "roles", roles
