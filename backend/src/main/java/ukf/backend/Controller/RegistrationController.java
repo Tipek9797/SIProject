@@ -1,5 +1,6 @@
 package ukf.backend.Controller;
 
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,16 +10,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import ukf.backend.Exception.InvalidTokenException;
 import ukf.backend.Model.AllowedEmailDomain.AllowedEmailDomainRepository;
 import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.Role.RoleRepository;
 import ukf.backend.Model.User.User;
 import ukf.backend.Model.User.UserRepository;
+import ukf.backend.Model.User.UserService;
 import ukf.backend.Security.JwtService;
 
 import java.util.Collection;
@@ -45,8 +47,11 @@ public class RegistrationController {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private UserService userService;
+
     @PostMapping(value = "/api/register", consumes = "application/json")
-    public ResponseEntity<String> createUser(@RequestBody User user){
+    public ResponseEntity<String> createUser(@RequestBody User user) throws MessagingException {
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()){
             return new ResponseEntity<>("A user with that email address already exists.",HttpStatus.BAD_REQUEST);
@@ -57,6 +62,10 @@ public class RegistrationController {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(Collections.singletonList(roleRepository.findByName("ROLE_USER")));
         userRepository.save(user);
+
+        // Create a secure token and send email
+        userService.sendRegistrationConfirmationEmail(user);
+
         return new ResponseEntity<>("User registered successfully." ,HttpStatus.OK);
     }
 
@@ -77,6 +86,10 @@ public class RegistrationController {
             User authenticatedUser = userRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalStateException("User not found"));
 
+            if (!userRepository.findByEmail(userDetails.getUsername()).get().isAccountVerified()) {
+                return new ResponseEntity<>(Map.of("message", "Account is not verified."), HttpStatus.CONFLICT);
+            }
+
             Collection<Role> roles = authenticatedUser.getRoles();
             String jwt = jwtService.generateToken(authenticatedUser.getEmail(), roles.toString(), authenticatedUser.getId());
 
@@ -93,6 +106,19 @@ public class RegistrationController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(Map.of("message", "Invalid credentials"), HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @GetMapping("/confirm-email")
+    public ResponseEntity<?> confirmEmail(@RequestParam("token") String token) throws InvalidTokenException {
+        try{
+            if(userService.verifyUser(token)){
+                return ResponseEntity.ok("Your email has been successfully verified.");
+            } else {
+                return ResponseEntity.ok("User details not found. Please login and regenerate the confirmation link.");
+            }
+        } catch (InvalidTokenException e){
+            return ResponseEntity.ok("Link expired or token already verified.");
         }
     }
 

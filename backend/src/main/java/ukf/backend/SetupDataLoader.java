@@ -183,6 +183,7 @@ public class SetupDataLoader implements
             user.setRoles(Collections.singletonList(role));
             user.setSchool(school);
             user.setFaculty(faculty);
+            user.setAccountVerified(true);
             userRepository.save(user);
             return user;
         }
