@@ -3,15 +3,11 @@ package ukf.backend.Model.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
-import ukf.backend.Model.Article.Article;
 import ukf.backend.Model.Faculty.Faculty;
 import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.School.School;
 
 import java.util.Collection;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
@@ -43,8 +39,4 @@ public class User {
     @JoinColumn(name = "faculty_id")
     @ToString.Exclude
     private Faculty faculty;
-
-    @ManyToMany(mappedBy = "users")
-    @JsonIgnore
-    private List<Article> articles;
 }
