@@ -91,12 +91,11 @@ public class RegistrationController {
             }
 
             Collection<Role> roles = authenticatedUser.getRoles();
-            String jwt = jwtService.generateToken(authenticatedUser.getEmail(), roles.toString(), authenticatedUser.getId());
+            String jwt = jwtService.generateToken(authenticatedUser.getEmail(), roles.toString());
 
             Map<String, Object> response = Map.of(
                     "token", jwt,
                     "user", Map.of(
-                            "id", authenticatedUser.getId(),
                             "name", authenticatedUser.getName(),
                             "surname", authenticatedUser.getSurname(),
                             "roles", roles
