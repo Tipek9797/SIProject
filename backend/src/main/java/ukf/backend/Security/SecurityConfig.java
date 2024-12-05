@@ -70,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers("/home", "/events").hasAnyRole("USER", "REVIEWER", "ADMIN")
                         .requestMatchers("/my-works").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/works-to-review").hasAnyRole("REVIEWER", "ADMIN")
-                        .requestMatchers("/manage-users", "/all-works").hasRole("ADMIN")
+                        .requestMatchers("/manage-users", "/all-works","/settings","/settings/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .build();
