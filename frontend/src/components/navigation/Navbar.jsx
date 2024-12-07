@@ -77,6 +77,12 @@ export default function Navbar() {
                 command: () => navigate('/all-works'),
                 visible: true
             });
+            items.push({
+                label: 'Nastavenia',
+                icon: 'pi pi-cog',
+                command: () => navigate('/settings'),
+                visible: true
+            });
         }
     }
 
