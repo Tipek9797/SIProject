@@ -5,17 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a7411554-2e51-47a4-b8e2-2f6b0b4a61f9" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/RegistrationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/RegistrationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Exception/InvalidTokenException.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Exception/InvalidTokenException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/EmailConfirmationToken/EmailConfirmationToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/EmailConfirmationToken/EmailConfirmationToken.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/EmailConfirmationToken/EmailConfirmationTokenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/EmailConfirmationToken/EmailConfirmationTokenRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/EmailConfirmationToken/EmailService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/EmailConfirmationToken/EmailService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/User/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/User/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/User/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/User/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Security/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/SetupDataLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/SetupDataLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/FileController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/FileDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/File.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/FileRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/FileService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ArticleController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ArticleController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ConferenceController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ConferenceController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/FacultyController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/FacultyController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ReviewController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ReviewController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/ConferenceDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/ConferenceDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/FacultyDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/FacultyDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/ReviewDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/ReviewDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/SchoolDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/SchoolDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/UpdateArticleDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/UpdateArticleDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/UpdateUserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/UpdateUserDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/compose.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +69,7 @@
     &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;Spring Boot.BackendApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature/add__email__verification&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/add__upload&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -111,6 +118,8 @@
       <updated>1732957492412</updated>
       <workItem from="1732957494179" duration="12943000" />
       <workItem from="1732971389404" duration="236000" />
+      <workItem from="1733652207305" duration="554000" />
+      <workItem from="1733728169600" duration="4117000" />
     </task>
     <servers />
   </component>

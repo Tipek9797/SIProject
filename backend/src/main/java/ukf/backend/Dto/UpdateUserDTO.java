@@ -1,4 +1,4 @@
-package ukf.backend.dtos;
+package ukf.backend.Dto;
 
 import lombok.Data;
 import java.util.List;

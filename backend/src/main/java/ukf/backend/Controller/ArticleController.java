@@ -13,7 +13,7 @@ import ukf.backend.Model.ArticleCategory.ArticleCategory;
 import ukf.backend.Model.ArticleCategory.ArticleCategoryRepository;
 import ukf.backend.Model.User.User;
 import ukf.backend.Model.User.UserRepository;
-import ukf.backend.dtos.UpdateArticleDTO;
+import ukf.backend.Dto.UpdateArticleDTO;
 
 import java.util.List;
 import java.util.Optional;
