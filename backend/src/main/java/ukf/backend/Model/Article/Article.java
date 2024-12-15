@@ -1,16 +1,15 @@
 package ukf.backend.Model.Article;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.ToString;
 import ukf.backend.Model.ArticleCategory.ArticleCategory;
 import ukf.backend.Model.Conference.Conference;
 import ukf.backend.Model.Review.Review;
 import ukf.backend.Model.User.User;
 import ukf.backend.Model.ArticleState.ArticleState;
+import ukf.backend.Model.ProsAndCons.ProsAndCons;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,4 +54,7 @@ public class Article {
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private List<ArticleCategory> categories;
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
+    private List<ProsAndCons> prosAndConsList;
 }

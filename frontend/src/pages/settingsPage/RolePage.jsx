@@ -8,6 +8,7 @@ import { InputText } from 'primereact/inputtext';
 import { Toolbar } from 'primereact/toolbar';
 import { FilterMatchMode } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
+import ToolbarTemplate from '../../components/ToolbarTemplate';
 import './settings.css';
 
 export default function RolePage() {
@@ -80,20 +81,9 @@ export default function RolePage() {
         updateRole(newData);
     };
 
-    const toolbarTemplate = () => {
-        return (
-            <React.Fragment>
-                <h1>Role</h1>
-                <Button label="Späť" icon="pi pi-arrow-left" className="p-button-secondary" onClick={() => navigate('/settings')} />
-                <Button label="Pridať Rolu" icon="pi pi-plus" onClick={openNewRoleDialog} />
-                <Button label="Vymazať Vybrané Role" icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedRoles} disabled={!selectedRoles.length} />
-            </React.Fragment>
-        );
-    };
-
     return (
         <div className="settings-page">
-            <Toolbar className="mb-4 settings-page-toolbar" start={toolbarTemplate} />
+            <Toolbar className="mb-4 settings-page-toolbar" start={() => ToolbarTemplate('Role', navigate, openNewRoleDialog, deleteSelectedRoles, selectedRoles.length)} />
             <DataTable
                 value={roles}
                 selection={selectedRoles}
@@ -109,7 +99,13 @@ export default function RolePage() {
                 onFilter={(e) => setFilters(e.filters)}>
                 <Column selectionMode="multiple" headerStyle={{ width: '3em' }} />
                 <Column field="id" header="ID" sortable />
-                <Column field="name" header="Názov" filter filterPlaceholder="Vyhľadať" editor={(options) => <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />} sortable />
+                <Column
+                    field="name"
+                    header="Názov"
+                    filter
+                    filterPlaceholder="Vyhľadať"
+                    editor={(options) => <InputText type="text"value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />}
+                    sortable />
                 <Column rowEditor headerStyle={{ width: '7rem' }} bodyStyle={{ textAlign: 'center' }} />
             </DataTable>
 

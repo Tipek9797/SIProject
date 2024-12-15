@@ -8,6 +8,7 @@ import { InputText } from 'primereact/inputtext';
 import { Toolbar } from 'primereact/toolbar';
 import { FilterMatchMode } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
+import ToolbarTemplate from '../../components/ToolbarTemplate';
 import './settings.css';
 
 export default function FormPage() {
@@ -81,20 +82,9 @@ export default function FormPage() {
 
     const navigate = useNavigate();
 
-    const toolbarTemplate = () => {
-        return (
-            <React.Fragment>
-                <h1>Formulár</h1>
-                <Button label="Späť" icon="pi pi-arrow-left" className="p-button-secondary" onClick={() => navigate('/settings')} />
-                <Button label="Pridať Formulár" icon="pi pi-plus" onClick={openNewFormDialog} />
-                <Button label="Vymazať Vybrané Formuláre" icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedForms} disabled={!selectedForms.length} />
-            </React.Fragment>
-        );
-    };
-
     return (
         <div className="settings-page">
-            <Toolbar className="mb-4 settings-page-toolbar" start={toolbarTemplate} />
+            <Toolbar className="mb-4 settings-page-toolbar" start={() => ToolbarTemplate('Formulár', navigate, openNewFormDialog, deleteSelectedForms, selectedForms.length)} />
             <DataTable
                 value={forms}
                 selection={selectedForms}

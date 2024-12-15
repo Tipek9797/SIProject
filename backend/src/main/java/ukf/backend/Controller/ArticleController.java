@@ -88,6 +88,11 @@ public class ArticleController {
             article.setCategories(categories);
         }
 
+        if (articleDTO.getProsAndConsList() != null) {
+            article.setProsAndConsList(articleDTO.getProsAndConsList());
+            articleDTO.getProsAndConsList().forEach(prosAndCons -> prosAndCons.setArticle(article));
+        }
+
         Article savedArticle = articleRepository.save(article);
         return ResponseEntity.ok(savedArticle);
     }
@@ -135,6 +140,11 @@ public class ArticleController {
                 return ResponseEntity.badRequest().body(null);
             }
             article.setCategories(categories);
+        }
+
+        if (articleDTO.getProsAndConsList() != null) {
+            article.setProsAndConsList(articleDTO.getProsAndConsList());
+            articleDTO.getProsAndConsList().forEach(prosAndCons -> prosAndCons.setArticle(article));
         }
 
         Article savedArticle = articleRepository.save(article);
@@ -189,6 +199,11 @@ public class ArticleController {
                 return ResponseEntity.badRequest().body(null);
             }
             article.setCategories(categories);
+        }
+
+        if (articleDTO.getProsAndConsList() != null) {
+            article.setProsAndConsList(articleDTO.getProsAndConsList());
+            articleDTO.getProsAndConsList().forEach(prosAndCons -> prosAndCons.setArticle(article));
         }
 
         Article savedArticle = articleRepository.save(article);

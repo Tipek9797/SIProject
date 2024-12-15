@@ -9,6 +9,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Toolbar } from 'primereact/toolbar';
 import { useNavigate } from 'react-router-dom';
+import ToolbarTemplate from '../../components/ToolbarTemplate';
 import './settings.css';
 
 export default function FacultyPage() {
@@ -135,22 +136,9 @@ export default function FacultyPage() {
 
     const navigate = useNavigate();
 
-    const toolbarTemplate = () => {
-        return (
-            <React.Fragment>
-                <h1>Fakulty</h1>
-                <Button label="Späť" icon="pi pi-arrow-left" className="p-button-secondary" onClick={() => navigate('/settings')} />
-                <Button label="Pridať fakultu" icon="pi pi-plus" onClick={openNewFacultyDialog} />
-                <Button label="Zmazať vybrané fakulty" icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedFaculties} disabled={!selectedFaculties.length} />
-            </React.Fragment>
-        );
-    };
-
     return (
         <div className="settings-page">
-            <Toolbar
-                className="mb-4 settings-page-toolbar"
-                start={toolbarTemplate} />
+            <Toolbar className="mb-4 settings-page-toolbar" start={() => ToolbarTemplate('Fakulty', navigate, openNewFacultyDialog, deleteSelectedFaculties, selectedFaculties.length)} />
             <DataTable
                 value={faculties}
                 filters={filters}

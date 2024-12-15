@@ -9,6 +9,7 @@ import { Calendar } from 'primereact/calendar';
 import { Toolbar } from 'primereact/toolbar';
 import { FilterMatchMode } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
+import ToolbarTemplate from '../../components/ToolbarTemplate';
 import './settings.css';
 
 export default function ConferencePage() {
@@ -128,20 +129,9 @@ export default function ConferencePage() {
 
     const navigate = useNavigate();
 
-    const toolbarTemplate = () => {
-        return (
-            <React.Fragment>
-                <h1>Konferencie</h1>
-                <Button label="Späť" icon="pi pi-arrow-left" className="p-button-secondary" onClick={() => navigate('/settings')} />
-                <Button label="Pridať Konferenciu" icon="pi pi-plus" onClick={openNewConferenceDialog} />
-                <Button label="Vymazať vybrané konferencie" icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedConferences} disabled={!selectedConferences.length} />
-            </React.Fragment>
-        );
-    };
-
     return (
         <div className="settings-page">
-            <Toolbar className="mb-4 settings-page-toolbar" start={toolbarTemplate} />
+            <Toolbar className="mb-4 settings-page-toolbar" start={() => ToolbarTemplate('Konferencie', navigate, openNewConferenceDialog, deleteSelectedConferences, selectedConferences.length)} />
             <DataTable
                 value={conferences}
                 selection={selectedConferences}
