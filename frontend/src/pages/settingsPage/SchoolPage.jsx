@@ -7,6 +7,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Toolbar } from 'primereact/toolbar';
 import { useNavigate } from 'react-router-dom';
+import ToolbarTemplate from '../../components/ToolbarTemplate';
 import './settings.css';
 
 export default function SchoolPage() {
@@ -75,20 +76,9 @@ export default function SchoolPage() {
         updateSchool(newData);
     };
 
-    const toolbarTemplate = () => {
-        return (
-            <React.Fragment>
-                <h1>Školy</h1>
-                <Button label="Späť" icon="pi pi-arrow-left" className="p-button-secondary" onClick={() => navigate('/settings')} />
-                <Button label="Pridať Školu" icon="pi pi-plus" onClick={openNewSchoolDialog} />
-                <Button label="Vymazať Vybrané Školy" icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedSchools} disabled={!selectedSchools.length} />
-            </React.Fragment>
-        );
-    };
-
     return (
         <div className="settings-page">
-            <Toolbar className="mb-4 settings-page-toolbar" start={toolbarTemplate} />
+            <Toolbar className="mb-4 settings-page-toolbar" start={() => ToolbarTemplate('Školy', navigate, openNewSchoolDialog, deleteSelectedSchools, selectedSchools.length)} />
             <DataTable
                 value={schools}
                 selection={selectedSchools}

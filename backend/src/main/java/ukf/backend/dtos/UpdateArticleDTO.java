@@ -1,6 +1,7 @@
 package ukf.backend.dtos;
 
 import lombok.Data;
+import ukf.backend.Model.ProsAndCons.ProsAndCons;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,4 +16,5 @@ public class UpdateArticleDTO {
     private Long stateId;
     private List<Long> userIds;
     private List<Long> categoryIds;
+    private List<ProsAndCons> prosAndConsList;
 }

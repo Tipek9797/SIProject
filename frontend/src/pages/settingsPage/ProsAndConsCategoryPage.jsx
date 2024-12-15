@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import ToolbarTemplate from '../../components/ToolbarTemplate';
 import './settings.css';
 
-export default function ArticleCategoryPage() {
+export default function ProsAndConsCategoryPage() {
     const [categories, setCategories] = useState([]);
     const [displayDialog, setDisplayDialog] = useState(false);
     const [addCategoryName, setAddCategoryName] = useState('');
@@ -23,7 +23,7 @@ export default function ArticleCategoryPage() {
     });
 
     const fetchCategories = () => {
-        axios.get('http://localhost:8080/api/article-categories')
+        axios.get('http://localhost:8080/api/pros-and-cons-categories')
             .then(response => setCategories(response.data))
             .catch(error => console.error('error: ', error));
     };
@@ -44,7 +44,7 @@ export default function ArticleCategoryPage() {
 
     const saveNewCategory = () => {
         const newCategory = { name: addCategoryName };
-        axios.post('http://localhost:8080/api/article-categories', newCategory)
+        axios.post('http://localhost:8080/api/pros-and-cons-categories', newCategory)
             .then(response => {
                 fetchCategories();
                 hideDialog();
@@ -53,7 +53,7 @@ export default function ArticleCategoryPage() {
     };
 
     const updateCategory = (category) => {
-        axios.put(`http://localhost:8080/api/article-categories/${category.id}`, category)
+        axios.put(`http://localhost:8080/api/pros-and-cons-categories/${category.id}`, category)
             .then(response => {
                 fetchCategories();
             })
@@ -62,7 +62,7 @@ export default function ArticleCategoryPage() {
 
     const deleteSelectedCategories = () => {
         const deleteRequests = selectedCategories.map(category =>
-            axios.delete(`http://localhost:8080/api/article-categories/${category.id}`)
+            axios.delete(`http://localhost:8080/api/pros-and-cons-categories/${category.id}`)
         );
         Promise.all(deleteRequests)
             .then(() => {
@@ -84,7 +84,7 @@ export default function ArticleCategoryPage() {
 
     return (
         <div className="settings-page">
-            <Toolbar className="mb-4 settings-page-toolbar" start={() => ToolbarTemplate('Kategórie Článkov', navigate, openNewCategoryDialog, deleteSelectedCategories, selectedCategories.length)} />
+            <Toolbar className="mb-4 settings-page-toolbar" start={() => ToolbarTemplate('Kategórie Pros and Cons', navigate, openNewCategoryDialog, deleteSelectedCategories, selectedCategories.length)} />
             <DataTable
                 value={categories}
                 selection={selectedCategories}
@@ -100,7 +100,16 @@ export default function ArticleCategoryPage() {
                 onFilter={(e) => setFilters(e.filters)}>
                 <Column selectionMode="multiple" headerStyle={{ width: '3em' }} />
                 <Column field="id" header="ID" sortable />
-                <Column field="name" header="Názov" filter filterPlaceholder="Vyhľadať" editor={(options) => <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />} sortable />
+                <Column
+                    field="name"
+                    header="Názov"
+                    filter
+                    filterPlaceholder="Vyhľadať"
+                    editor={(options) => <InputText type="text"
+                        value={options.value}
+                        onChange={(e) => options.editorCallback(e.target.value)}
+                    />}
+                    sortable />
                 <Column rowEditor headerStyle={{ width: '7rem' }} bodyStyle={{ textAlign: 'center' }} />
             </DataTable>
 

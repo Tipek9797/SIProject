@@ -19,6 +19,7 @@ export default function Settings() {
                     <Button label="Fakulty" className="settings-button" onClick={() => navigate('/settings/faculty')} />
                     <Button label="Role" className="settings-button" onClick={() => navigate('/settings/role')} />
                     <Button label="Stavy Článkov" className="settings-button" onClick={() => navigate('/settings/article-state')} />
+                    <Button label="Kategórie recenzií Pre a Proti" className="settings-button" onClick={() => navigate('/settings/pros-and-cons-category')} />
                 </div>
             </Panel>
         </div>
