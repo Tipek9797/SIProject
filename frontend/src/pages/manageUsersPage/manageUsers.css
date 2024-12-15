@@ -1,0 +1,53 @@
+.manage-users-container {
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.header-title {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.global-search,
+.text-filter,
+.role-filter {
+    width: 250px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.text-filter {
+    height: 35px;
+}
+
+.p-datatable {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 10px;
+    font-size: 14px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+    background-color: #f0f8ff;
+}

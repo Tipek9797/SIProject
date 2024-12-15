@@ -1,13 +1,17 @@
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-image: url('https://img.freepik.com/free-photo/school-classroom-blur-background-without-young-student-blurry-view-elementary-class-room-no-kid-teacher-with-chairs-tables-campus-vintage-effect-style-pictures_1253-1375.jpg?t=st=1733662688~exp=1733666288~hmac=75cce84f97de341d32e842d688fc7788600b135267f3265d0e7694269d0d2538&w=1380');
+  background-size: cover; /* Zabezpečí, že obrázok pokryje celú stránku */
+  background-repeat: no-repeat; /* Zabraňuje opakovaniu obrázka */
+  background-attachment: fixed; /* Udržiava pozadie fixné pri scrollovaní */
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  monospace;
 }
