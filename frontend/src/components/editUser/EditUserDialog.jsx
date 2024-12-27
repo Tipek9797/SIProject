@@ -1,133 +1,149 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Dropdown } from 'primereact/dropdown';
-import './editUser.css';
+import React, { useState, useEffect } from "react";
+import "./editUser.css";
+import { useParams } from "react-router-dom";
 
-const EditUserDialog = ({ visible, onHide, userId, onSave }) => {
-    const [user, setUser] = useState({
-        name: '',
-        surname: '',
-        email: '',
-        password: '',
-        schoolId: null,
-        facultyId: null,
-        roleIds: []
-    });
-
+const EditUserDialog = ({ onClose, onUpdate }) => {
+    const { id } = useParams();
+    const [userData, setUserData] = useState({});
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
     const [schools, setSchools] = useState([]);
     const [faculties, setFaculties] = useState([]);
-    const [roles, setRoles] = useState([]);
+    const [selectedSchool, setSelectedSchool] = useState(null);
+    const [selectedFaculty, setSelectedFaculty] = useState(null);
+    const [error, setError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
 
-    // Fetch user data by ID
     useEffect(() => {
-        if (userId) {
-            axios.get(`/api/users/${userId}`)
-                .then(response => {
-                    const data = response.data;
-                    setUser({
-                        name: data.name,
-                        surname: data.surname,
-                        email: data.email,
-                        schoolId: data.school ? data.school.id : null,
-                        facultyId: data.faculty ? data.faculty.id : null,
-                        roleIds: data.roles ? data.roles.map(role => role.id) : []
-                    });
-                })
-                .catch(error => console.error('Error fetching user data:', error));
+        const fetchData = async () => {
+            try {
+                const userResponse = await fetch(`http://localhost:8080/api/users/${id}`);
+                if (!userResponse.ok) throw new Error("Nepodarilo sa načítať údaje používateľa");
+                const userData = await userResponse.json();
+                setUserData(userData);
+                setFirstName(userData.name || "");
+                setLastName(userData.surname || "");
+                setEmail(userData.email || "");
+                setSelectedSchool(userData.school_id || null);
+                setSelectedFaculty(userData.faculty_id || null);
+
+                const schoolsResponse = await fetch("http://localhost:8080/api/schools");
+                if (!schoolsResponse.ok) throw new Error("Nepodarilo sa načítať zoznam škôl");
+                const schoolsData = await schoolsResponse.json();
+                setSchools(schoolsData);
+
+                const facultiesResponse = await fetch("http://localhost:8080/api/faculties");
+                if (!facultiesResponse.ok) throw new Error("Nepodarilo sa načítať zoznam fakúlt");
+                const facultiesData = await facultiesResponse.json();
+                setFaculties(facultiesData);
+            } catch (err) {
+                setError(err.message);
+            }
+        };
+
+        fetchData();
+    }, [id]);
+
+    const handleSave = async () => {
+        try {
+            const updatedUser = {
+                name: firstName,
+                surname: lastName,
+                email,
+                ...(selectedSchool !== userData.school_id && { schoolId: selectedSchool }), // Zmena na schoolId
+                ...(selectedFaculty !== userData.faculty_id && { facultyId: selectedFaculty }), // Zmena na facultyId
+            };
+
+            const response = await fetch(`http://localhost:8080/api/users/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedUser),
+            });
+
+            if (!response.ok) {
+                throw new Error("Chyba pri aktualizácii používateľa");
+            }
+
+            setSuccessMessage("Zmeny profilu boli úspešne uložené!");
+            setTimeout(() => setSuccessMessage(""), 3000);
+
+            onUpdate && onUpdate();
+            onClose && onClose();
+        } catch (err) {
+            setError(err.message);
         }
-    }, [userId]);
-
-    // Fetch schools and faculties
-    useEffect(() => {
-        axios.get("/api/schools").then(response => setSchools(response.data));
-        axios.get("/api/faculties").then(response => setFaculties(response.data));
-        axios.get("/api/roles").then(response => setRoles(response.data));
-    }, []);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setUser(prevUser => ({ ...prevUser, [name]: value }));
-    };
-
-    const handleDropdownChange = (name, value) => {
-        setUser(prevUser => ({ ...prevUser, [name]: value }));
-    };
-
-    const handleSave = () => {
-        axios.put(`/api/users/${userId}`, user)
-            .then(() => {
-                onSave(); // Callback to refresh the parent component
-                onHide(); // Close the dialog
-            })
-            .catch(error => console.error('Error updating user:', error));
     };
 
     return (
-        <Dialog visible={visible} onHide={onHide} header="Edit User" style={{ width: '50vw' }}>
-            <div className="p-fluid">
-                <div className="p-field">
-                    <label htmlFor="name">Name</label>
-                    <InputText id="name" name="name" value={user.name} onChange={handleInputChange} />
-                </div>
-
-                <div className="p-field">
-                    <label htmlFor="surname">Surname</label>
-                    <InputText id="surname" name="surname" value={user.surname} onChange={handleInputChange} />
-                </div>
-
-                <div className="p-field">
-                    <label htmlFor="email">Email</label>
-                    <InputText id="email" name="email" value={user.email} onChange={handleInputChange} />
-                </div>
-
-                <div className="p-field">
-                    <label htmlFor="password">Password</label>
-                    <InputText id="password" name="password" type="password" value={user.password} onChange={handleInputChange} />
-                </div>
-
-                <div className="p-field">
-                    <label htmlFor="schoolId">School</label>
-                    <Dropdown
-                        id="schoolId"
-                        value={user.schoolId}
-                        options={schools.map(s => ({ label: s.name, value: s.id }))}
-                        onChange={(e) => handleDropdownChange('schoolId', e.value)}
-                        placeholder="Select a School"
+        <div className="edit-user-dialog">
+            <div className="dialog-content">
+                <h2>Upraviť používateľa</h2>
+                {error && <div className="error-message">{error}</div>}
+                {successMessage && <div className="success-message">{successMessage}</div>}
+                <div className="form-group">
+                    <label>Meno:</label>
+                    <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
                     />
                 </div>
-
-                <div className="p-field">
-                    <label htmlFor="facultyId">Faculty</label>
-                    <Dropdown
-                        id="facultyId"
-                        value={user.facultyId}
-                        options={faculties.map(f => ({ label: f.name, value: f.facultyId }))}
-                        onChange={(e) => handleDropdownChange('facultyId', e.value)}
-                        placeholder="Select a Faculty"
+                <div className="form-group">
+                    <label>Priezvisko:</label>
+                    <input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
                     />
                 </div>
-
-                <div className="p-field">
-                    <label htmlFor="roleIds">Roles</label>
-                    <Dropdown
-                        id="roleIds"
-                        value={user.roleIds}
-                        options={roles.map(r => ({ label: r.name, value: r.id }))}
-                        onChange={(e) => handleDropdownChange('roleIds', e.value)}
-                        placeholder="Select Roles"
-                        multiple
+                <div className="form-group">
+                    <label>Email:</label>
+                    <input
+                        type="email"
+                        value={email}
+                        disabled
                     />
                 </div>
-
-                <div className="p-field">
-                    <Button label="Save" onClick={handleSave} className="p-button-success" />
-                    <Button label="Cancel" onClick={onHide} className="p-button-secondary" style={{ marginLeft: '1rem' }} />
+                <div className="form-group">
+                    <label>Škola:</label>
+                    <select
+                        value={selectedSchool || ""}
+                        onChange={(e) => setSelectedSchool(Number(e.target.value))}
+                    >
+                        <option value="">-- Vyberte školu --</option>
+                        {schools.map((school) => (
+                            <option key={school.id} value={school.id}>
+                                {school.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label>Fakulta:</label>
+                    <select
+                        value={selectedFaculty || ""}
+                        onChange={(e) => setSelectedFaculty(Number(e.target.value))}
+                        disabled={!selectedSchool}
+                    >
+                        <option value="">-- Vyberte fakultu --</option>
+                        {faculties
+                            .filter((faculty) => faculty.schoolId === selectedSchool)
+                            .map((faculty) => (
+                                <option key={faculty.facultyId} value={faculty.facultyId}>
+                                    {faculty.name}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+                <div className="dialog-actions">
+                    <button onClick={handleSave}>Uložiť</button>
+                    <button onClick={() => onClose && onClose()}>Zrušiť</button>
                 </div>
             </div>
-        </Dialog>
+        </div>
     );
 };
 

@@ -23,7 +23,6 @@ export default function Navbar() {
         return roles.map(role => role.name);
     };
 
-
     const user = getUserFromLocalStorage();
     const token = localStorage.getItem('jwtToken');
     const roleNames = user ? extractRoleNames(user.roles) : [];
@@ -99,6 +98,15 @@ export default function Navbar() {
         setShowMenu((prevState) => !prevState);
     };
 
+    const handleEditProfile = () => {
+        const userId = user?.id;
+        if (userId) {
+            navigate(`/edit-user/${userId}`);
+        } else {
+            console.error("User ID is not available.");
+        }
+    };
+
     useEffect(() => {
         const checkTokenExpiration = () => {
             const expDate = new Date(localStorage.getItem('tokenExpiration'));
@@ -121,13 +129,13 @@ export default function Navbar() {
                     <div className="user-dropdown">
                         <span
                             className="user-name"
-                            onClick={toggleMenu} // Kliknutie na meno otvorí menu
+                            onClick={toggleMenu}
                         >
                             {`${user.name} ${user.surname}`}
                         </span>
                         {showMenu && (
                             <div className="dropdown-menu">
-                                <button onClick={() => navigate('/edit-user')}>Upraviť profil</button>
+                                <button onClick={handleEditProfile}>Upraviť profil</button>
                             </div>
                         )}
                     </div>
