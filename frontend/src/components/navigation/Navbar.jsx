@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
@@ -6,23 +6,25 @@ import './navbar.css';
 
 export default function Navbar() {
     const navigate = useNavigate();
+    const [showMenu, setShowMenu] = useState(false);
 
     const getUserFromLocalStorage = () => {
         try {
             const user = JSON.parse(localStorage.getItem('user'));
-            return user ? user : null;
+            return user && user.roles ? user : { roles: [] };
         } catch (error) {
-            console.error(error);
-            return null;
+            console.error("Error reading user from localStorage:", error);
+            return { roles: [] };
         }
     };
 
     const extractRoleNames = (roles) => {
+        if (!roles || !Array.isArray(roles)) return [];
         return roles.map(role => role.name);
     };
 
-    const user = getUserFromLocalStorage();
 
+    const user = getUserFromLocalStorage();
     const token = localStorage.getItem('jwtToken');
     const roleNames = user ? extractRoleNames(user.roles) : [];
 
@@ -93,6 +95,10 @@ export default function Navbar() {
         navigate('/api/login');
     };
 
+    const toggleMenu = () => {
+        setShowMenu((prevState) => !prevState);
+    };
+
     useEffect(() => {
         const checkTokenExpiration = () => {
             const expDate = new Date(localStorage.getItem('tokenExpiration'));
@@ -102,9 +108,9 @@ export default function Navbar() {
                 }
             }
         };
-    
+
         const interval = setInterval(checkTokenExpiration, 300000);
-    
+
         return () => clearInterval(interval);
     }, []);
 
@@ -112,11 +118,23 @@ export default function Navbar() {
         <div className="user-info">
             {token ? (
                 <>
-                    <span className="user-name">{`${user.name} ${user.surname}`}</span>
-                    <Button 
+                    <div className="user-dropdown">
+                        <span
+                            className="user-name"
+                            onClick={toggleMenu} // Kliknutie na meno otvorí menu
+                        >
+                            {`${user.name} ${user.surname}`}
+                        </span>
+                        {showMenu && (
+                            <div className="dropdown-menu">
+                                <button onClick={() => navigate('/edit-user')}>Upraviť profil</button>
+                            </div>
+                        )}
+                    </div>
+                    <Button
                         label="Odhlásiť Sa"
                         icon="pi pi-sign-out"
-                        className="p-button-danger"
+                        className="p-button-danger logout-button"
                         onClick={handleLogout}
                     />
                 </>

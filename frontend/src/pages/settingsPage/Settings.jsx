@@ -9,7 +9,6 @@ export default function Settings() {
 
     return (
         <div className="settings-container">
-            <h1>Nastavenia</h1>
             <Panel className="settings-panel" header="Nastavenia Konferencií">
                 <div className="settings-menu">
                     <Button label="Kategórie Článkov" className="settings-button" onClick={() => navigate('/settings/article-category')} />
