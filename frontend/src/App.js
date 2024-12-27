@@ -51,6 +51,8 @@ function App() {
                             path="/edit-user"
                             element={<PrivateRoute roles={['ROLE_USER', 'ROLE_ADMIN', 'ROLE_REVIEWER']} page={<EditUserDialog />} />}  //Edit je spraveny pre kazdeho aj admina neviem ci je to spravne alebo ci by to malo byt len pre Reviewer a User
                         />
+                        <Route path="/edit-user" element={<PrivateRoute roles={['ROLE_USER', 'ROLE_ADMIN', 'ROLE_REVIEWER']} page={<EditUserDialog />} />}  //Edit je spraveny pre kazdeho aj admina neviem ci je to spravne alebo ci by to malo byt len pre Reviewer a User
+                        />
                     </Routes>
                 </div>
                 <Footer />
