@@ -47,10 +47,6 @@ function App() {
                         <Route path="/settings/article-state" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ArticleStatePage />} />} />
                         <Route path="/settings/role" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<RolePage />} />} />
                         <Route path="/settings/pros-and-cons-category" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ProsAndConsCategoryPage />} />} />
-                        <Route
-                            path="/edit-user"
-                            element={<PrivateRoute roles={['ROLE_USER', 'ROLE_ADMIN', 'ROLE_REVIEWER']} page={<EditUserDialog />} />}  //Edit je spraveny pre kazdeho aj admina neviem ci je to spravne alebo ci by to malo byt len pre Reviewer a User
-                        />
                         <Route path="/edit-user" element={<PrivateRoute roles={['ROLE_USER', 'ROLE_ADMIN', 'ROLE_REVIEWER']} page={<EditUserDialog />} />}  //Edit je spraveny pre kazdeho aj admina neviem ci je to spravne alebo ci by to malo byt len pre Reviewer a User
                         />
                     </Routes>
