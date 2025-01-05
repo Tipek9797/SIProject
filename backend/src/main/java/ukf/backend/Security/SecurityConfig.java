@@ -66,6 +66,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         //update when the testing is done
                         .requestMatchers("/api/**").permitAll()
+                        //.requestMatchers("/api/upload/**").permitAll()
                         .requestMatchers("/api/login", "/api/register", "confirm-email").permitAll()
                         .requestMatchers("/home", "/events").hasAnyRole("USER", "REVIEWER", "ADMIN")
                         .requestMatchers("/my-works").hasAnyRole("USER", "ADMIN")

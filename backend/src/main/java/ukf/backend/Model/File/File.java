@@ -2,6 +2,10 @@ package ukf.backend.Model.File;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+import ukf.backend.Model.User.User;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -16,4 +20,11 @@ public class File {
 
     @Lob
     private byte[] data;
+
+    @ManyToOne
+    private User user;
+
+    @DateTimeFormat
+    private LocalDateTime uploadDate;
+
 }

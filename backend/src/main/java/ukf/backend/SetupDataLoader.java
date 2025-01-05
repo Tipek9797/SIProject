@@ -120,6 +120,9 @@ public class SetupDataLoader implements
 
         createReviewIfNotFound(5, "Super", true, article);
 
+        createUserIfNotFound("Test2", "Test2", "test", "test2@student.ukf.sk", adminRole, school, faculty);
+
+
         alreadySetup = true;
     }
 

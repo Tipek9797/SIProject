@@ -5,23 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a7411554-2e51-47a4-b8e2-2f6b0b4a61f9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/FileController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/FileDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/File.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/FileRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/FileService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ArticleController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ArticleController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ConferenceController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ConferenceController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/FacultyController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/FacultyController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ReviewController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/ReviewController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/ConferenceDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/ConferenceDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/FacultyDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/FacultyDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/ReviewDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/ReviewDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/SchoolDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/SchoolDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/UpdateArticleDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/UpdateArticleDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/dtos/UpdateUserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/UpdateUserDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/FileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Controller/FileController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/FileDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Dto/FileDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/File.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/File.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/FileRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/FileRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/FileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Model/File/FileService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/Security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/SetupDataLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ukf/backend/SetupDataLoader.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -61,25 +52,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;Spring Boot.BackendApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature/add__upload&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "Spring Boot.BackendApplication.executor": "Run",
+    "git-widget-placeholder": "feature/add__upload",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="BackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="backend" />
@@ -120,6 +111,11 @@
       <workItem from="1732971389404" duration="236000" />
       <workItem from="1733652207305" duration="554000" />
       <workItem from="1733728169600" duration="4117000" />
+      <workItem from="1735466674484" duration="4050000" />
+      <workItem from="1735561993792" duration="1143000" />
+      <workItem from="1735563322069" duration="285000" />
+      <workItem from="1735987752137" duration="7385000" />
+      <workItem from="1736075527450" duration="6634000" />
     </task>
     <servers />
   </component>
