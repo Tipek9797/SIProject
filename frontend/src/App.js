@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ManageUsers from "./pages/manageUsersPage/ManageUsers";
 import AllWorks from './pages/allWorksPage/AllWorks';
+import WorksToReview from './pages/worksToReviewPage/WorksToReview';
 import Register from './pages/registerPage/Register';
 import Navbar from "./components/navigation/Navbar";
 import MyWorks from './pages/myWorksPage/MyWorks';
@@ -33,10 +34,10 @@ function App() {
                         <Route path="/events" element={<Event />} />
                         <Route path="/api/login" element={<LoginPage />} />
                         <Route path="/api/register" element={<Register />} />
-                        <Route path="/manage-users"element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ManageUsers />} />} />
+                        <Route path="/manage-users" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ManageUsers />} />} />
                         <Route path="/all-works" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<AllWorks />} />} />
                         <Route path="/my-works" element={<PrivateRoute roles={['ROLE_USER', 'ROLE_ADMIN']} page={<MyWorks />} />} />
-                        <Route path="/works-to-review"element={<PrivateRoute roles={['ROLE_REVIEWER']} page={<AllWorks />} />} />
+                        <Route path="/works-to-review" element={<PrivateRoute roles={['ROLE_REVIEWER']} page={<WorksToReview />} />} />
                         <Route path="/settings" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<Settings />} />} />
                         <Route path="/settings/article-category" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ArticleCategoryPage />} />} />
                         <Route path="/settings/school" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<SchoolPage />} />} />

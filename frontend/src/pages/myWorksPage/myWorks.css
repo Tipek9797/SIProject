@@ -18,7 +18,7 @@
     padding: 0.5rem;
     border-radius: 10px;
     text-align: left;
-    background-color: #61dafb;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .workcard p{
@@ -94,7 +94,7 @@
 }
 
 .work-dialog-details{
-    background-color: #02925f;
+    background-color: rgba(0, 0, 0, 0.5);
     padding: 1rem;
 }
 
@@ -104,7 +104,7 @@
 }
 
 .work-dialog-upload{
-    background-color: #02925f;
+    background-color: rgba(0, 0, 0, 0.5);
     padding: 1rem;
 }
 

@@ -141,8 +141,8 @@ export default function MyWorks() {
     const detailsFooterContent = (
         <div>
             <Button label="Download" icon="pi pi-download" severity="success" onClick={() => setWorkDetailsVisible(false)} autoFocus />
-            <Button label="Edit" icon="pi pi-pen-to-square" onClick={() => setWorkDetailsVisible(false)} autoFocus />
-            <Button label="Delete" icon="pi pi-trash" severity="danger"  onClick={confirm} autoFocus/>
+            <Button label="Edit" icon="pi pi-pen-to-square" onClick={() => setWorkDetailsVisible(false)}/>
+            <Button label="Delete" icon="pi pi-trash" severity="danger"  onClick={confirm}/>
         </div>
     );
 
