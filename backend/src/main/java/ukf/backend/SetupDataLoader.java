@@ -98,9 +98,9 @@ public class SetupDataLoader implements
         createDomainIfNotFound("student.ukf.sk");
         createDomainIfNotFound("stu.sk");
 
-        createRoleIfNotFound("ROLE_ADMIN");
-        createRoleIfNotFound("ROLE_REVIEWER");
-        createRoleIfNotFound("ROLE_USER");
+        Role adminRole = createRoleIfNotFound("ROLE_ADMIN");
+        Role reviewerRole = createRoleIfNotFound("ROLE_REVIEWER");
+        Role userRole = createRoleIfNotFound("ROLE_USER");
 
         createSchoolIfNotFound("UKF");
         createSchoolIfNotFound("TRN");
@@ -133,6 +133,8 @@ public class SetupDataLoader implements
 
         createReviewIfNotFound(5, "Super", true, article);
 
+        createUserIfNotFound("Test2", "Test2", "test", "test2@student.ukf.sk", userRole, school, faculty);
+
         createProsAndConsIfNotFound(proCategory, "cool", article);
         createProsAndConsIfNotFound(conCategory, "very bad", article);
 
@@ -140,15 +142,15 @@ public class SetupDataLoader implements
     }
 
     @Transactional
-    void createRoleIfNotFound(String name) {
+    Role createRoleIfNotFound(String name) {
 
         Role role = roleRepository.findByName(name);
         if (role == null) {
             role = new Role();
             role.setName(name);
             roleRepository.save(role);
-            return;
         }
+        return role;
     }
 
     @Transactional
