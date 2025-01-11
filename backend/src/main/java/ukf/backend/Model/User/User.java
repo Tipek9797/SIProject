@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 import ukf.backend.Model.Article.Article;
+import ukf.backend.Model.Conference.Conference;
 import ukf.backend.Model.Faculty.Faculty;
 import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.School.School;
@@ -47,4 +48,9 @@ public class User {
     @ManyToMany(mappedBy = "users")
     @JsonIgnore
     private List<Article> articles;
+
+    @ManyToMany(mappedBy = "users")
+    @JsonIgnore
+    private List<Conference> conferences;
+
 }

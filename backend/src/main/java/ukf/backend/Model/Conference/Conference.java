@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import ukf.backend.Model.Article.Article;
 import ukf.backend.Model.Form.Form;
+import ukf.backend.Model.User.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +18,7 @@ public class Conference {
     private Long id;
     private String state;
     private String name;
+    private String description;
     private LocalDateTime startUpload;
     private LocalDateTime closeUpload;
     private LocalDateTime startReview;
@@ -28,4 +30,13 @@ public class Conference {
 
     @OneToMany(mappedBy = "conference", cascade = CascadeType.ALL)
     private List<Article> articles;
+
+    @ManyToMany
+    @JoinTable(
+            name = "conference_users",
+            joinColumns = @JoinColumn(name = "conference_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> users;
+
 }
