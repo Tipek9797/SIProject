@@ -10,6 +10,7 @@ import {
 import WorkUploadDialog from "../../components/work-dialog/WorkUploadDialog";
 import WorkInfoDialog from "../../components/work-dialog/WorkInfoDialog";
 import "./myWorks.css";
+import {handleUpload} from "../../services/handleUpload";
 
 export default function MyWorks() {
     const [workDetailsVisible, setWorkDetailsVisible] = useState(false);
@@ -21,15 +22,20 @@ export default function MyWorks() {
     const [name, setName] = useState('');
     const [errorFields, setErrorFields] = useState({ name: false, lastName: false, email: false, password: false });
 
+    const [files, setFiles] = useState([]);
+
     const onTemplateSelect = (e) => {
         let _totalSize = totalSize;
         let files = e.files;
+
+        setFiles(files);
 
         Object.keys(files).forEach((key) => {
             _totalSize += files[key].size || 0;
         });
 
         setTotalSize(_totalSize);
+
     };
 
     const onTemplateUpload = (e) => {
@@ -112,7 +118,10 @@ export default function MyWorks() {
 
     const uploadFooterContent = (
         <div>
-            <Button label="Submit" icon="pi pi-check" onClick={() => setWorkUploadVisible(false)} autoFocus />
+            <Button label="Submit" icon="pi pi-check" onClick={() => {setWorkUploadVisible(false);
+                                                                            handleUpload(files, toast);}
+                                                              } autoFocus
+            />
         </div>
     );
 

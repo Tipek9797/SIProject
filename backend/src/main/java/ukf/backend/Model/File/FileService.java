@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import ukf.backend.Dto.FileDTO;
+import ukf.backend.dtos.FileDTO;
 import ukf.backend.Model.User.User;
 import ukf.backend.Model.User.UserRepository;
 

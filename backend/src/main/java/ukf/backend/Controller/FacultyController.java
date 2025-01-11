@@ -6,7 +6,7 @@ import ukf.backend.Model.Faculty.Faculty;
 import ukf.backend.Model.Faculty.FacultyRepository;
 import ukf.backend.Model.School.School;
 import ukf.backend.Model.School.SchoolRepository;
-import ukf.backend.Dto.FacultyDTO;
+import ukf.backend.dtos.FacultyDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;

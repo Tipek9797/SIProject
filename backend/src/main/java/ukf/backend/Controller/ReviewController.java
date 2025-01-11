@@ -8,7 +8,7 @@ import ukf.backend.Model.Article.Article;
 import ukf.backend.Model.Article.ArticleRepository;
 import ukf.backend.Model.Review.Review;
 import ukf.backend.Model.Review.ReviewRepository;
-import ukf.backend.Dto.ReviewDTO;
+import ukf.backend.dtos.ReviewDTO;
 
 import java.util.List;
 import java.util.Optional;

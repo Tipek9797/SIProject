@@ -6,7 +6,7 @@ import ukf.backend.Model.Conference.Conference;
 import ukf.backend.Model.Conference.ConferenceRepository;
 import ukf.backend.Model.Form.Form;
 import ukf.backend.Model.Form.FormRepository;
-import ukf.backend.Dto.ConferenceDTO;
+import ukf.backend.dtos.ConferenceDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;

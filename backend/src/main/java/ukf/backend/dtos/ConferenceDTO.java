@@ -1,5 +1,5 @@
 
-package ukf.backend.Dto;
+package ukf.backend.dtos;
 
 import java.time.LocalDateTime;
 

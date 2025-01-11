@@ -12,9 +12,9 @@ import ukf.backend.Model.User.User;
 import ukf.backend.Model.User.UserRepository;
 import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.Role.RoleRepository;
-import ukf.backend.Dto.UpdateUserDTO;
-import ukf.backend.Dto.SchoolDTO;
-import ukf.backend.Dto.FacultyDTO;
+import ukf.backend.dtos.UpdateUserDTO;
+import ukf.backend.dtos.SchoolDTO;
+import ukf.backend.dtos.FacultyDTO;
 
 import java.util.List;
 import java.util.Optional;

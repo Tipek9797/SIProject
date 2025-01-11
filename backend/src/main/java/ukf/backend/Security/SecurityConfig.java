@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -66,13 +67,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         //update when the testing is done
                         .requestMatchers("/api/**").permitAll()
-                        //.requestMatchers("/api/upload/**").permitAll()
                         .requestMatchers("/api/login", "/api/register", "confirm-email").permitAll()
                         .requestMatchers("/home", "/events").hasAnyRole("USER", "REVIEWER", "ADMIN")
                         .requestMatchers("/my-works").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/works-to-review").hasAnyRole("REVIEWER", "ADMIN")
                         .requestMatchers("/manage-users", "/all-works","/settings","/settings/**").hasRole("ADMIN")
+                        //.requestMatchers("/api/files/upload/**").hasRole("USER")
                         .anyRequest().authenticated()
+
                 )
                 .build();
     }

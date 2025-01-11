@@ -7,16 +7,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import ukf.backend.Dto.FileDTO;
+import ukf.backend.dtos.FileDTO;
 import ukf.backend.Model.File.File;
 import ukf.backend.Model.File.FileRepository;
 import ukf.backend.Model.File.FileService;
 import ukf.backend.Model.User.User;
 import ukf.backend.Model.User.UserRepository;
-import ukf.backend.Model.User.UserService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -63,6 +64,8 @@ public class FileController {
     public ResponseEntity<String> uploadFile(@PathVariable Long userId, @RequestParam("file") MultipartFile file) throws Exception {
         Optional<User> user = userRepository.findById(userId);
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         if (user.isEmpty()){
             return new ResponseEntity<>("User doesn't exist.",HttpStatus.BAD_REQUEST);
         }
@@ -76,20 +79,14 @@ public class FileController {
 
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("GMT+01:00"));
 
-        File attachment = null;
-        String downloadURl = "";
-        attachment = fileService.saveAttachment(file, user.get(), localDateTime);
-        downloadURl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/download/")
-                .path(Long.toString(attachment.getId()))
-                .toUriString();
+        fileService.saveAttachment(file, user.get(), localDateTime);
 
         return new ResponseEntity<>("File uploaded successfully.", HttpStatus.OK);
     }
 
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId) throws Exception {
-        File attachment = null;
+        File attachment;
         attachment = fileService.getAttachment(fileId);
         return  ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(attachment.getFileType()))

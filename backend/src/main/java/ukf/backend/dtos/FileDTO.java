@@ -1,8 +1,7 @@
-package ukf.backend.Dto;
+package ukf.backend.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ukf.backend.Model.User.User;
 
 import java.time.LocalDateTime;
 
