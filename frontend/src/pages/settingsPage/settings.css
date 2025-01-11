@@ -1,3 +1,40 @@
+/*Opravené štýlovanie aby ten settings box nebol priamo až v navbare ale aby bol viacej v strede stránky.*/
+.settings-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: calc(100vh - 400px);
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+.settings-panel {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.settings-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.settings-button {
+    width: 200px;
+    height: 50px;
+    background-color: #60a9e1;
+    border-color: #60a9e1;
+    color: #ffffff;
+}
+
+.settings-button:hover {
+    background-color: #2f7ac5;
+    border-color: #2f7ac5;
+}
+
 .settings-page-table .p-datatable-thead > tr > th,
 .settings-page-table .p-datatable-tbody > tr > td {
     padding: 0.5rem;
@@ -21,37 +58,4 @@
 
 .settings-page-table .p-datatable-tbody > tr {
     height: 2.5rem;
-}
-
-.settings-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 60vh;
-}
-
-.settings-panel {
-    width: 50%;
-    margin: 0 auto;
-}
-
-.settings-menu {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.settings-button {
-    width: 200px;
-    height: 50px;
-    background-color: #60a9e1;
-    border-color: #60a9e1;
-    color: #ffffff;
-}
-
-.settings-button:hover {
-    background-color: #2f7ac5;
-    border-color: #2f7ac5;
 }

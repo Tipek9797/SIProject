@@ -5,10 +5,11 @@ body {
   sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: url('https://img.freepik.com/free-photo/school-classroom-blur-background-without-young-student-blurry-view-elementary-class-room-no-kid-teacher-with-chairs-tables-campus-vintage-effect-style-pictures_1253-1375.jpg?t=st=1733662688~exp=1733666288~hmac=75cce84f97de341d32e842d688fc7788600b135267f3265d0e7694269d0d2538&w=1380');
-  background-size: cover; /* Zabezpečí, že obrázok pokryje celú stránku */
-  background-repeat: no-repeat; /* Zabraňuje opakovaniu obrázka */
-  background-attachment: fixed; /* Udržiava pozadie fixné pri scrollovaní */
+  /*background-image: url('https://img.freepik.com/free-photo/school-classroom-blur-background-without-young-student-blurry-view-elementary-class-room-no-kid-teacher-with-chairs-tables-campus-vintage-effect-style-pictures_1253-1375.jpg?t=st=1733662688~exp=1733666288~hmac=75cce84f97de341d32e842d688fc7788600b135267f3265d0e7694269d0d2538&w=1380'); */
+  background-image: url('https://i.imgur.com/ec1Sfex.jpeg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 code {
