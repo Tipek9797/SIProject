@@ -19,6 +19,7 @@ import FacultyPage from './pages/settingsPage/FacultyPage';
 import ConferencePage from './pages/settingsPage/ConferencePage';
 import ArticleStatePage from './pages/settingsPage/ArticleStatePage';
 import RolePage from './pages/settingsPage/RolePage';
+import ProsAndConsCategoryPage from './pages/settingsPage/ProsAndConsCategoryPage';
 
 function App() {
     return (
@@ -44,6 +45,7 @@ function App() {
                         <Route path="/settings/conference" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ConferencePage />} />} />
                         <Route path="/settings/article-state" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ArticleStatePage />} />} />
                         <Route path="/settings/role" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<RolePage />} />} />
+                        <Route path="/settings/pros-and-cons-category" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ProsAndConsCategoryPage />} />} />
                     </Routes>
                 </div>
                 <Footer />

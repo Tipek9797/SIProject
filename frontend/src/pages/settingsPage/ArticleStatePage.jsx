@@ -8,6 +8,7 @@ import { InputText } from 'primereact/inputtext';
 import { Toolbar } from 'primereact/toolbar';
 import { FilterMatchMode } from 'primereact/api';
 import { useNavigate } from 'react-router-dom';
+import ToolbarTemplate from '../../components/ToolbarTemplate';
 import './settings.css';
 
 export default function ArticleStatePage() {
@@ -81,20 +82,9 @@ export default function ArticleStatePage() {
 
     const navigate = useNavigate();
 
-    const toolbarTemplate = () => {
-        return (
-            <React.Fragment>
-                <h1>Stavy Článkov</h1>
-                <Button label="Späť" icon="pi pi-arrow-left" className="p-button-secondary" onClick={() => navigate('/settings')} />
-                <Button label="Pridať Stav Článku" icon="pi pi-plus" onClick={openNewStateDialog} />
-                <Button label="Vymazať Vybrané Stavy" icon="pi pi-trash" className="p-button-danger" onClick={deleteSelectedStates} disabled={!selectedStates.length} />
-            </React.Fragment>
-        );
-    };
-
     return (
         <div className="settings-page">
-            <Toolbar className="mb-4 settings-page-toolbar" start={toolbarTemplate} />
+            <Toolbar className="mb-4 settings-page-toolbar" start={() => ToolbarTemplate('Stavy Článkov', navigate, openNewStateDialog, deleteSelectedStates, selectedStates.length)} />
             <DataTable
                 value={states}
                 selection={selectedStates}

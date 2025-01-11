@@ -28,6 +28,10 @@ import ukf.backend.Model.User.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ukf.backend.Model.ArticleState.ArticleState;
 import ukf.backend.Model.ArticleState.ArticleStateRepository;
+import ukf.backend.Model.ProsAndConsCategory.ProsAndConsCategory;
+import ukf.backend.Model.ProsAndConsCategory.ProsAndConsCategoryRepository;
+import ukf.backend.Model.ProsAndCons.ProsAndCons;
+import ukf.backend.Model.ProsAndCons.ProsAndConsRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -76,6 +80,12 @@ public class SetupDataLoader implements
     @Autowired
     private ArticleStateRepository articleStateRepository;
 
+    @Autowired
+    private ProsAndConsCategoryRepository prosAndConsCategoryRepository;
+
+    @Autowired
+    private ProsAndConsRepository prosAndConsRepository;
+
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -106,6 +116,10 @@ public class SetupDataLoader implements
 
         createCategoryIfNotFound("Kategoria 2");
 
+        ProsAndConsCategory proCategory = createProsAndConsCategoryIfNotFound("PRO");
+        ProsAndConsCategory conCategory = createProsAndConsCategoryIfNotFound("CON");
+
+        Role adminRole = roleRepository.findByName("ROLE_ADMIN");
         School school = schoolRepository.findByName("ukf").orElseThrow();
         Faculty faculty = facultyRepository.findByNameAndSchool("inf", school).orElseThrow();
         Form form = createFormIfNotFound("Formular");
@@ -121,6 +135,8 @@ public class SetupDataLoader implements
 
         createUserIfNotFound("Test2", "Test2", "test", "test2@student.ukf.sk", userRole, school, faculty);
 
+        createProsAndConsIfNotFound(proCategory, "cool", article);
+        createProsAndConsIfNotFound(conCategory, "very bad", article);
 
         alreadySetup = true;
     }
@@ -280,5 +296,30 @@ public class SetupDataLoader implements
             return state;
         }
         return stateOptional.get();
+    }
+
+    @Transactional
+    ProsAndConsCategory createProsAndConsCategoryIfNotFound(String name) {
+        Optional<ProsAndConsCategory> categoryOptional = prosAndConsCategoryRepository.findByName(name);
+        if (categoryOptional.isEmpty()) {
+            ProsAndConsCategory category = new ProsAndConsCategory();
+            category.setName(name);
+            prosAndConsCategoryRepository.save(category);
+            return category;
+        }
+        return categoryOptional.get();
+    }
+
+    @Transactional
+    void createProsAndConsIfNotFound(ProsAndConsCategory category, String description, Article article) {
+        List<ProsAndCons> prosAndConsList = prosAndConsRepository.findByCategoryAndArticle(category, article);
+        boolean prosAndConsExists = prosAndConsList.stream().anyMatch(prosAndCons -> prosAndCons.getDescription().equals(description));
+        if (!prosAndConsExists) {
+            ProsAndCons prosAndCons = new ProsAndCons();
+            prosAndCons.setCategory(category);
+            prosAndCons.setDescription(description);
+            prosAndCons.setArticle(article);
+            prosAndConsRepository.save(prosAndCons);
+        }
     }
 }

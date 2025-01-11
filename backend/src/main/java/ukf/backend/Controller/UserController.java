@@ -50,6 +50,15 @@ public class UserController {
         }
     }
 
+    @GetMapping("/reviewers")
+    public List<User> getReviewers() {
+        Role reviewerRole = roleRepository.findByName("ROLE_REVIEWER");
+        if (reviewerRole != null) {
+            return userRepository.findByRoles(reviewerRole);
+        }
+        return List.of();
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody UpdateUserDTO updateUserDTO) {
         Optional<User> findUser = userRepository.findById(id);
