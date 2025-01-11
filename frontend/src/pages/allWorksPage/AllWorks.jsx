@@ -23,7 +23,7 @@ export default function AllWorks() {
 
     const fetchArticles = () => {
         axios.get('http://localhost:8080/api/articles')
-            .then(response => { setArticles(response.data); console.log(response.data); })
+            .then(response => { setArticles(response.data); console.log("articles --- ",response.data); })
             .catch(error => console.error(error));
     };
 
@@ -41,16 +41,16 @@ export default function AllWorks() {
             .catch(error => console.error(error));
     };
 
-    const fetchUsers = () => {
-        axios.get('http://localhost:8080/api/users')
-            .then(response => setUsers(response.data))
+    const fetchReviewers = () => {
+        axios.get('http://localhost:8080/api/users/reviewers')
+            .then(response => {setUsers(response.data); console.log("reviewers --- ",response.data); })
             .catch(error => console.error(error));
     };
 
     useEffect(() => {
         fetchArticles();
         fetchStatesAndCategories();
-        fetchUsers();
+        fetchReviewers();
     }, []);
 
     const onRowEditComplete = (e) => {
@@ -253,7 +253,7 @@ export default function AllWorks() {
                 <Column
                     field="categories"
                     header="Kategórie"
-                    body={(rowData) => {getCategoryNames(rowData.categories); console.log("Categories body: ", rowData.categories)}}
+                    body={(rowData) => getCategoryNames(rowData.categories)}
                     editor={categoriesEditor}
                     sortable />
                 <Column
