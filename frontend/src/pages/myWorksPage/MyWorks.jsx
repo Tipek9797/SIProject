@@ -13,6 +13,7 @@ import WorkInfoDialog from "../../components/work-dialog/WorkInfoDialog";
 import "../worksToReviewPage/worksToReview.css";
 import "./myWorks.css";
 import axios from "axios";
+import {handleUpload} from "../../services/handleUpload";
 
 export default function MyWorks() {
     // Databaza --------------------------------------------------------------------------------------------------------
@@ -110,17 +111,20 @@ export default function MyWorks() {
     const fileUploadRef = useRef(null);
 
     const [errorFields, setErrorFields] = useState({ name: false, lastName: false, email: false, password: false });
-
-    // Upload Template -------------------------------------------------------------------------------------------------
+    const [files, setFiles] = useState([]);
+  
     const onTemplateSelect = (e) => {
         let _totalSize = totalSize;
         let files = e.files;
+
+        setFiles(files);
 
         Object.keys(files).forEach((key) => {
             _totalSize += files[key].size || 0;
         });
 
         setTotalSize(_totalSize);
+
     };
 
     const onTemplateUpload = (e) => {
@@ -204,9 +208,14 @@ export default function MyWorks() {
     const cancelOptions = { icon: 'pi pi-fw pi-times', iconOnly: true, className: 'custom-cancel-btn p-button-danger p-button-rounded p-button-outlined' };
 
     const uploadFooterContent = (
-        <div className="flex align-items-center justify-content-center">
+        /*<div className="flex align-items-center justify-content-center">
             <Button label="Odoslať" icon="pi pi-check" className="p-button-rounded custom-width"
-                    onClick={() => onDataSubmitClick()} />
+                    onClick={() => onDataSubmitClick()} />*/
+        <div>
+            <Button label="Submit" icon="pi pi-check" onClick={() => {setWorkUploadVisible(false);
+                                                                            handleUpload(files, toast);}
+                                                              } autoFocus
+            />
         </div>
     );
 
