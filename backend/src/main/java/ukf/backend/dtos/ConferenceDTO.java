@@ -5,11 +5,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.Data;
+import ukf.backend.Model.Article.Article;
 
 @Data
 public class ConferenceDTO {
     private Long id;
     private List<Long> userIds;
+    private List<Article> articleId;
     private String name;
     private String state;
     private String description;

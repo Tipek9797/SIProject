@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ukf.backend.dtos.FileDTO;
+import ukf.backend.Model.Article.Article;
 import ukf.backend.Model.User.User;
 import ukf.backend.Model.User.UserRepository;
 
@@ -21,7 +22,7 @@ public class FileService {
     @Autowired
     private UserRepository userRepository;
 
-    public File saveAttachment(MultipartFile file, User user, LocalDateTime uploadDate) throws Exception {
+    public File saveAttachment(MultipartFile file, User user, Article article, LocalDateTime uploadDate) throws Exception {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         try {
             if(fileName.contains("..")) {
@@ -34,6 +35,7 @@ public class FileService {
             newFile.setFileType(file.getContentType());
             newFile.setData(file.getBytes());
             newFile.setUser(user);
+            newFile.setArticle(article);
             newFile.setUploadDate(uploadDate);
             return fileRepository.save(newFile);
 

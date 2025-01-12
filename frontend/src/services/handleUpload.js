@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const handleUpload = async (files, toast) => {
+export const handleUpload = async (files, toast, articleId) => {
     console.log(files);
 
     if (files.length === 0) {
@@ -13,7 +13,7 @@ export const handleUpload = async (files, toast) => {
         formData.append('file', files[0]);
 
         const userID = localStorage.getItem("userId");
-        await axios.post('http://localhost:8080/api/files/upload/'+userID, formData);
+        await axios.post(`http://localhost:8080/api/files/upload/${userID}/${articleId}`, formData);
         console.log("Uploading file " + files);
 
         toast.current.show({ severity: 'success', summary: 'Úspech', detail: 'Úspešne ste nahrali súbor.' });

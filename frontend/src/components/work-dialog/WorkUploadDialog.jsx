@@ -7,29 +7,29 @@ import { FileUpload } from "primereact/fileupload";
 import { Dropdown } from 'primereact/dropdown';
 
 export default function WorkUploadDialog({
-                                             visible,
-                                             onHide,
-                                             name,
-                                             setName,
-                                             errorFields,
-                                             setErrorFields,
-                                             fileUploadRef,
-                                             onTemplateUpload,
-                                             onTemplateSelect,
-                                             onTemplateClear,
-                                             headerTemplate,
-                                             itemTemplate,
-                                             emptyTemplate,
-                                             chooseOptions,
-                                             cancelOptions,
-                                             footer,
-                                             uploadFooter,
-                                             selectedConference,
-                                             setSelectedConference,
-                                             optConference,
-                                             update,
-                                         }) {
-    const chooseFooter = ()=> {
+    visible,
+    onHide,
+    name,
+    setName,
+    errorFields,
+    setErrorFields,
+    fileUploadRef,
+    onTemplateUpload,
+    onTemplateSelect,
+    onTemplateClear,
+    headerTemplate,
+    itemTemplate,
+    emptyTemplate,
+    chooseOptions,
+    cancelOptions,
+    footer,
+    uploadFooter,
+    selectedConference,
+    setSelectedConference,
+    optConference,
+    update,
+}) {
+    const chooseFooter = () => {
         switch (update) {
             case true:
                 return uploadFooter;
@@ -56,32 +56,32 @@ export default function WorkUploadDialog({
             <div className="work-details-text">
                 <div className="work-details-row">
                     <h2>Názov práce</h2><i className="pi pi-angle-right"></i>
-                    <Divider layout="vertical"/>
+                    <Divider layout="vertical" />
                     <InputText
                         style={{ width: '30rem' }}
                         value={name}
                         onChange={(e) => {
                             setName(e.target.value);
-                            setErrorFields((prev) => ({...prev, name: false}));
+                            setErrorFields((prev) => ({ ...prev, name: false }));
                         }}
                         onBlur={() => {
-                            if (!name) setErrorFields((prev) => ({...prev, name: true}));
+                            if (!name) setErrorFields((prev) => ({ ...prev, name: true }));
                         }}
                         className={errorFields.name ? "p-invalid" : ""}
                     />
                 </div>
                 <div className="work-details-row">
                     <h2>Konferencia</h2><i className="pi pi-angle-right"></i>
-                    <Divider layout="vertical"/>
+                    <Divider layout="vertical" />
                     <Dropdown style={{ width: '30rem' }} panelStyle={{ width: '30rem' }} placeholder="Vyber Konferenciu"
-                              options={optConference} value={selectedConference} optionLabel="name"
-                              onChange={(e) => setSelectedConference(e.value)}/>
+                        options={optConference} value={selectedConference} optionLabel="name"
+                        onChange={(e) => setSelectedConference(e.value)} />
                 </div>
             </div>
             <div className="rating-table-container">
-                <Tooltip target=".custom-choose-btn" content="Browse" position="bottom"/>
+                <Tooltip target=".custom-choose-btn" content="Browse" position="bottom" />
                 {/*<Tooltip target=".custom-upload-btn" content="Upload" position="bottom" />*/}
-                <Tooltip target=".custom-cancel-btn" content="Clear" position="bottom"/>
+                <Tooltip target=".custom-cancel-btn" content="Clear" position="bottom" />
 
                 <FileUpload
                     ref={fileUploadRef}
