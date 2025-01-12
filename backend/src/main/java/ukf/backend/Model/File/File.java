@@ -3,7 +3,11 @@ package ukf.backend.Model.File;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import ukf.backend.Model.User.User;
+import ukf.backend.Model.Article.Article;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +27,11 @@ public class File {
 
     @ManyToOne
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "article_id")
+    @JsonIgnore
+    private Article article;
 
     @DateTimeFormat
     private LocalDateTime uploadDate;

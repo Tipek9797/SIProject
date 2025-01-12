@@ -7,6 +7,8 @@ import ukf.backend.Model.Article.Article;
 import ukf.backend.Model.Article.ArticleRepository;
 import ukf.backend.Model.Conference.Conference;
 import ukf.backend.Model.Conference.ConferenceRepository;
+import ukf.backend.Model.File.File;
+import ukf.backend.Model.File.FileRepository;
 import ukf.backend.Model.ArticleState.ArticleState;
 import ukf.backend.Model.ArticleState.ArticleStateRepository;
 import ukf.backend.Model.ArticleCategory.ArticleCategory;
@@ -32,6 +34,8 @@ public class ArticleController {
     private ArticleCategoryRepository articleCategoryRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private FileRepository fileRepository;
 
     @GetMapping
     public List<Article> getAllArticles() {
@@ -53,7 +57,6 @@ public class ArticleController {
         Article article = new Article();
         article.setName(articleDTO.getName());
         article.setDate(articleDTO.getDate());
-        article.setFilePath(articleDTO.getFilePath());
         article.setReviewerId(articleDTO.getReviewerId());
 
         if (articleDTO.getConferenceId() != null) {
@@ -91,6 +94,15 @@ public class ArticleController {
         if (articleDTO.getProsAndConsList() != null) {
             article.setProsAndConsList(articleDTO.getProsAndConsList());
             articleDTO.getProsAndConsList().forEach(prosAndCons -> prosAndCons.setArticle(article));
+        }
+
+        if (articleDTO.getFileIds() != null && !articleDTO.getFileIds().isEmpty()) {
+            List<File> files = fileRepository.findAllById(articleDTO.getFileIds());
+            if (files.size() != articleDTO.getFileIds().size()) {
+                return ResponseEntity.badRequest().body(null);
+            }
+            files.forEach(file -> file.setArticle(article));
+            article.setFiles(files);
         }
 
         Article savedArticle = articleRepository.save(article);
@@ -107,7 +119,6 @@ public class ArticleController {
         Article article = findArticle.get();
         article.setName(articleDTO.getName());
         article.setDate(articleDTO.getDate());
-        article.setFilePath(articleDTO.getFilePath());
         article.setReviewerId(articleDTO.getReviewerId());
 
         if (articleDTO.getConferenceId() != null) {
@@ -145,6 +156,15 @@ public class ArticleController {
         if (articleDTO.getProsAndConsList() != null) {
             article.setProsAndConsList(articleDTO.getProsAndConsList());
             articleDTO.getProsAndConsList().forEach(prosAndCons -> prosAndCons.setArticle(article));
+        }
+
+        if (articleDTO.getFileIds() != null && !articleDTO.getFileIds().isEmpty()) {
+            List<File> files = fileRepository.findAllById(articleDTO.getFileIds());
+            if (files.size() != articleDTO.getFileIds().size()) {
+                return ResponseEntity.badRequest().body(null);
+            }
+            files.forEach(file -> file.setArticle(article));
+            article.setFiles(files);
         }
 
         Article savedArticle = articleRepository.save(article);
@@ -165,9 +185,6 @@ public class ArticleController {
         }
         if (articleDTO.getDate() != null) {
             article.setDate(articleDTO.getDate());
-        }
-        if (articleDTO.getFilePath() != null) {
-            article.setFilePath(articleDTO.getFilePath());
         }
         if (articleDTO.getReviewerId() != null) {
             article.setReviewerId(articleDTO.getReviewerId());
@@ -204,6 +221,15 @@ public class ArticleController {
         if (articleDTO.getProsAndConsList() != null) {
             article.setProsAndConsList(articleDTO.getProsAndConsList());
             articleDTO.getProsAndConsList().forEach(prosAndCons -> prosAndCons.setArticle(article));
+        }
+
+        if (articleDTO.getFileIds() != null && !articleDTO.getFileIds().isEmpty()) {
+            List<File> files = fileRepository.findAllById(articleDTO.getFileIds());
+            if (files.size() != articleDTO.getFileIds().size()) {
+                return ResponseEntity.badRequest().body(null);
+            }
+            files.forEach(file -> file.setArticle(article));
+            article.setFiles(files);
         }
 
         Article savedArticle = articleRepository.save(article);

@@ -64,7 +64,6 @@ export default function AllWorks() {
                 : [newData.categories],
             name: newData.name,
             date: newData.date,
-            filePath: newData.filePath,
             reviewerId: newData.reviewerId
         };
 
@@ -224,10 +223,6 @@ export default function AllWorks() {
                     body={dateBodyTemplate}
                     filter
                     filterPlaceholder="Vyhľadať"
-                    sortable />
-                <Column
-                    field="filePath"
-                    header="Cesta k súboru"
                     sortable />
                 <Column
                     field="reviewerId"

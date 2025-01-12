@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ukf.backend.dtos.FileDTO;
+import ukf.backend.Model.Article.Article;
+import ukf.backend.Model.Article.ArticleRepository;
 import ukf.backend.Model.File.File;
 import ukf.backend.Model.File.FileRepository;
 import ukf.backend.Model.File.FileService;
@@ -34,8 +36,12 @@ public class FileController {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private FileRepository fileRepository;
+
+    @Autowired
+    private ArticleRepository articleRepository;
 
     /*@PostMapping("/upload")
     public FileDTO uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
@@ -60,26 +66,29 @@ public class FileController {
                 file.getSize());
     }*/
 
-    @PostMapping("/upload/{userId}")
-    public ResponseEntity<String> uploadFile(@PathVariable Long userId, @RequestParam("file") MultipartFile file) throws Exception {
+    @PostMapping("/upload/{userId}/{articleId}")
+    public ResponseEntity<String> uploadFile(@PathVariable Long userId, @PathVariable Long articleId, @RequestParam("file") MultipartFile file) throws Exception {
         Optional<User> user = userRepository.findById(userId);
+        Optional<Article> article = articleRepository.findById(articleId);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (user.isEmpty()) {
+            return new ResponseEntity<>("User doesn't exist.", HttpStatus.BAD_REQUEST);
+        }
 
-        if (user.isEmpty()){
-            return new ResponseEntity<>("User doesn't exist.",HttpStatus.BAD_REQUEST);
+        if (article.isEmpty()) {
+            return new ResponseEntity<>("Article doesn't exist.", HttpStatus.BAD_REQUEST);
         }
 
         String contentType = file.getContentType();
 
         if (!Objects.equals(contentType, "application/vnd.openxmlformats-officedocument.wordprocessingml.document") &&
-                !Objects.equals(contentType, "application/pdf")){
-            return new ResponseEntity<>("File type is not supported.",HttpStatus.BAD_REQUEST);
+                !Objects.equals(contentType, "application/pdf")) {
+            return new ResponseEntity<>("File type is not supported.", HttpStatus.BAD_REQUEST);
         }
 
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("GMT+01:00"));
 
-        fileService.saveAttachment(file, user.get(), localDateTime);
+        fileService.saveAttachment(file, user.get(), article.get(), localDateTime);
 
         return new ResponseEntity<>("File uploaded successfully.", HttpStatus.OK);
     }

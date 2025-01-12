@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     TabPanel, TabView,
     Fieldset,
@@ -13,7 +13,7 @@ import WorkInfoDialog from "../../components/work-dialog/WorkInfoDialog";
 import "../worksToReviewPage/worksToReview.css";
 import "./myWorks.css";
 import axios from "axios";
-import {handleUpload} from "../../services/handleUpload";
+import { handleUpload } from "../../services/handleUpload";
 
 export default function MyWorks() {
     // Databaza --------------------------------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ export default function MyWorks() {
 
     useEffect(() => {
         fetchArticles();
-    }, []);
+    }, [Articles]);
 
 
     // Dialogs ---------------------------------------------------------------------------------------------------------
@@ -96,9 +96,26 @@ export default function MyWorks() {
         setWorkUpdate(true);
     };
 
-    const onDataSubmitClick = () => {
-        setWorkUploadVisible(false);
+    const onDataSubmitClick = async () => {
+        try {
+            const articleData = {
+                name: name,
+                date: new Date(),
+                reviewerId: user.id,
+                conferenceId: selectedConference.id,
+                userIds: [user.id],
+                stateId: 1 // Assuming 1 is the initial state ID
+            };
 
+            const response = await axios.post('http://localhost:8080/api/articles', articleData);
+            const articleId = response.data.id;
+
+            await handleUpload(files, toast, articleId);
+            setWorkUploadVisible(false);
+        } catch (error) {
+            console.error("Error creating article or uploading file:", error);
+            toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa vytvoriť článok alebo nahrať súbor.' });
+        }
     };
 
     const onDataUpdateClick = () => {
@@ -112,7 +129,7 @@ export default function MyWorks() {
 
     const [errorFields, setErrorFields] = useState({ name: false, lastName: false, email: false, password: false });
     const [files, setFiles] = useState([]);
-  
+
     const onTemplateSelect = (e) => {
         let _totalSize = totalSize;
         let files = e.files;
@@ -192,8 +209,8 @@ export default function MyWorks() {
                         color: 'var(--surface-d)'
                     }}></i>
                 </div>
-                <span style={{fontSize: '1.2em', color: 'var(--text-color-secondary)'}} className="my-5">
-                    <br/>Drag and Drop Files Here
+                <span style={{ fontSize: '1.2em', color: 'var(--text-color-secondary)' }} className="my-5">
+                    <br />Drag and Drop Files Here
                 </span>
             </div>
         );
@@ -208,21 +225,15 @@ export default function MyWorks() {
     const cancelOptions = { icon: 'pi pi-fw pi-times', iconOnly: true, className: 'custom-cancel-btn p-button-danger p-button-rounded p-button-outlined' };
 
     const uploadFooterContent = (
-        /*<div className="flex align-items-center justify-content-center">
-            <Button label="Odoslať" icon="pi pi-check" className="p-button-rounded custom-width"
-                    onClick={() => onDataSubmitClick()} />*/
         <div>
-            <Button label="Submit" icon="pi pi-check" onClick={() => {setWorkUploadVisible(false);
-                                                                            handleUpload(files, toast);}
-                                                              } autoFocus
-            />
+            <Button label="Submit" icon="pi pi-check" onClick={onDataSubmitClick} autoFocus />
         </div>
     );
 
     const updateFooterContent = (
         <div className="flex align-items-center justify-content-center">
             <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                    onClick={() => onDataUpdateClick()} />
+                onClick={() => onDataUpdateClick()} />
         </div>
     );
 
@@ -258,7 +269,7 @@ export default function MyWorks() {
         const date1 = new Date(article.date);
         const formattedDate = `${String(date1.getDate()).padStart(2, '0')}/${String(date1.getMonth() + 1).padStart(2, '0')}/${date1.getFullYear()} - ${String(date1.getHours()).padStart(2, '0')}:${String(date1.getMinutes()).padStart(2, '0')}`;
 
-        if (article.state.name === "Odoslané"){
+        if (article.state.name === "Odoslané") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -277,9 +288,9 @@ export default function MyWorks() {
                             <div className="font-bold ">Termín: <i className="text-2xl">{formattedDate}</i></div>
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
-                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"/>
+                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" />
                             <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                                    onClick={() => onUpdateClick(article)}/>
+                                onClick={() => onUpdateClick(article)} />
                         </div>
                     </div>
                 </div>
@@ -291,7 +302,7 @@ export default function MyWorks() {
         const date2 = new Date(article.date);
         const formattedDate = `${String(date2.getDate()).padStart(2, '0')}/${String(date2.getMonth() + 1).padStart(2, '0')}/${date2.getFullYear()} - ${String(date2.getHours()).padStart(2, '0')}:${String(date2.getMinutes()).padStart(2, '0')}`;
 
-        if (article.state.name !== "Odoslané"){
+        if (article.state.name !== "Odoslané") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -312,8 +323,8 @@ export default function MyWorks() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                    onClick={() => onOpenClick(article)}/>
-                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"/>
+                                onClick={() => onOpenClick(article)} />
+                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" />
                         </div>
                     </div>
                 </div>
@@ -325,7 +336,7 @@ export default function MyWorks() {
         const date3 = new Date(article.date);
         const formattedDate = `${String(date3.getDate()).padStart(2, '0')}/${String(date3.getMonth() + 1).padStart(2, '0')}/${date3.getFullYear()} - ${String(date3.getHours()).padStart(2, '0')}:${String(date3.getMinutes()).padStart(2, '0')}`;
 
-        if (article.state.name === "Ohodnotené"){
+        if (article.state.name === "Ohodnotené") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -346,8 +357,8 @@ export default function MyWorks() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                    onClick={() => onOpenClick(article)}/>
-                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"/>
+                                onClick={() => onOpenClick(article)} />
+                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" />
                         </div>
                     </div>
                 </div>
@@ -357,7 +368,7 @@ export default function MyWorks() {
 
     const ArticleTemplate = () => {
         if (!Articles) {
-            return(
+            return (
                 <div className="flex align-items-center justify-content-center">
                     <div>
                         <i className="pi pi-info-circle" style={{ fontSize: '50px', color: 'white' }}></i>
@@ -365,7 +376,7 @@ export default function MyWorks() {
                     </div>
                 </div>
             );
-        }else {
+        } else {
             return <div className="grid grid-nogutter">{Articles.map((article) => gridArticles(article))}</div>;
         }
     };
@@ -392,15 +403,15 @@ export default function MyWorks() {
             <Fieldset legend="Moja Práca" className="workbox" style={Articles.length === 0 ? { height: '75vh', } : {}}>
                 <TabView scrollable>
                     <TabPanel header="Aktuálne práce" rightIcon="pi pi-calendar-clock">
-                        <DataView value={Articles} listTemplate={ArticleTemplate}/>
+                        <DataView value={Articles} listTemplate={ArticleTemplate} />
                         <Button className="workuploadbtn large-icon up-down" label="Upload" icon="pi pi-upload"
-                                onClick={() => onUploadClick()} />
+                            onClick={() => onUploadClick()} />
                     </TabPanel>
                     <TabPanel header="Hodnotenie" rightIcon="pi pi-check">
-                        <DataView value={Articles} listTemplate={RatingTemplate}/>
+                        <DataView value={Articles} listTemplate={RatingTemplate} />
                     </TabPanel>
                     <TabPanel header="Archív" rightIcon="pi pi-building-columns">
-                        <DataView value={Articles} listTemplate={ArchiveTemplate}/>
+                        <DataView value={Articles} listTemplate={ArchiveTemplate} />
                     </TabPanel>
                 </TabView>
             </Fieldset>
@@ -416,7 +427,7 @@ export default function MyWorks() {
 
             <WorkUploadDialog
                 visible={workUploadVisible}
-                onHide={() => {setWorkUploadVisible(false); setName(""); setWorkUpdate(false)}}
+                onHide={() => { setWorkUploadVisible(false); setName(""); setWorkUpdate(false) }}
                 name={name}
                 setName={setName}
                 errorFields={errorFields}
