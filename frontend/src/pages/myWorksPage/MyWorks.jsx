@@ -18,6 +18,7 @@ import { handleUpload } from "../../services/handleUpload";
 export default function MyWorks() {
     // Databaza --------------------------------------------------------------------------------------------------------
     const [Articles, setArticles] = useState([]);
+    const [conferences, setConferences] = useState([]);  //*Pridane
 
     const getUserFromLocalStorage = () => {
         try {
@@ -30,21 +31,48 @@ export default function MyWorks() {
     };
     const user = getUserFromLocalStorage();
 
-    const fetchArticles = () => {
-        axios.get('http://localhost:8080/api/articles')
-            .then(response => {
-                const filteredArticles = response.data.filter(article =>
-                    article.users.some(u => u.id === user.id)
-                );
-                setArticles(filteredArticles);
-                console.log("Filtered Articles:", filteredArticles);
-            })
-            .catch(error => console.error(error));
-    };
-
+    /////////////////////////////////////////////////////////////////
+    /*!!!Toto funguje ale treba nastavit aby v article -> conference_id aby sa nastavilo automaticky lebo inak sa name
+    Konferencie neupdatuje na frontende. Treba to manualne do databazy davat aby to islo.
+     */
     useEffect(() => {
-        fetchArticles();
-    }, [Articles]);
+        const fetchData = async () => {
+            try {
+                console.log("Fetching conferences...");
+                const conferencesResponse = await axios.get('http://localhost:8080/api/conferences');
+                const loadedConferences = conferencesResponse.data;
+                console.log("Conferences fetched:", loadedConferences);
+
+                console.log("Fetching articles...");
+                const articlesResponse = await axios.get('http://localhost:8080/api/articles');
+                const loadedArticles = articlesResponse.data;
+
+
+                const articlesWithConferenceNames = loadedArticles.map(article => {
+                    const relatedConference = loadedConferences.find(conf =>
+                        conf.articleId.some(a => a.id === article.id)
+                    );
+                    console.log("Processing article:", article);
+                    console.log("Related conference:", relatedConference);
+
+                    return {
+                        ...article,
+                        conferenceName: relatedConference ? relatedConference.name : "Neznáma konferencia",
+                    };
+                });
+
+                setConferences(loadedConferences); // Nastaviť konferencie
+                setArticles(articlesWithConferenceNames); // Nastaviť články
+                console.log("Filtered Articles with Conference Names:", articlesWithConferenceNames);
+            } catch (error) {
+                console.error("Erro r during fetchData:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     // Dialogs ---------------------------------------------------------------------------------------------------------
@@ -102,15 +130,18 @@ export default function MyWorks() {
                 name: name,
                 date: new Date(),
                 reviewerId: user.id,
-                conferenceId: selectedConference.id,
+                conferenceId: selectedConference?.id,   //TOTO Nechce dávat do database -> article -> conference_id; dava sa tam NULL.
                 userIds: [user.id],
-                stateId: 1 // Assuming 1 is the initial state ID
+                stateId: 1, // Počiatočný stav (napr. odoslané)
             };
+
 
             const response = await axios.post('http://localhost:8080/api/articles', articleData);
             const articleId = response.data.id;
 
+
             await handleUpload(files, toast, articleId);
+
             setWorkUploadVisible(false);
         } catch (error) {
             console.error("Error creating article or uploading file:", error);
@@ -233,7 +264,7 @@ export default function MyWorks() {
     const updateFooterContent = (
         <div className="flex align-items-center justify-content-center">
             <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                onClick={() => onDataUpdateClick()} />
+                    onClick={() => onDataUpdateClick()} />
         </div>
     );
 
@@ -268,6 +299,7 @@ export default function MyWorks() {
     const gridArticles = (article) => {
         const date1 = new Date(article.date);
         const formattedDate = `${String(date1.getDate()).padStart(2, '0')}/${String(date1.getMonth() + 1).padStart(2, '0')}/${date1.getFullYear()} - ${String(date1.getHours()).padStart(2, '0')}:${String(date1.getMinutes()).padStart(2, '0')}`;
+        const articleConferenceName = article.conferenceName || "Neznáma konferencia";
 
         if (article.state.name === "Odoslané") {
             return (
@@ -282,7 +314,7 @@ export default function MyWorks() {
                         </div>
                         <div className="flex flex-column align-items-center gap-3 py-5">
                             <div className="text-2xl font-bold">{article.name}</div>
-                            <div className="font-semibold">{article.name}</div>
+                            <div className="font-bold">Konferencia: <i className="font-semibold">{articleConferenceName}</i></div>
                             <div className="font-bold">Škola: <i className="font-semibold">{article.users[0].school.name}</i></div>
                             <div className="font-bold">Fakulta: <i className="font-semibold">{article.users[0].faculty.name}</i></div>
                             <div className="font-bold ">Termín: <i className="text-2xl">{formattedDate}</i></div>
@@ -290,13 +322,14 @@ export default function MyWorks() {
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" />
                             <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                                onClick={() => onUpdateClick(article)} />
+                                    onClick={() => onUpdateClick(article)} />
                         </div>
                     </div>
                 </div>
             );
         }
     };
+
 
     const gridRating = (article) => {
         const date2 = new Date(article.date);
@@ -323,7 +356,7 @@ export default function MyWorks() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                onClick={() => onOpenClick(article)} />
+                                    onClick={() => onOpenClick(article)} />
                             <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" />
                         </div>
                     </div>
@@ -357,7 +390,7 @@ export default function MyWorks() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                onClick={() => onOpenClick(article)} />
+                                    onClick={() => onOpenClick(article)} />
                             <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" />
                         </div>
                     </div>
@@ -405,7 +438,7 @@ export default function MyWorks() {
                     <TabPanel header="Aktuálne práce" rightIcon="pi pi-calendar-clock">
                         <DataView value={Articles} listTemplate={ArticleTemplate} />
                         <Button className="workuploadbtn large-icon up-down" label="Upload" icon="pi pi-upload"
-                            onClick={() => onUploadClick()} />
+                                onClick={() => onUploadClick()} />
                     </TabPanel>
                     <TabPanel header="Hodnotenie" rightIcon="pi pi-check">
                         <DataView value={Articles} listTemplate={RatingTemplate} />
