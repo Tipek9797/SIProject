@@ -44,7 +44,7 @@ export default function MyWorks() {
 
     useEffect(() => {
         fetchArticles();
-    }, [Articles]);
+    }, []);
 
 
     // Dialogs ---------------------------------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ export default function MyWorks() {
                 reviewerId: user.id,
                 conferenceId: selectedConference.id,
                 userIds: [user.id],
-                stateId: 1 // Assuming 1 is the initial state ID
+                stateId: 1
             };
 
             const response = await axios.post('http://localhost:8080/api/articles', articleData);
@@ -114,7 +114,7 @@ export default function MyWorks() {
             setWorkUploadVisible(false);
         } catch (error) {
             console.error("Error creating article or uploading file:", error);
-            toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa vytvoriť článok alebo nahrať súbor.' });
+            toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa vytvoriť článok alebo nahrať súbory.' });
         }
     };
 
@@ -265,6 +265,22 @@ export default function MyWorks() {
         }
     };
 
+    const downloadMostRecentFile = (articleId, fileType) => {
+        axios.get(`http://localhost:8080/api/files/download/recent/${articleId}/${fileType}`, { responseType: 'blob' })
+            .then(response => {
+                const contentDisposition = response.headers['content-disposition'];
+                const fileName = contentDisposition ? contentDisposition.split('filename=')[1].replace(/"/g, '') : 'file';
+                const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            })
+            .catch(error => console.error(error));
+    };
+
     const gridArticles = (article) => {
         const date1 = new Date(article.date);
         const formattedDate = `${String(date1.getDate()).padStart(2, '0')}/${String(date1.getMonth() + 1).padStart(2, '0')}/${date1.getFullYear()} - ${String(date1.getHours()).padStart(2, '0')}:${String(date1.getMinutes()).padStart(2, '0')}`;
@@ -288,7 +304,10 @@ export default function MyWorks() {
                             <div className="font-bold ">Termín: <i className="text-2xl">{formattedDate}</i></div>
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
-                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" />
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
+                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
+                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
                             <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
                                 onClick={() => onUpdateClick(article)} />
                         </div>
@@ -324,7 +343,10 @@ export default function MyWorks() {
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
                                 onClick={() => onOpenClick(article)} />
-                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" />
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
+                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
+                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
                         </div>
                     </div>
                 </div>
@@ -358,7 +380,10 @@ export default function MyWorks() {
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
                                 onClick={() => onOpenClick(article)} />
-                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" />
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
+                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
+                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
                         </div>
                     </div>
                 </div>

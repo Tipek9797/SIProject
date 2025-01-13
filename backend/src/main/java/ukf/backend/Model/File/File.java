@@ -19,11 +19,16 @@ public class File {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String fileName;
-    private String fileType;
+    private String fileNameDocx;
+    private String fileNamePdf;
+    private String fileTypeDocx;
+    private String fileTypePdf;
 
     @Lob
-    private byte[] data;
+    private byte[] dataDocx;
+
+    @Lob
+    private byte[] dataPdf;
 
     @ManyToOne
     private User user;
