@@ -28,6 +28,10 @@ const Home = () => {
                         <li>Možnosť získať ocenenie</li>
                         <li>Výstupom je publikácia príspevku</li>
                         <li>Získať nové kontakty</li>
+                        <li>Získanie cenných skúseností</li>
+                        <li>Možnosť rozšíriť svoje portfólio</li>
+                        <li>Príležitosť konzultovať svoju prácu so skúsenými odborníkmi</li>
+                        <li>Podpora osobného rastu a rozvoja kritického myslenia</li>
                     </ul>
                 </div>
 
