@@ -23,7 +23,7 @@ export default function AllWorks() {
 
     const fetchArticles = () => {
         axios.get('http://localhost:8080/api/articles')
-            .then(response => { setArticles(response.data); console.log("articles --- ",response.data); })
+            .then(response => { setArticles(response.data); console.log("articles --- ", response.data); })
             .catch(error => console.error(error));
     };
 
@@ -43,7 +43,7 @@ export default function AllWorks() {
 
     const fetchReviewers = () => {
         axios.get('http://localhost:8080/api/users/reviewers')
-            .then(response => {setUsers(response.data); console.log("reviewers --- ",response.data); })
+            .then(response => { setUsers(response.data); console.log("reviewers --- ", response.data); })
             .catch(error => console.error(error));
     };
 
@@ -193,6 +193,41 @@ export default function AllWorks() {
         console.log('Filters:', e.filters);
     };
 
+    const downloadMostRecentFile = (articleId, fileType) => {
+        console.log(`Downloading most recent ${fileType} file for article ID: ${articleId}`);
+        axios.get(`http://localhost:8080/api/files/download/recent/${articleId}/${fileType}`, { responseType: 'blob' })
+            .then(response => {
+                const contentDisposition = response.headers['content-disposition'];
+                console.log('Content-Disposition:', contentDisposition);
+                const fileName = contentDisposition ? contentDisposition.split('filename=')[1].replace(/"/g, '') : 'file';
+                console.log('File name:', fileName);
+                const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            })
+            .catch(error => console.error('Error downloading file:', error));
+    };
+
+    const downloadDocxButtonTemplate = (rowData) => {
+        return (
+            <button onClick={() => downloadMostRecentFile(rowData.id, 'docx')}>
+                Stiahnut Docx
+            </button>
+        );
+    };
+
+    const downloadPdfButtonTemplate = (rowData) => {
+        return (
+            <button onClick={() => downloadMostRecentFile(rowData.id, 'pdf')}>
+                Stiahnut Pdf
+            </button>
+        );
+    };
+
     return (
         <div className="all-works-page">
             <DataTable
@@ -261,6 +296,18 @@ export default function AllWorks() {
                     header="Klady a Zápory"
                     body={prosAndConsBodyTemplate}
                     sortable />
+                <Column
+                    header="Stiahnut Docx"
+                    body={downloadDocxButtonTemplate}
+                    headerStyle={{ width: '7rem' }}
+                    bodyStyle={{ textAlign: 'center' }}
+                />
+                <Column
+                    header="Stiahnut Pdf"
+                    body={downloadPdfButtonTemplate}
+                    headerStyle={{ width: '7rem' }}
+                    bodyStyle={{ textAlign: 'center' }}
+                />
                 <Column rowEditor headerStyle={{ width: '7rem' }} bodyStyle={{ textAlign: 'center' }} />
             </DataTable>
         </div>

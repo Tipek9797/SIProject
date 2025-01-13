@@ -2,7 +2,6 @@ package ukf.backend.Model.File;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ukf.backend.dtos.FileDTO;
 import ukf.backend.Model.Article.Article;
@@ -22,26 +21,26 @@ public class FileService {
     @Autowired
     private UserRepository userRepository;
 
-    public File saveAttachment(MultipartFile file, User user, Article article, LocalDateTime uploadDate) throws Exception {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        try {
-            if(fileName.contains("..")) {
-                throw  new Exception("Filename contains invalid path sequence "
-                        + fileName);
-            }
+    public File saveAttachments(MultipartFile fileDocx, MultipartFile filePdf, User user, Article article, LocalDateTime uploadDate) throws Exception {
+        String fileNameDocx = fileDocx.getOriginalFilename();
+        String fileNamePdf = filePdf.getOriginalFilename();
+        String fileTypeDocx = fileDocx.getContentType();
+        String fileTypePdf = filePdf.getContentType();
+        byte[] dataDocx = fileDocx.getBytes();
+        byte[] dataPdf = filePdf.getBytes();
 
-            File newFile = new File();
-            newFile.setFileName(fileName);
-            newFile.setFileType(file.getContentType());
-            newFile.setData(file.getBytes());
-            newFile.setUser(user);
-            newFile.setArticle(article);
-            newFile.setUploadDate(uploadDate);
-            return fileRepository.save(newFile);
+        File newFile = new File();
+        newFile.setFileNameDocx(fileNameDocx);
+        newFile.setFileTypeDocx(fileTypeDocx);
+        newFile.setDataDocx(dataDocx);
+        newFile.setFileNamePdf(fileNamePdf);
+        newFile.setFileTypePdf(fileTypePdf);
+        newFile.setDataPdf(dataPdf);
+        newFile.setUser(user);
+        newFile.setArticle(article);
+        newFile.setUploadDate(uploadDate);
 
-        } catch (Exception e) {
-            throw new Exception("Could not save File: " + fileName);
-        }
+        return fileRepository.save(newFile);
     }
 
     public File getAttachment(Long fileId) throws Exception {
@@ -52,7 +51,15 @@ public class FileService {
     }
 
     private FileDTO convertToDTO(File file) {
-        return new FileDTO(file.getId() ,file.getFileName(), file.getFileType(), file.getUser().getId(), file.getUploadDate());
+        return new FileDTO(
+                file.getId(),
+                file.getFileNameDocx(),
+                file.getFileTypeDocx(),
+                file.getFileNamePdf(),
+                file.getFileTypePdf(),
+                file.getUser().getId(),
+                file.getUploadDate()
+        );
     }
 
     private List<FileDTO> convertToDTOs(List<File> files) {
