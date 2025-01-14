@@ -78,6 +78,7 @@ public class ConferenceController {
             conference.setCloseUpload(conferenceDTO.getCloseUpload());
             conference.setStartReview(conferenceDTO.getStartReview());
             conference.setCloseReview(conferenceDTO.getCloseReview());
+            conference.setDescription(conferenceDTO.getDescription());
             if (conferenceDTO.getFormId() != null) {
                 Form form = formRepository.findById(conferenceDTO.getFormId()).orElseThrow(() -> new IllegalArgumentException("Invalid form ID"));
                 conference.setForm(form);
