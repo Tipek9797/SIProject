@@ -348,7 +348,6 @@ export default function MyWorks() {
         }
     };
 
-
     const gridRating = (article) => {
         const date2 = new Date(article.date);
         const formattedDate = `${String(date2.getDate()).padStart(2, '0')}/${String(date2.getMonth() + 1).padStart(2, '0')}/${date2.getFullYear()} - ${String(date2.getHours()).padStart(2, '0')}:${String(date2.getMinutes()).padStart(2, '0')}`;
