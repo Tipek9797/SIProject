@@ -1,7 +1,8 @@
 .manage-users-container {
     padding: 20px;
     background-color: #f9f9f9;
-    margin-top: 35px; /* Pridaná medzera medzi navbar a manage users*/
+    /* Pridaná medzera medzi navbar a manage users*/
+    margin: 20px;
 }
 
 .header-container {

@@ -27,13 +27,27 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@AllArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
+    /*@Autowired
     private final UserService appUserService;
 
+    //@Autowired
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;*/
+
+    private final UserService appUserService;
+    private final JwtService jwtService;
+
+    public SecurityConfig(UserService appUserService, JwtService jwtService) {
+        this.appUserService = appUserService;
+        this.jwtService = jwtService;
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtService, userDetailsService());
+    }
 
     @Bean
     public UserDetailsService userDetailsService(){
@@ -72,10 +86,12 @@ public class SecurityConfig {
                         .requestMatchers("/my-works").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/works-to-review").hasAnyRole("REVIEWER", "ADMIN")
                         .requestMatchers("/manage-users", "/all-works","/settings","/settings/**").hasRole("ADMIN")
-                        //.requestMatchers("/api/files/upload/**").hasRole("USER")
+                        //.requestMatchers("/api/files/upload/**").hasAuthority("ROLE_USER")
+                        //.requestMatchers("/api/schools").hasRole("USER")
                         .anyRequest().authenticated()
 
                 )
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

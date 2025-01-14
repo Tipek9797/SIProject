@@ -43,33 +43,19 @@ public class FileController {
     @Autowired
     private ArticleRepository articleRepository;
 
-    /*@PostMapping("/upload")
-    public FileDTO uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
+    @PostMapping("/upload/{articleId}")
+    public ResponseEntity<String> uploadFiles(@PathVariable Long articleId,
+                                              @RequestParam("fileDocx") MultipartFile fileDocx,
+                                              @RequestParam("filePdf") MultipartFile filePdf) throws Exception {
+        //Optional<User> user = userRepository.findById(userId);
 
-        //UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        //String username = userDetails.getUsername();
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
+                .getPrincipal();
+        String email = userDetails.getUsername();
+        Optional<User> user = userRepository.findByEmail(email);
 
-        //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        //UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-        File attachment = null;
-        String downloadURl = "";
-        attachment = fileService.saveAttachment(file);
-        downloadURl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/download/")
-                .path(Long.toString(attachment.getId()))
-                .toUriString();
-
-        return new FileDTO(attachment.getFileName(),
-                downloadURl,
-                file.getContentType(),
-                file.getSize());
-    }*/
-
-    @PostMapping("/upload/{userId}/{articleId}")
-    public ResponseEntity<String> uploadFile(@PathVariable Long userId, @PathVariable Long articleId, @RequestParam("file") MultipartFile file) throws Exception {
-        Optional<User> user = userRepository.findById(userId);
         Optional<Article> article = articleRepository.findById(articleId);
+
 
         if (user.isEmpty()) {
             return new ResponseEntity<>("User doesn't exist.", HttpStatus.BAD_REQUEST);
@@ -79,30 +65,80 @@ public class FileController {
             return new ResponseEntity<>("Article doesn't exist.", HttpStatus.BAD_REQUEST);
         }
 
-        String contentType = file.getContentType();
+        String contentTypeDocx = fileDocx.getContentType();
+        String contentTypePdf = filePdf.getContentType();
 
-        if (!Objects.equals(contentType, "application/vnd.openxmlformats-officedocument.wordprocessingml.document") &&
-                !Objects.equals(contentType, "application/pdf")) {
+        if (!Objects.equals(contentTypeDocx, "application/vnd.openxmlformats-officedocument.wordprocessingml.document") ||
+            !Objects.equals(contentTypePdf, "application/pdf")) {
             return new ResponseEntity<>("File type is not supported.", HttpStatus.BAD_REQUEST);
         }
 
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("GMT+01:00"));
 
-        fileService.saveAttachment(file, user.get(), article.get(), localDateTime);
+        fileService.saveAttachments(fileDocx, filePdf, user.get(), article.get(), localDateTime);
 
-        return new ResponseEntity<>("File uploaded successfully.", HttpStatus.OK);
+        return new ResponseEntity<>("Files uploaded successfully.", HttpStatus.OK);
     }
 
-    @GetMapping("/download/{fileId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId) throws Exception {
-        File attachment;
-        attachment = fileService.getAttachment(fileId);
-        return  ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(attachment.getFileType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + attachment.getFileName()
-                                + "\"")
-                .body(new ByteArrayResource(attachment.getData()));
+    @GetMapping("/download/{fileId}/{fileType}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId, @PathVariable String fileType) throws Exception {
+        File attachment = fileService.getAttachment(fileId);
+        byte[] data;
+        String fileName;
+        String contentType;
+
+        if ("docx".equalsIgnoreCase(fileType)) {
+            data = attachment.getDataDocx();
+            fileName = attachment.getFileNameDocx();
+            contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        } else if ("pdf".equalsIgnoreCase(fileType)) {
+            data = attachment.getDataPdf();
+            fileName = attachment.getFileNamePdf();
+            contentType = "application/pdf";
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION)
+                .body(new ByteArrayResource(data));
+    }
+
+    @GetMapping("/download/recent/{articleId}/{fileType}")
+    public ResponseEntity<Resource> downloadMostRecentFile(@PathVariable Long articleId, @PathVariable String fileType) throws Exception {
+        Optional<Article> article = articleRepository.findById(articleId);
+        if (article.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        File mostRecentFile = fileRepository.findTopByArticleOrderByUploadDateDesc(article.get());
+        if (mostRecentFile == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        byte[] data;
+        String fileName;
+        String contentType;
+
+        if ("docx".equalsIgnoreCase(fileType)) {
+            data = mostRecentFile.getDataDocx();
+            fileName = mostRecentFile.getFileNameDocx();
+            contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        } else if ("pdf".equalsIgnoreCase(fileType)) {
+            data = mostRecentFile.getDataPdf();
+            fileName = mostRecentFile.getFileNamePdf();
+            contentType = "application/pdf";
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION)
+                .body(new ByteArrayResource(data));
     }
 
     @GetMapping

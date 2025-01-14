@@ -35,8 +35,10 @@ public class ConferenceController {
         return conferences.stream().map(conference -> {
             ConferenceDTO conferenceDTO = new ConferenceDTO();
             conferenceDTO.setId(conference.getId());
+            conferenceDTO.setName(conference.getName());
             conferenceDTO.setArticleId(conference.getArticles());
             conferenceDTO.setState(conference.getState());
+            conferenceDTO.setArticles(conference.getArticles());
             conferenceDTO.setStartUpload(conference.getStartUpload());
             conferenceDTO.setCloseUpload(conference.getCloseUpload());
             conferenceDTO.setStartReview(conference.getStartReview());
