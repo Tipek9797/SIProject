@@ -21,6 +21,7 @@ import ConferencePage from './pages/settingsPage/ConferencePage';
 import ArticleStatePage from './pages/settingsPage/ArticleStatePage';
 import RolePage from './pages/settingsPage/RolePage';
 import ProsAndConsCategoryPage from './pages/settingsPage/ProsAndConsCategoryPage';
+import EditUserDialog from './components/editUser/EditUserDialog';  //Tu som len pridal routing na tú EditPage
 
 function App() {
     return (
@@ -47,6 +48,7 @@ function App() {
                         <Route path="/settings/article-state" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ArticleStatePage />} />} />
                         <Route path="/settings/role" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<RolePage />} />} />
                         <Route path="/settings/pros-and-cons-category" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ProsAndConsCategoryPage />} />} />
+                        <Route path="/edit-user/:id" element={<PrivateRoute roles={['ROLE_USER', 'ROLE_REVIEWER']} page={<EditUserDialog />} />} />
                     </Routes>
                 </div>
                 <Footer />

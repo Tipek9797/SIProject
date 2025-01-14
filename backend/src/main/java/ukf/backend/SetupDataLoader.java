@@ -93,14 +93,12 @@ public class SetupDataLoader implements
         if (alreadySetup)
             return;
 
-
-
         createDomainIfNotFound("student.ukf.sk");
         createDomainIfNotFound("stu.sk");
 
-        createRoleIfNotFound("ROLE_ADMIN");
-        createRoleIfNotFound("ROLE_REVIEWER");
-        createRoleIfNotFound("ROLE_USER");
+        Role adminRole = createRoleIfNotFound("ROLE_ADMIN");
+        Role reviewerRole = createRoleIfNotFound("ROLE_REVIEWER");
+        Role userRole = createRoleIfNotFound("ROLE_USER");
 
         createSchoolIfNotFound("UKF");
         createSchoolIfNotFound("TRN");
@@ -119,19 +117,21 @@ public class SetupDataLoader implements
         ProsAndConsCategory proCategory = createProsAndConsCategoryIfNotFound("PRO");
         ProsAndConsCategory conCategory = createProsAndConsCategoryIfNotFound("CON");
 
-        Role adminRole = roleRepository.findByName("ROLE_ADMIN");
         School school = schoolRepository.findByName("ukf").orElseThrow();
         Faculty faculty = facultyRepository.findByNameAndSchool("inf", school).orElseThrow();
         Form form = createFormIfNotFound("Formular");
         Conference conference = createConferenceIfNotFound("Konferencia Test", "Otvorena", LocalDateTime.now(),
-                LocalDateTime.now().plusDays(30), LocalDateTime.now().plusDays(40), LocalDateTime.now().plusDays(50), form);
+                LocalDateTime.now().plusDays(30), LocalDateTime.now().plusDays(40), LocalDateTime.now().plusDays(50),
+                form);
         ArticleCategory articleCategory = createCategoryIfNotFound("Kategoria 1");
         ArticleState stateSubmitted = articleStateRepository.findByName("Odoslané").orElseThrow();
         User user = createUserIfNotFound("Test", "Test", "test", "test@student.ukf.sk", adminRole, school, faculty);
-        Article article = createArticleIfNotFound("Praca1", LocalDateTime.now(), stateSubmitted, "/cesta",
-                conference, List.of(articleCategory), List.of(user),null);
+        Article article = createArticleIfNotFound("Praca1", LocalDateTime.now(), stateSubmitted,
+                conference, List.of(articleCategory), List.of(user), null);
 
         createReviewIfNotFound(5, "Super", true, article);
+
+        createUserIfNotFound("Test2", "Test2", "test", "test2@student.ukf.sk", userRole, school, faculty);
 
         createProsAndConsIfNotFound(proCategory, "cool", article);
         createProsAndConsIfNotFound(conCategory, "very bad", article);
@@ -140,15 +140,15 @@ public class SetupDataLoader implements
     }
 
     @Transactional
-    void createRoleIfNotFound(String name) {
+    Role createRoleIfNotFound(String name) {
 
         Role role = roleRepository.findByName(name);
         if (role == null) {
             role = new Role();
             role.setName(name);
             roleRepository.save(role);
-            return;
         }
+        return role;
     }
 
     @Transactional
@@ -185,9 +185,9 @@ public class SetupDataLoader implements
             }
         }
     }
-    
+
     User createUserIfNotFound(String name, String surname, String password, String email, Role role, School school,
-                              Faculty faculty) {
+            Faculty faculty) {
 
         Optional<User> users = userRepository.findByEmail(email);
         if (users.isEmpty()) {
@@ -235,7 +235,7 @@ public class SetupDataLoader implements
 
     @Transactional
     Conference createConferenceIfNotFound(String name, String state, LocalDateTime startUpload,
-                                          LocalDateTime closeUpload, LocalDateTime startReview, LocalDateTime closeReview, Form form) {
+            LocalDateTime closeUpload, LocalDateTime startReview, LocalDateTime closeReview, Form form) {
         Optional<Conference> conferenceOptional = conferenceRepository.findByName(name);
         if (conferenceOptional.isEmpty()) {
             Conference conference = new Conference();
@@ -253,15 +253,14 @@ public class SetupDataLoader implements
     }
 
     @Transactional
-    Article createArticleIfNotFound(String name, LocalDateTime date, ArticleState state, String filePath,
-                                    Conference conference, List<ArticleCategory> categories, List<User> users,Long reviewerId) {
+    Article createArticleIfNotFound(String name, LocalDateTime date, ArticleState state,
+            Conference conference, List<ArticleCategory> categories, List<User> users, Long reviewerId) {
         Optional<Article> articleOptional = articleRepository.findByName(name);
         if (articleOptional.isEmpty()) {
             Article article = new Article();
             article.setName(name);
             article.setDate(date);
             article.setState(state);
-            article.setFilePath(filePath);
             article.setConference(conference);
             article.setCategories(categories);
             article.setUsers(users);
@@ -311,7 +310,8 @@ public class SetupDataLoader implements
     @Transactional
     void createProsAndConsIfNotFound(ProsAndConsCategory category, String description, Article article) {
         List<ProsAndCons> prosAndConsList = prosAndConsRepository.findByCategoryAndArticle(category, article);
-        boolean prosAndConsExists = prosAndConsList.stream().anyMatch(prosAndCons -> prosAndCons.getDescription().equals(description));
+        boolean prosAndConsExists = prosAndConsList.stream()
+                .anyMatch(prosAndCons -> prosAndCons.getDescription().equals(description));
         if (!prosAndConsExists) {
             ProsAndCons prosAndCons = new ProsAndCons();
             prosAndCons.setCategory(category);

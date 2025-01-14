@@ -1,17 +1,17 @@
-/*html {
-    font-size: 14px;
-}*/
+.cardWork {
+    padding: 1rem;
+}
 
 .workbox {
-    font-weight: normal;
+    font-weight: bold;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
-    margin-inline: 0.5rem;
-    margin-block: 1rem;
     border-radius: 20px;
     font-size: 50px;
-    padding: 0.5rem;
+    padding: 0;
+    height: auto;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .workcard {
@@ -50,17 +50,6 @@
     border-radius: 20px;
     border-color: white;
     border-width: 0.5rem;
-}
-
-.workdialog {
-    text-align: center;
-}
-
-.worktext{
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
 }
 
 .work-details-text{
@@ -123,4 +112,12 @@
 
 .rating-table-container .p-column-title{
     font-size: 20px;
+}
+
+.up-down{
+    margin-top: 2rem;
+}
+
+.uppercase-label {
+    text-transform: uppercase;
 }

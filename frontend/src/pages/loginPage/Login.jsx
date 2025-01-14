@@ -58,8 +58,8 @@ export default function LoginPage() {
                         }}
                         className={errorFields.password ? "p-invalid" : ""}
                     />
-                    <Button label="Prihlásenie" icon="pi pi-sign-in" onClick={() => handleLogin({ email, password, toast, navigate })} className="p-button-success" />
-                    <Button label="Registrácia" icon="pi pi-user" onClick={() => handleRegister(navigate)} className="p-button-info" />
+                    <Button label="Prihlásenie" icon="pi pi-sign-in" onClick={() => handleLogin({ email, password, toast, navigate })} className="login-button-login" />
+                    <Button label="Registrácia" icon="pi pi-user" onClick={() => handleRegister(navigate)} className="login-button-register" />
                 </div>
             </div>
         </div>

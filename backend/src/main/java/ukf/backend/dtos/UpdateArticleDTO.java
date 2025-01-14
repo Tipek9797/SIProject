@@ -17,4 +17,5 @@ public class UpdateArticleDTO {
     private List<Long> userIds;
     private List<Long> categoryIds;
     private List<ProsAndCons> prosAndConsList;
+    private List<Long> fileIds;
 }

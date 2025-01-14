@@ -2,13 +2,15 @@
     border-radius: 8px;
     width: 100%;
     max-width: 600px;
-    margin: 0 auto;
+    margin: 35px auto;
+    align-items: center;
 }
 
 .p-field {
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
+
 }
 
 .p-inputtext {
