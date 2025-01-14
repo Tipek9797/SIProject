@@ -28,20 +28,25 @@ export default function ManageUsers() {
     const fetchData = async () => {
         try {
             const response = await axios.get("http://localhost:8080/api/users");
-            const users = response.data.map((user) => ({
-                id: user.id,
-                firstName: user.name,
-                lastName: user.surname,
-                email: user.email,
-                school: user.school ? { name: user.school.name, id: user.school.id } : null,
-                faculty: user.faculty ? { name: user.faculty.name, id: user.faculty.id } : null,
-                role: user.roles.map((role) => ({ id: role.id, name: role.name })),
+            const users = await Promise.all(response.data.map(async (user) => {
+                const conferences = await fetchUserConferences(user.id);
+                return {
+                    id: user.id,
+                    firstName: user.name,
+                    lastName: user.surname,
+                    email: user.email,
+                    school: user.school ? { name: user.school.name, id: user.school.id } : null,
+                    faculty: user.faculty ? { name: user.faculty.name, id: user.faculty.id } : null,
+                    role: user.roles.map((role) => ({ id: role.id, name: role.name })),
+                    conferences,
+                };
             }));
             setData(users);
         } catch (error) {
             console.error(error);
         }
     };
+
 
     const fetchSchools = async () => {
         try {
@@ -73,6 +78,17 @@ export default function ManageUsers() {
             console.error(error);
         }
     };
+
+    const fetchUserConferences = async (userId) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/conferences/user-conferences/${userId}`);
+            return response.data.map(conference => conference.name).join(", ");
+        } catch (error) {
+            console.error(error);
+            return "N/A";
+        }
+    };
+
 
     const patchUser = async (id, updatedFields) => {
         try {
@@ -125,6 +141,7 @@ export default function ManageUsers() {
             "school.name": { value: "", matchMode: FilterMatchMode.CONTAINS },
             "faculty.name": { value: "", matchMode: FilterMatchMode.CONTAINS },
             role: { value: [], matchMode: FilterMatchMode.IN },
+            conferences: { value: "", matchMode: FilterMatchMode.CONTAINS },
         });
         setGlobalFilterValue("");
     };
@@ -222,6 +239,14 @@ export default function ManageUsers() {
                 <Column field="school" header="Škola" editor={schoolEditor} body={(rowData) => rowData.school?.name || "N/A"} sortable filterField="school.name" />
                 <Column field="faculty" header="Fakulta" editor={facultyEditor} body={(rowData) => rowData.faculty?.name || "N/A"} sortable filterField="faculty.name" />
                 <Column field="role" header="Rola" editor={roleEditor} body={(rowData) => rowData.role.map((r) => r.name).join(", ")} filterField="role.name" />
+                <Column
+                    field="conferences"
+                    header="Konferencie"
+                    body={(rowData) => rowData.conferences || "Žiadna konferencia"}
+                    filter
+                    filterField="conferences"
+                    sortable
+                />
                 <Column rowEditor headerStyle={{ width: "10%" }} bodyStyle={{ textAlign: "center" }} />
             </DataTable>
         </div>

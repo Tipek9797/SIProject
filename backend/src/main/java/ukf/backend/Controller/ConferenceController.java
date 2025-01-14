@@ -12,6 +12,7 @@ import ukf.backend.Model.User.User;
 import ukf.backend.Model.User.UserRepository;
 import ukf.backend.dtos.ConferenceDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,7 @@ public class ConferenceController {
 
     @Autowired
     private FormRepository formRepository;
+
     @Autowired
     private UserRepository userRepository;
 
@@ -119,9 +121,6 @@ public class ConferenceController {
         return conference;
     }
 
-
-
-
     @GetMapping("/{id}/isUserIn")
     public boolean isUserInConference(@PathVariable Long id, @RequestParam Long userId) {
         Conference conference = conferenceRepository.findById(id)
@@ -147,5 +146,38 @@ public class ConferenceController {
 
         conferenceRepository.save(conference);
         userRepository.save(user);
+    }
+
+    @GetMapping("/user-conferences")
+    public List<String> getUserConferenceIds() {
+        List<Conference> conferences = conferenceRepository.findAll();
+
+        if (conferences.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No conferences found");
+        }
+
+        List<String> userConferenceIds = new ArrayList<>();
+        for (Conference conference : conferences) {
+            if (conference.getUsers() != null && !conference.getUsers().isEmpty()) {
+                for (User user : conference.getUsers()) {
+                    userConferenceIds.add("Conference ID: " + conference.getId() + ", User ID: " + user.getId());
+                }
+            }
+        }
+
+        return userConferenceIds;
+    }
+
+    @GetMapping("/user-conferences/{userId}")
+    public List<ConferenceDTO> getUserConferences(@PathVariable Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        return user.getConferences().stream().map(conference -> {
+            ConferenceDTO dto = new ConferenceDTO();
+            dto.setId(conference.getId());
+            dto.setName(conference.getName());
+            return dto;
+        }).collect(Collectors.toList());
     }
 }
