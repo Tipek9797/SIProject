@@ -7,6 +7,7 @@ export { InputText } from "primereact/inputtext";
 export { DataTable } from "primereact/datatable";
 export { Fieldset } from 'primereact/fieldset';
 export { DataView } from 'primereact/dataview';
+export { Dropdown } from 'primereact/dropdown';
 export { Tooltip } from 'primereact/tooltip';
 export { Divider } from 'primereact/divider';
 export { ListBox } from 'primereact/listbox';

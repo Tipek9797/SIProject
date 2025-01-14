@@ -1,45 +1,121 @@
 import React, { useState, useEffect } from 'react';
 import {
-    InputTextarea,
-    ScrollPanel,
-    DataTable,
-    InputText,
     Fieldset,
     TabPanel,
     DataView,
     TabView,
-    Divider,
-    ListBox,
     Button,
-    Editor,
-    Dialog,
     Rating,
-    Column,
     Tag
 } from "../../components/index";
+import ReviewOpenDialog from '../../components/Review-dialog/ReviewOpenDialog';
+import ReviewRateDialog from '../../components/Review-dialog/ReviewRateDialog';
+import ReviewUpdateDialog from '../../components/Review-dialog/ReviewUpdateDialog';
 import "./worksToReview.css";
-import { ReviewService } from './service/ReviewService';
+import axios from "axios";
+
 
 export default function WorksToReview() {
     // Databaza --------------------------------------------------------------------------------------------------------
-    const [Reviews, setProducts] = useState([]);
+    const [Reviews, setReviews] = useState([]);
+    const [Conferences, setConferences] = useState([]);
+
+    const getUserFromLocalStorage = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            return user ? user : null;
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    };
+    const user = getUserFromLocalStorage();
+
+    const fetchArticles = () => {
+        axios.get('http://localhost:8080/api/articles')
+            .then(response => {
+                const filteredReviews = response.data.filter(article => article.reviewerId === user.id);
+                setReviews(filteredReviews);
+            })
+            .catch(error => console.error(error));
+    };
+
+    const fetchConferences = () => {
+        axios.get('http://localhost:8080/api/conferences')
+            .then(response => { setConferences(response.data)})
+            .catch(error => console.error(error));
+    };
+
+    useEffect(() => {
+        fetchArticles();
+        fetchConferences();
+    }, []);
+
+    const formatDate = (dateString) => {
+        if (!dateString) return null; // Handle missing or invalid dates
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('sk-SK', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+    };
+
+    const filterReviewConference = (review, conferences) => {
+        // Find the conference that contains the article matching the review ID
+        const matchingConference = conferences.find(conference =>
+            conference.articles.some(article => article.id === review.id)
+        );
+        if (matchingConference) {
+            // Return relevant conference details
+            return {
+                name: matchingConference.name,
+                startReview: formatDate(matchingConference.startReview),
+                closeReview: formatDate(matchingConference.closeReview)
+            };
+        } else {
+            // Return default values if no match is found
+            return {
+                name: "No matching conference",
+                startReview: null,
+                closeReview: null
+            };
+        }
+    };
 
     // Dialog ----------------------------------------------------------------------------------------------------------
     const [archiveVisible, setArchiveVisible] = useState(false);
     const [ratingVisible, setRatingVisible] = useState(false);
+    //const [selectedArticle, setSelectedArticle] = useState(null);
+    const [selectedArticle1, setSelectedArticle1] = useState(null);
+    const [selectedArticle2, setSelectedArticle2] = useState(null);
+    const [selectedArticle3, setSelectedArticle3] = useState(null);
+    const [selectedConference, setSelectedConference] = useState(null);
+    const [reviewID, setReviewID] = useState(null);
+    const [proConID, setProConID] = useState(null);
+
+
+    const [ratings, setRatings] = useState([]);
     const [editVisible, setEditVisible] = useState(false);
+    const [inputTextValue, setInputTextValue] = useState('');
+    const [starValue, setStarValue] = useState(null);
+
+    const processRatings = (Details) => {
+        if (Details && Details.prosAndConsList) {
+            const pros = Details.prosAndConsList.filter(item => item.category.name === "PRO").map(item => item.description);
+            const cons = Details.prosAndConsList.filter(item => item.category.name === "CON").map(item => item.description);
+            // Pair PRO and CON descriptions into an array
+            const formattedRatings = [];
+            const maxLength = Math.max(pros.length, cons.length);
+            for (let i = 0; i < maxLength; i++) {
+                formattedRatings.push({
+                    PRO: pros[i] || "", // Use an empty string if no PRO at this index
+                    CON: cons[i] || "" // Use an empty string if no CON at this index
+                });
+            }
+            setRatings(formattedRatings);
+        } else {
+            setRatings([]); // Reset if no prosAndConsList
+        }
+    };
 
     // Dialog Na Ohodnotenie/Upravu ------------------------------------------------------------------------------------
-    const renderHeader = () => {
-        return (
-            <span className="ql-formats">
-                <button className="ql-bold" aria-label="Bold"></button>
-                <button className="ql-italic" aria-label="Italic"></button>
-                <button className="ql-underline" aria-label="Underline"></button>
-            </span>
-        );
-    };
-    const header = renderHeader();
     const [text, setText] = useState('');
     const [plusList, setPlusList] = useState([]);
     const [minusList, setMinusList] = useState([]);
@@ -70,50 +146,168 @@ export default function WorksToReview() {
         }
     };
     const ratingFooterContent = (
-        <div>
+        <div className="flex justify-content-center">
             <Button label="Ohodnotiť"
                     icon="pi pi-star-fill"
-                    className="p-button-rounded"
-                    onClick={() => setRatingVisible(false)}
+                    className="p-button-rounded custom-width"
+                    onClick={() => onRatingSendClick()}
             />
         </div>
     );
 
     // Dialog Na Upravu ------------------------------------------------------------------------------------------------
     const editFooterContent = (
-        <div>
+        <div className="flex justify-content-center">
             <Button label="Upraviť"
                     icon="pi pi-user-edit"
                     severity="warning"
-                    className="p-button-rounded"
-                    onClick={() => setEditVisible(false)}/>
+                    className="p-button-rounded custom-width"
+                    onClick={() => onUpdateSendClick()}/>
         </div>
     );
 
-    // Placeholder -----------------------------------------------------------------------------------------------------
-    const [starValue, setStarValue] = useState(null);
-    const [editorTextValue, setEditorTextValue] = useState('');
-    const [textValue] = useState('Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. Sem Posudok od Recenzenta. ');
-    const ratings = [
-        { pros: "Positive", cons: "Great design" },
-        { pros: "Positive", cons: "User-friendly" },
-        { pros: "Positive", cons: "Responsive layout" },
-        { pros: "Negative", cons: "Slow loading" },
-        { pros: "Negative", cons: "Limited features" },
-        { pros: "Negative", cons: "Occasional bugs" },
-    ];
+    // Buttons ---------------------------------------------------------------------------------------------------------
+    const onOpenClick = (ReviewDetails, ConferenceName) => {
+        setSelectedArticle1(ReviewDetails);
+        setSelectedConference(ConferenceName);
+        processRatings(ReviewDetails);
+        setArchiveVisible(true);
+    };
 
-    // Databaza + Grid Usporiadanie ------------------------------------------------------------------------------------
-    useEffect(() => {
-        ReviewService.getProducts().then((data) => setProducts(data.slice(0, 12)));
-    }, []);
+    const onRatingClick = (ReviewDetails, ConferenceName) => {
+        setSelectedArticle2(ReviewDetails);
+        setSelectedConference(ConferenceName);
+        setStarValue(0);
+        setInputTextValue('');
+        setText('');
+        setPlusList([]);
+        setMinusList([]);
+        setRatingVisible(true);
+    };
+
+    const onRatingSendClick = () => {
+        setRatingVisible(false);
+        const newReview = {
+            rating: starValue,
+            comment: inputTextValue,
+            isAccepted: 0,
+            articleId: selectedArticle2.id,
+        };
+        axios.post('http://localhost:8080/api/reviews', newReview)
+            .then(response => {fetchArticles()})
+            .catch(error => console.error(error));
+
+        plusList.forEach((newProText) => {
+            const newPro = {
+                description: newProText,
+                articleId: selectedArticle2.id,
+                categoryId: 1,
+            };
+            axios.post('http://localhost:8080/api/pros-and-cons', newPro)
+                .then(response => {fetchArticles()})
+                .catch(error => console.error(error));
+        });
+
+        minusList.forEach((newConText) => {
+            const newCon = {
+                description: newConText,
+                articleId: selectedArticle2.id,
+                categoryId: 2,
+            };
+            axios.post('http://localhost:8080/api/pros-and-cons', newCon)
+                .then(response => {fetchArticles()})
+                .catch(error => console.error(error));
+        });
+    };
+
+    const onUpdateClick = (ReviewDetails, ConferenceName) => {
+        setSelectedArticle3(ReviewDetails);
+        setSelectedConference(ConferenceName);
+        setEditVisible(true);
+        setReviewID(ReviewDetails.reviews[0].id);
+        setProConID(ReviewDetails.prosAndConsList);
+        setText('');
+        setStarValue(ReviewDetails.reviews[0].rating);
+        setInputTextValue(ReviewDetails.reviews[0].comment);
+
+        const pros = ReviewDetails.prosAndConsList
+            .filter(item => item.category.name === "PRO")
+            .map(item => item.description);
+        const cons = ReviewDetails.prosAndConsList
+            .filter(item => item.category.name === "CON")
+            .map(item => item.description);
+        setPlusList(pros);
+        setMinusList(cons);
+    };
+
+    const onUpdateSendClick = () => {
+        setEditVisible(false);
+        console.log("Logged-in user:", reviewID);
+        console.log("Pro-Con:", proConID);
+        axios.delete(`http://localhost:8080/api/reviews/${reviewID}`)
+            .then(response => {fetchArticles()})
+            .catch(error => {console.error(error);});
+        const newReview = {
+            rating: starValue,
+            comment: inputTextValue,
+            isAccepted: 0,
+            articleId: selectedArticle3.id,
+        };
+        axios.post('http://localhost:8080/api/reviews', newReview)
+            .then(response => {fetchArticles()})
+            .catch(error => console.error(error));
+
+        proConID.forEach(ProCon => {
+            axios.delete(`http://localhost:8080/api/pros-and-cons/${ProCon.id}`)
+                .then(response => {fetchArticles()})
+                .catch(error => {console.error(error);});
+        });
+        plusList.forEach((newProText) => {
+            const newPro = {
+                description: newProText,
+                articleId: selectedArticle3.id,
+                categoryId: 1,
+            };
+            axios.post('http://localhost:8080/api/pros-and-cons', newPro)
+                .then(response => {fetchArticles()})
+                .catch(error => console.error(error));
+        });
+        minusList.forEach((newConText) => {
+            const newCon = {
+                description: newConText,
+                articleId: selectedArticle3.id,
+                categoryId: 2,
+            };
+            axios.post('http://localhost:8080/api/pros-and-cons', newCon)
+                .then(response => {fetchArticles()})
+                .catch(error => console.error(error));
+        });
+    };
+
+    const onSendClick = (ReviewDetails) => {
+        const changeState = {
+            stateId: 3,
+        };
+        axios.patch(`http://localhost:8080/api/articles/${ReviewDetails.id}`, changeState)
+            .then(response => fetchArticles())
+            .catch(error => console.error(error));
+
+        /*const changeAccepted = {
+            isAccepted: true,
+        };
+        axios.patch(`http://localhost:8080/api/reviews/${ReviewDetails.reviews[0].id}`, changeAccepted)
+            .then(response => fetchArticles())
+            .catch(error => console.error(error));*/
+    };
+
+    // Grid Usporiadanie ------------------------------------------------------------------------------------
 
     const getSeverity = (hodnotenie) => {
-        switch (hodnotenie.inventoryStatus) {
-            case 'OHODNOTENÉ':
+        switch (getState(hodnotenie)) {
+            case 'ODOSLANÉ':
                 return 'success';
 
-            case 'UPRAVENÉ':
+            case 'NEODOSLANÉ':
                 return 'warning';
 
             case 'NEOHODNOTENÉ':
@@ -124,86 +318,122 @@ export default function WorksToReview() {
         }
     };
 
+    const getState = (state) => {
+        if (!state.reviews || state.reviews.length === 0){
+            return 'NEOHODNOTENÉ';
+        }else{
+            if (state.state.name === "Ohodnotené"){
+                return 'ODOSLANÉ';
+            }else {
+                return 'NEODOSLANÉ';
+            }
+        }
+    };
+
     const gridItemToReview = (review) => {
-        return (
-            <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={review.id}>
-                <div className="p-4 border-1 surface-border surface-card border-round">
-                    <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-                        <div className="flex align-items-center gap-2">
-                            <i className="pi pi-tag"></i>
-                            <span className="font-semibold">{review.category}</span>
+        const conferenceDetails = filterReviewConference(review, Conferences);
+        if (!review.reviews || review.reviews.length === 0){
+            return (
+                <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={review.id}>
+                    <div className="p-4 border-1 surface-border surface-card border-round">
+                        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div className="flex align-items-center gap-2">
+                                {/*   <i className="pi pi-tag"></i>
+                                <span className="font-semibold">{user.name}</span>*/}
+                            </div>
+                            <Tag value={getState(review)} severity={getSeverity(review)}></Tag>
                         </div>
-                        <Tag value={review.inventoryStatus} severity={getSeverity(review)}></Tag>
-                    </div>
-                    <div className="flex flex-column align-items-center gap-3 py-5">
-                        <div className="text-2xl font-bold">{review.name}</div>
-                        <div className="font-semibold">{review.description}</div>
-                        <div className="font-bold">Škola: <i className="font-semibold">{review.school}</i></div>
-                        <div className="font-bold">Odbor: <i className="font-semibold">{review.odbor}</i></div>
-                        <div className="font-bold ">Termín: <i className="text-2xl">{review.price}</i></div>
-                    </div>
-                    <div className="botombutton align-items-center justify-content-between">
-                        <Button label="Ohodnotiť" icon="pi pi-star-fill" className="p-button-rounded" onClick={() => setRatingVisible(true)}/>
+                        <div className="flex flex-column align-items-center gap-3 py-5">
+                            <div className="text-2xl font-bold">{review.name}</div>
+                            <div className="font-semibold">{conferenceDetails.name}</div>
+                            <div className="font-bold">Škola: <i className="font-semibold">{review.users[0].school.name}</i></div>
+                            <div className="font-bold">Fakulta: <i className="font-semibold">{review.users[0].faculty.name}</i></div>
+                            <div className="font-bold ">Termín: <i className="text-2xl">
+                                {conferenceDetails.startReview ? `${conferenceDetails.startReview} - ${conferenceDetails.closeReview}` : "No review period"}
+                            </i></div>
+                        </div>
+                        <div className="align-items-center justify-content-between">
+                            <Button label="Ohodnotiť" icon="pi pi-star-fill" className="p-button-rounded custom-width"
+                                onClick={() => onRatingClick(review, conferenceDetails)}/>
+                        </div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        }
     };
 
     const gridItemUpdate = (review) => {
-        return (
-            <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={review.id}>
-                <div className="p-4 border-1 surface-border surface-card border-round">
-                    <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-                        <div className="flex align-items-center gap-2">
-                            <i className="pi pi-tag"></i>
-                            <span className="font-semibold">{review.category}</span>
+        const conferenceDetails = filterReviewConference(review, Conferences);
+        if (review.state.name !== 'Ohodnotené' && review.reviews.length !== 0){
+            return (
+                <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={review.id}>
+                    <div className="p-4 border-1 surface-border surface-card border-round">
+                        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div className="flex align-items-center gap-2">
+                                {/* <i className="pi pi-tag"></i>
+                                <span className="font-semibold">{user.name}</span> */}
+                            </div>
+                            <Tag value={getState(review)} severity={getSeverity(review)}></Tag>
                         </div>
-                        <Tag value={review.inventoryStatus} severity={getSeverity(review)}></Tag>
-                    </div>
-                    <div className="flex flex-column align-items-center gap-3 py-5">
-                        <div className="text-2xl font-bold">{review.name}</div>
-                        <div className="font-semibold">{review.description}</div>
-                        <div className="font-bold">Škola: <i className="font-semibold">{review.school}</i></div>
-                        <div className="font-bold">Odbor: <i className="font-semibold">{review.odbor}</i></div>
-                        <Rating value={review.rating} readOnly cancel={false}></Rating>
-                        <div className="font-bold ">Termín: <i className="text-2xl">{review.price}</i></div>
-                    </div>
-                    <div className="flex align-items-center justify-content-between">
-                        <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded" onClick={() => setArchiveVisible(true)}/>
-                        <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded" onClick={() => setEditVisible(true)}/>
-                        <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded"/>
+                        <div className="flex flex-column align-items-center gap-3 py-5">
+                            <div className="text-2xl font-bold">{review.name}</div>
+                            <div className="font-semibold">{conferenceDetails.name}</div>
+                            <div className="font-bold">Škola: <i
+                                className="font-semibold">{review.users[0].school.name}</i></div>
+                            <div className="font-bold">Fakulta: <i
+                                className="font-semibold">{review.users[0].faculty.name}</i></div>
+                            <Rating value={review.reviews[0].rating} readOnly cancel={false}></Rating>
+                            <div className="font-bold ">Termín: <i className="text-2xl">
+                                {conferenceDetails.startReview ? `${conferenceDetails.startReview} - ${conferenceDetails.closeReview}` : "No review period"}
+                            </i></div>
+                        </div>
+                        <div className="flex botombutton align-items-center justify-content-between">
+                            <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary"
+                                    className="p-button-rounded custom-width"
+                                    onClick={() => onOpenClick(review, conferenceDetails)}/>
+                            <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
+                                    onClick={() => onUpdateClick(review, conferenceDetails)}/>
+                        </div>
+                        <div className="flex botombutton align-items-center justify-content-between">
+                            <Button label="Odoslať" icon="pi pi-send" className="p-button-rounded custom-width"
+                                    onClick={() => onSendClick(review)}/>
+                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"/>
+                        </div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        }
     };
 
     const gridItemArchive = (review) => {
-        return (
-            <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={review.id}>
-                <div className="p-4 border-1 surface-border surface-card border-round">
-                    <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-                        <div className="flex align-items-center gap-2">
-                            <i className="pi pi-tag"></i>
-                            <span className="font-semibold">{review.category}</span>
+        const conferenceDetails = filterReviewConference(review, Conferences);
+        if (review.state.name === 'Ohodnotené'){
+            return (
+                <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={review.id}>
+                    <div className="p-4 border-1 surface-border surface-card border-round">
+                        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div className="flex align-items-center gap-2">
+                                {/*  <i className="pi pi-tag"></i>
+                                <span className="font-semibold">{user.name}</span>*/}
+                            </div>
+                            <Tag value={getState(review)} severity={getSeverity(review)}></Tag>
                         </div>
-                        <Tag value={review.inventoryStatus} severity={getSeverity(review)}></Tag>
-                    </div>
-                    <div className="flex flex-column align-items-center gap-3 py-5">
-                        <div className="text-2xl font-bold">{review.name}</div>
-                        <div className="font-semibold">{review.description}</div>
-                        <div className="font-bold">Škola: <i className="font-semibold">{review.school}</i></div>
-                        <div className="font-bold">Odbor: <i className="font-semibold">{review.odbor}</i></div>
-                        <Rating value={review.rating} readOnly cancel={false}></Rating>
-                    </div>
-                    <div className="flex botombutton align-items-center justify-content-between">
-                        <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded" onClick={() => setArchiveVisible(true)}/>
-                        <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded"/>
+                        <div className="flex flex-column align-items-center gap-3 py-5">
+                            <div className="text-2xl font-bold">{review.name}</div>
+                            <div className="font-semibold">{conferenceDetails.name}</div>
+                            <div className="font-bold">Škola: <i className="font-semibold">{review.users[0].school.name}</i></div>
+                            <div className="font-bold">Fakulta: <i className="font-semibold">{review.users[0].faculty.name}</i></div>
+                            <Rating value={review.reviews[0].rating} readOnly cancel={false}></Rating>
+                        </div>
+                        <div className="flex botombutton align-items-center justify-content-between">
+                            <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
+                                    onClick={() => onOpenClick(review, conferenceDetails)}/>
+                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"/>
+                        </div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        }
     };
 
     const ReviewTemplate = () => {
@@ -227,15 +457,16 @@ export default function WorksToReview() {
         return <div className="grid grid-nogutter">{Reviews.map((review) => gridItemArchive(review))}</div>;
     };
 
+
     // Return ----------------------------------------------------------------------------------------------------------
     return (
         <div className="card">
-            <Fieldset legend="Recenzent" className="recenzent">
+            <Fieldset legend="Recenzent" className="recenzent" style={Reviews.length === 0 ? { height: '75vh', } : {}}>
                 <TabView scrollable>
                     <TabPanel header="Na Ohodnotenie" rightIcon="pi pi-calendar-clock mr-2">
                         <DataView value={Reviews} listTemplate={ReviewTemplate}/>
                     </TabPanel>
-                    <TabPanel header="Ohodnotené/Upravoť" rightIcon="pi pi-pencil ml-2">
+                    <TabPanel header="Ohodnotené/Upraviť" rightIcon="pi pi-pencil ml-2">
                         <DataView value={Reviews} listTemplate={UpdateTemplate}/>
                     </TabPanel>
                     <TabPanel header="Archív" rightIcon="pi pi-building-columns ml-2">
@@ -244,232 +475,61 @@ export default function WorksToReview() {
                 </TabView>
             </Fieldset>
 
-            {/* Dialog - Button Otvorit  ----------------------------------------------------------------------------*/}
-            <Dialog className="s:dial m:dial reviewDialog"
-                    header="Názov Práce Názov Práce Názov Práce Názov Práce Názov Práce"
-                    visible={archiveVisible}
-                    maximizable
-                    onHide={() => setArchiveVisible(false)}>
-                <Divider />
-                <div className="review-details-text">
-                    <label htmlFor="school">Názov Konferencie Názov Konferencie Názov Konferencie Názov
-                        Konferencie</label><br/>
-                    <div className="review-details-row">
-                        <h2>Škola</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <label htmlFor="school">Univerzita Konštantína Filozofa v Nitre</label>
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Katedra</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <label htmlFor="department">Katedra Informatiky</label>
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Odbor</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <label htmlFor="field">Aplikovaná Informatika</label>
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Hodnotenie</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <Rating value={4} readOnly cancel={false}/>
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Posudok</h2><i className="pi pi-angle-down"></i>
-                        <Divider layout="vertical"/>
-                    </div>
-                    <ScrollPanel className="scrollP">
-                        <InputTextarea className="inpTextArea font-bold" disabled  autoResize value={textValue}/>
-                    </ScrollPanel>
-                </div>
-                <div className="rating-table-container">
-                    <DataTable value={ratings} className="p-datatable-sm" showGridlines>
-                        <Column className="rating-column" field="pros" header="Pozitíva +"/>
-                        <Column className="rating-column" field="cons" header="Negatíva -" />
-                    </DataTable>
-                </div>
-            </Dialog>
+            <ReviewOpenDialog
+                visible={archiveVisible}
+                onHide={() => setArchiveVisible(false)}
+                selectedArticle={selectedArticle1}
+                selectedConference={selectedConference}
+                ratings={ratings}
+            />;
 
-            {/* Dialog - Button Ohodnotit  ----------------------------------------------------------------------------*/}
-            <Dialog className="s:dial m:dial reviewDialog"
-                    header="Názov Práce Názov Práce Názov Práce Názov Práce Názov Práce"
-                    visible={ratingVisible}
-                    footer={ratingFooterContent}
-                    maximizable
-                    onHide={() => setRatingVisible(false)}>
-                <Divider />
-                <div className="review-details-text">
-                    <label htmlFor="school">Názov Konferencie Názov Konferencie Názov Konferencie Názov
-                        Konferencie</label><br/>
-                    <div className="review-details-row">
-                        <h2>Škola</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <label htmlFor="school">Univerzita Konštantína Filozofa v Nitre</label>
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Katedra</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <label htmlFor="department">Katedra Informatiky</label>
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Odbor</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <label htmlFor="field">Aplikovaná Informatika</label>
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Hodnotenie</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <Rating value={starValue} onChange={(e) => setStarValue(e.value)} cancel={false} />
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Posudok</h2><i className="pi pi-angle-down"></i>
-                        <Divider layout="vertical"/>
-                    </div>
-                    <Editor className="inpEditorText"
-                            value={editorTextValue}
-                            onTextChange={(e) => setEditorTextValue(e.htmlValue)}
-                            headerTemplate={header}/>
-                </div>
-                <div>
-                    <Divider />
-                    <div className="flex justify-content-center">
-                        <div className="flex align-items-center flex-column gap-2">
-                            <InputText
-                                value={text}
-                                placeholder="Napíšte niečo..."
-                                onChange={(e) => setText(e.target.value)}
-                                style={{ width: '30rem' }}
-                            />
-                            <small>Stlač + Pozitíva alebo - Negatíva, na pridanie.</small>
-                        </div>
-                    </div>
-                    <div className="plusminus flex justify-content-between">
-                        <Button label="Pozitíva" icon="pi pi-plus" rounded severity="success" onClick={addToPlusList}/>
-                        <Button label="Negatíva" icon="pi pi-minus" rounded severity="danger" onClick={addToMinusList}/>
-                    </div>
-                    <div className="flex gap-2">
-                        <ListBox
-                            value={selectedPlusItem}
-                            options={plusList.map(item => ({label: item, value: item}))}
-                            onChange={(e) => setSelectedPlusItem(e.value)}
-                            className="p-d-block"
-                            style={{width: '100%'}}
-                        />
-                        <ListBox
-                            value={selectedMinusItem}
-                            options={minusList.map(item => ({label: item, value: item}))}
-                            onChange={(e) => setSelectedMinusItem(e.value)}
-                            className="p-d-block"
-                            style={{width: '100%'}}
-                        />
-                    </div>
-                    <div className="flex py-2 justify-content-between">
-                        <Button
-                            label="Delete"
-                            icon="pi pi-trash"
-                            onClick={deleteFromPlusList}
-                            severity="danger"
-                            disabled={!selectedPlusItem}
-                        />
-                        <Button
-                            label="Delete"
-                            icon="pi pi-trash"
-                            onClick={deleteFromMinusList}
-                            severity="danger"
-                            disabled={!selectedMinusItem}
-                        />
-                    </div>
-                </div>
-            </Dialog>
+            <ReviewRateDialog
+                visible={ratingVisible}
+                onHide={() => setRatingVisible(false)}
+                selectedArticle={selectedArticle2}
+                selectedConference={selectedConference}
+                ratingFooterContent={ratingFooterContent}
+                starValue={starValue}
+                setStarValue={setStarValue}
+                inputTextValue={inputTextValue}
+                setInputTextValue={setInputTextValue}
+                text={text}
+                setText={setText}
+                plusList={plusList}
+                addToPlusList={addToPlusList}
+                selectedPlusItem={selectedPlusItem}
+                setSelectedPlusItem={setSelectedPlusItem}
+                deleteFromPlusList={deleteFromPlusList}
+                minusList={minusList}
+                addToMinusList={addToMinusList}
+                selectedMinusItem={selectedMinusItem}
+                setSelectedMinusItem={setSelectedMinusItem}
+                deleteFromMinusList={deleteFromMinusList}
+            />;
 
-            {/* Dialog - Button Upravit  ----------------------------------------------------------------------------*/}
-            <Dialog className="s:dial m:dial reviewDialog"
-                    header="Názov Práce Názov Práce Názov Práce Názov Práce Názov Práce"
-                    visible={editVisible}
-                    footer={editFooterContent}
-                    maximizable
-                    onHide={() => setEditVisible(false)}>
-                <Divider />
-                <div className="review-details-text">
-                    <label htmlFor="school">Názov Konferencie Názov Konferencie Názov Konferencie Názov
-                        Konferencie</label><br/>
-                    <div className="review-details-row">
-                        <h2>Hodnotenie Staré</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <Rating value={4} readOnly cancel={false}/>
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Hodnotenie Nové</h2><i className="pi pi-angle-right"></i>
-                        <Divider layout="vertical"/>
-                        <Rating value={starValue} onChange={(e) => setStarValue(e.value)} cancel={false}/>
-                    </div>
-                    <div className="review-details-row">
-                        <h2>Posudok Starý</h2><i className="pi pi-angle-down"></i>
-                        <Divider layout="vertical"/>
-                    </div>
-                    <ScrollPanel className="scrollP">
-                        <InputTextarea className="inpTextArea font-bold" disabled  autoResize value={textValue}/>
-                    </ScrollPanel>
-                    <div className="review-details-row">
-                        <h2>Posudok Nový</h2><i className="pi pi-angle-down"></i>
-                        <Divider layout="vertical"/>
-                    </div>
-                    <Editor className="inpEditorText"
-                            value={editorTextValue}
-                            onTextChange={(e) => setEditorTextValue(e.htmlValue)}
-                            headerTemplate={header}/>
-                </div>
-                <div>
-                    <Divider/>
-                    <div className="flex justify-content-center">
-                        <div className="flex align-items-center flex-column gap-2">
-                            <InputText
-                                value={text}
-                                placeholder="Napíšte niečo..."
-                                onChange={(e) => setText(e.target.value)}
-                                style={{ width: '30rem' }}
-                            />
-                            <small>Stlač + Pozitíva alebo - Negatíva, na pridanie.</small>
-                        </div>
-                    </div>
-                    <div className="plusminus flex justify-content-between">
-                        <Button label="Pozitíva" icon="pi pi-plus" rounded severity="success" onClick={addToPlusList}/>
-                        <Button label="Negatíva" icon="pi pi-minus" rounded severity="danger" onClick={addToMinusList}/>
-                    </div>
-                    <div className="flex gap-2">
-                        <ListBox
-                            value={selectedPlusItem}
-                            options={plusList.map(item => ({label: item, value: item}))}
-                            onChange={(e) => setSelectedPlusItem(e.value)}
-                            className="p-d-block"
-                            style={{width: '100%'}}
-                        />
-                        <ListBox
-                            value={selectedMinusItem}
-                            options={minusList.map(item => ({label: item, value: item}))}
-                            onChange={(e) => setSelectedMinusItem(e.value)}
-                            className="p-d-block"
-                            style={{width: '100%'}}
-                        />
-                    </div>
-                    <div className="flex py-2 justify-content-between">
-                        <Button
-                            label="Delete"
-                            icon="pi pi-trash"
-                            onClick={deleteFromPlusList}
-                            severity="danger"
-                            disabled={!selectedPlusItem}
-                        />
-                        <Button
-                            label="Delete"
-                            icon="pi pi-trash"
-                            onClick={deleteFromMinusList}
-                            severity="danger"
-                            disabled={!selectedMinusItem}
-                        />
-                    </div>
-                </div>
-            </Dialog>
+            <ReviewUpdateDialog
+                selectedArticle3={selectedArticle3}
+                selectedConference={selectedConference}
+                editVisible={editVisible}
+                editFooterContent={editFooterContent}
+                setEditVisible={setEditVisible}
+                starValue={starValue}
+                setStarValue={setStarValue}
+                inputTextValue={inputTextValue}
+                setInputTextValue={setInputTextValue}
+                text={text}
+                setText={setText}
+                plusList={plusList}
+                addToPlusList={addToPlusList}
+                minusList={minusList}
+                addToMinusList={addToMinusList}
+                selectedPlusItem={selectedPlusItem}
+                setSelectedPlusItem={setSelectedPlusItem}
+                selectedMinusItem={selectedMinusItem}
+                setSelectedMinusItem={setSelectedMinusItem}
+                deleteFromPlusList={deleteFromPlusList}
+                deleteFromMinusList={deleteFromMinusList}
+            />
         </div>
     )
 }

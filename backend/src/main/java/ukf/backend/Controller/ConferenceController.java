@@ -29,6 +29,7 @@ public class ConferenceController {
             conferenceDTO.setId(conference.getId());
             conferenceDTO.setName(conference.getName());
             conferenceDTO.setState(conference.getState());
+            conferenceDTO.setArticles(conference.getArticles());
             conferenceDTO.setStartUpload(conference.getStartUpload());
             conferenceDTO.setCloseUpload(conference.getCloseUpload());
             conferenceDTO.setStartReview(conference.getStartReview());
