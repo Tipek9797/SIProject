@@ -43,12 +43,19 @@ public class FileController {
     @Autowired
     private ArticleRepository articleRepository;
 
-    @PostMapping("/upload/{userId}/{articleId}")
-    public ResponseEntity<String> uploadFiles(@PathVariable Long userId, @PathVariable Long articleId,
+    @PostMapping("/upload/{articleId}")
+    public ResponseEntity<String> uploadFiles(@PathVariable Long articleId,
                                               @RequestParam("fileDocx") MultipartFile fileDocx,
                                               @RequestParam("filePdf") MultipartFile filePdf) throws Exception {
-        Optional<User> user = userRepository.findById(userId);
+        //Optional<User> user = userRepository.findById(userId);
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
+                .getPrincipal();
+        String email = userDetails.getUsername();
+        Optional<User> user = userRepository.findByEmail(email);
+
         Optional<Article> article = articleRepository.findById(articleId);
+
 
         if (user.isEmpty()) {
             return new ResponseEntity<>("User doesn't exist.", HttpStatus.BAD_REQUEST);

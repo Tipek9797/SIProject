@@ -20,8 +20,15 @@ export const handleUpload = async (files, toast, articleId) => {
         formData.append('fileDocx', fileDocx);
         formData.append('filePdf', filePdf);
 
-        const userID = localStorage.getItem("userId");
-        await axios.post(`http://localhost:8080/api/files/upload/${userID}/${articleId}`, formData);
+        //const userID = localStorage.getItem("userId");
+        //await axios.post(`http://localhost:8080/api/files/upload/${userID}/${articleId}`, formData);
+
+
+        const jwtToken = localStorage.getItem('jwtToken');
+        const config = {
+            headers: { Authorization: `Bearer ${jwtToken}` }
+        };
+        await axios.post(`http://localhost:8080/api/files/upload/${articleId}`, formData, config);
 
         toast.current.show({ severity: 'success', summary: 'Úspech', detail: 'Úspešne ste nahrali súbory.' });
 
