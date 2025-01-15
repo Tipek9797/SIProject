@@ -11,7 +11,6 @@ import {
 } from "../../components/index";
 import WorkUploadDialog from "../../components/work-dialog/WorkUploadDialog";
 import WorkInfoDialog from "../../components/work-dialog/WorkInfoDialog";
-import "../worksToReviewPage/worksToReview.css";
 import "./myWorks.css";
 import axios from "axios";
 import { handleUpload } from "../../services/handleUpload";
@@ -19,7 +18,8 @@ import { handleUpload } from "../../services/handleUpload";
 export default function MyWorks() {
     // Databaza --------------------------------------------------------------------------------------------------------
     const [Articles, setArticles] = useState([]);
-    const [conferences, setConferences] = useState([]);  //*Pridane
+    const [conferences, setConferences] = useState([]);
+    const [Category, setCategory] = useState([]);
     const [fileHistories, setFileHistories] = useState({});
 
     const getUserFromLocalStorage = () => {
@@ -32,6 +32,11 @@ export default function MyWorks() {
         }
     };
     const user = getUserFromLocalStorage();
+    const fetchCategory = () => {
+        axios.get('http://localhost:8080/api/article-categories')
+            .then(response => {setCategory(response.data)})
+            .catch(error => console.error(error));
+    };
 
     /////////////////////////////////////////////////////////////////
     /*!!!Toto funguje ale treba nastavit aby v article -> conference_id aby sa nastavilo automaticky lebo inak sa name
@@ -60,12 +65,18 @@ export default function MyWorks() {
                     return {
                         ...article,
                         conferenceName: relatedConference ? relatedConference.name : "Neznáma konferencia",
+                        conferenceStartUpload: relatedConference ? relatedConference.startUpload : null,
+                        conferenceCloseUpload: relatedConference ? relatedConference.closeUpload : null,
+                        conferenceEnd: relatedConference ? relatedConference.conferenceEnd : null,
+                        conferenceState: relatedConference ? relatedConference.state : "",
                     };
                 });
+                const filteredArticles = articlesWithConferenceNames.filter(article =>
+                    article.users.some(u => u.id === user.id));
 
                 setConferences(loadedConferences); // Nastaviť konferencie
-                setArticles(articlesWithConferenceNames); // Nastaviť články
-                console.log("Filtered Articles with Conference Names:", articlesWithConferenceNames);
+                setArticles(filteredArticles); // Nastaviť články
+                console.log("Filtered Articles with Conference Names:", filteredArticles);
 
                 const fileHistories = {};
                 for (const article of loadedArticles) {
@@ -87,6 +98,7 @@ export default function MyWorks() {
         };
 
         fetchData();
+        fetchCategory();
     }, []);
 
     const downloadFile = (fileId, fileType) => {
@@ -117,7 +129,8 @@ export default function MyWorks() {
     // Dialogs ---------------------------------------------------------------------------------------------------------
     const [workDetailsVisible, setWorkDetailsVisible] = useState(false);
     const [workUploadVisible, setWorkUploadVisible] = useState(false);
-    const [selectedConference, setSelectedConference] = useState(null); 
+    const [selectedConference, setSelectedConference] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [ratings, setRatings] = useState([]);
 
@@ -131,13 +144,21 @@ export default function MyWorks() {
             for (let i = 0; i < maxLength; i++) {
                 formattedRatings.push({
                     PRO: pros[i] || "",
-                    CON: cons[i] || "" 
+                    CON: cons[i] || ""
                 });
             }
 
             setRatings(formattedRatings);
         } else {
             setRatings([]);
+        }
+    };
+
+    const ratingTest = (data) =>{
+        if (data.state.name === "Prebieha Hodnotenie" || data.state.name === "Ohodnotené"){
+            return 0
+        }else{
+            return data.reviews[0].rating
         }
     };
 
@@ -149,15 +170,35 @@ export default function MyWorks() {
 
     const [name, setName] = useState('');                //Upload Dialog
     const [workUpdate, setWorkUpdate] = useState(false);
+    const [optConference, setOptConference] = useState([]);
+    const [optCategory, setOptCategory] = useState([]);
+    const [optConferenceID, setOptConferenceID] = useState([]);
+    const [optCategoryID, setOptCategoryID] = useState([]);
+
+    const Options = () => {
+        const filteredConferenceOpt = conferences
+            .filter(conference => conference.state === "Otvorena")
+            .map(conference => ({ label: conference.name, value: conference.name }));
+
+        const filteredCategoryOpt = Category.map(category => ({ label: category.name, value: category.name }));
+
+        setOptCategory(filteredCategoryOpt);
+        setOptConference(filteredConferenceOpt);
+    };
+
     const onUploadClick = () => {
+        Options();
         setName("");
         setSelectedConference(null);
+        setSelectedCategory(null);
         setWorkUploadVisible(true);
     };
 
     const onUpdateClick = (WorkDetails) => {
+        Options();
         setName(WorkDetails.name);
-        setSelectedConference(optConference[2]);
+        setSelectedConference(optConference[1]);                    // Zatial nejde
+        setSelectedCategory(null);                          // Zatial nejde
         setSelectedArticle(WorkDetails);
         setWorkUploadVisible(true);
         setWorkUpdate(true);
@@ -165,11 +206,18 @@ export default function MyWorks() {
 
     const onUpdateArticleNameClick = async () => {
         try {
+            const matchingConference = conferences.find(conference => conference.name === selectedConference);
+            setOptConferenceID(matchingConference.id);
+
+            const matchingCategory = Category.find(category => category.name === selectedCategory);
+            setOptCategoryID(matchingCategory.id);
+
             const articleData = {
                 name: name,
                 date: selectedArticle.date,
                 reviewerId: user.id,
-                conferenceId: selectedConference?.id,
+                conferenceId: optConferenceID,
+                categoryIds: [optCategoryID],
                 userIds: [user.id],
                 stateId: selectedArticle.state.id
             };
@@ -196,11 +244,18 @@ export default function MyWorks() {
 
     const onDataSubmitClick = async () => {
         try {
+            const matchingConference = conferences.find(conference => conference.name === selectedConference);
+            setOptConferenceID(matchingConference.id);
+
+            const matchingCategory = Category.find(category => category.name === selectedCategory);
+            setOptCategoryID(matchingCategory.id);
+
             const articleData = {
                 name: name,
                 date: new Date(),
                 reviewerId: user.id,
-                conferenceId: selectedConference?.id,   //TOTO Nechce dávat do database -> article -> conference_id; dava sa tam NULL.
+                conferenceId: optConferenceID,
+                categoryIds: [optCategoryID],
                 userIds: [user.id],
                 stateId: 1
             };
@@ -326,8 +381,9 @@ export default function MyWorks() {
     const cancelOptions = { icon: 'pi pi-fw pi-times', iconOnly: true, className: 'custom-cancel-btn p-button-danger p-button-rounded p-button-outlined' };
 
     const uploadFooterContent = (
-        <div>
-            <Button label="Submit" icon="pi pi-check" onClick={onDataSubmitClick} autoFocus />
+        <div className="flex align-items-center justify-content-center">
+            <Button label="Odoslať" icon="pi pi-check" className="p-button-rounded custom-width"
+                    onClick={onDataSubmitClick} autoFocus/>
         </div>
     );
 
@@ -338,15 +394,13 @@ export default function MyWorks() {
         </div>
     );
 
-    // Placeholder -----------------------------------------------------------------------------------------------------
+    // Data Corection --------------------------------------------------------------------------------------------------
 
-    const optConference = [
-        { name: 'Konferencia Test' },
-        { name: 'Konferencia 01' },
-        { name: 'Konferencia 02' },
-        { name: 'Konferencia 03' },
-        { name: 'Konferencia 04' }
-    ];
+    const formatDate = (dateString) => {
+        if (!dateString) return null; // Handle missing or invalid dates
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('sk-SK', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+    };
 
     // New Grid system -------------------------------------------------------------------------------------------------
 
@@ -389,34 +443,41 @@ export default function MyWorks() {
 
     const gridArticles = (article) => {
         const date1 = new Date(article.date);
-        const formattedDate = `${String(date1.getDate()).padStart(2, '0')}/${String(date1.getMonth() + 1).padStart(2, '0')}/${date1.getFullYear()} - ${String(date1.getHours()).padStart(2, '0')}:${String(date1.getMinutes()).padStart(2, '0')}`;
+        const formattedDate = `${String(date1.getDate()).padStart(2, '0')}/${String(date1.getMonth() + 1).padStart(2, '0')}/${date1.getFullYear()} - ${String(date1.getHours()+1).padStart(2, '0')}:${String(date1.getMinutes()).padStart(2, '0')}`;
         const articleConferenceName = article.conferenceName || "Neznáma konferencia";
-    
-        return (
-            <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
-                <div className="p-4 border-1 surface-border surface-card border-round">
-                    <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-                        <div className="flex align-items-center gap-2">
-                            <i className="pi pi-clock"></i>
-                            <span className="font-semibold">{formattedDate}</span>
+        const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
+        const relatedConference = conferences.find(conf => conf.name === articleConferenceName);
+
+        if (article.state.name === "Odoslané") {
+            return (
+                <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
+                    <div className="p-4 border-1 surface-border surface-card border-round">
+                        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div className="flex align-items-center gap-2">
+                                <i className="pi pi-clock"></i>
+                                <span className="font-semibold">{formattedDate}</span>
+                            </div>
+                            <Tag className="font-bold uppercase-label" value={article.state.name} severity={getSeverity(article.state.name)}></Tag>
                         </div>
-                        <Tag className="font-bold uppercase-label" value={article.state.name} severity={getSeverity(article.state.name)}></Tag>
-                    </div>
-                    <div className="flex flex-column align-items-center gap-3 py-5">
-                        <div className="text-2xl font-bold">{article.name}</div>
-                        <div className="font-bold">Konferencia: <i className="font-semibold">{articleConferenceName}</i></div>
-                        <div className="font-bold">Škola: <i className="font-semibold">{article.users[0].school.name}</i></div>
-                        <div className="font-bold">Fakulta: <i className="font-semibold">{article.users[0].faculty.name}</i></div>
-                        <div className="font-bold ">Termín: <i className="text-2xl">{formattedDate}</i></div>
-                    </div>
-                    <div className="flex botombutton align-items-center justify-content-between">
-                        <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
-                            onClick={() => downloadMostRecentFile(article.id, 'docx')} />
-                        <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
-                            onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
-                        <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                            onClick={() => onUpdateClick(article)} />
-                    </div>
+                        <div className="flex flex-column align-items-center gap-3 py-5">
+                            <div className="text-2xl font-bold">{article.name}</div>
+                            <div className="font-semibold">{articleConferenceName}</div>
+                            <div className="font-bold">Škola: <i className="font-semibold">{article.users[0].school.name}</i></div>
+                            <div className="font-bold">Fakulta: <i className="font-semibold">{article.users[0].faculty.name}</i></div>
+                            <div className="font-bold ">Kategória: <i className="font-semibold">{article.categories[0].name}</i></div>
+                            <div className="font-bold ">Termín: <i className="text-2xl">{articleConferenceDate}</i></div>
+                        </div>
+                        <div className="flex botombutton align-items-center justify-content-between">
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                        </div>
+                        <div className="botombutton align-items-center justify-content-between">
+                            {relatedConference && isUploadPeriodActive(relatedConference) && (
+                                <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
+                                        onClick={() => onUpdateClick(article)} />
+                            )}
                     {fileHistories[article.id] && (
                         <div className="file-history">
                             <h3>História súborov</h3>
@@ -430,9 +491,12 @@ export default function MyWorks() {
 
     const gridRating = (article) => {
         const date2 = new Date(article.date);
-        const formattedDate = `${String(date2.getDate()).padStart(2, '0')}/${String(date2.getMonth() + 1).padStart(2, '0')}/${date2.getFullYear()} - ${String(date2.getHours()).padStart(2, '0')}:${String(date2.getMinutes()).padStart(2, '0')}`;
+        const formattedDate = `${String(date2.getDate()).padStart(2, '0')}/${String(date2.getMonth() + 1).padStart(2, '0')}/${date2.getFullYear()} - ${String(date2.getHours()+1).padStart(2, '0')}:${String(date2.getMinutes()).padStart(2, '0')}`;
+        const articleConferenceName = article.conferenceName || "Neznáma konferencia";
+        const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
 
-        if (article.state.name !== "Odoslané") {
+        //console.log("Data", article);
+        if (article.state.name !== "Odoslané" &&  article.conferenceState === "Otvorena") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -445,19 +509,23 @@ export default function MyWorks() {
                         </div>
                         <div className="flex flex-column align-items-center gap-3 py-5">
                             <div className="text-2xl font-bold">{article.name}</div>
-                            <div className="font-semibold">{article.name}</div>
+                            <div className="font-semibold">{articleConferenceName}</div>
                             <div className="font-bold">Škola: <i className="font-semibold">{article.users[0].school.name}</i></div>
                             <div className="font-bold">Fakulta: <i className="font-semibold">{article.users[0].faculty.name}</i></div>
-                            <Rating value={article.reviews[0].rating} readOnly cancel={false}></Rating>
-                            <div className="font-bold ">Termín: <i className="text-2xl">{formattedDate}</i></div>
+                            <div className="font-bold ">Kategória: <i className="font-semibold">{article.categories[0].name}</i></div>
+                            <Rating value={ratingTest(article)} readOnly cancel={false}></Rating>
+                            <div className="font-bold ">Termín: <i className="text-2xl">{articleConferenceDate}</i>
+                            </div>
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                        </div>
+                        <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                onClick={() => onOpenClick(article)} />
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                                    onClick={() => onOpenClick(article)} />
                         </div>
                         {fileHistories[article.id] && (
                         <div className="file-history">
@@ -473,9 +541,13 @@ export default function MyWorks() {
 
     const gridArchive = (article) => {
         const date3 = new Date(article.date);
-        const formattedDate = `${String(date3.getDate()).padStart(2, '0')}/${String(date3.getMonth() + 1).padStart(2, '0')}/${date3.getFullYear()} - ${String(date3.getHours()).padStart(2, '0')}:${String(date3.getMinutes()).padStart(2, '0')}`;
+        const formattedDate = `${String(date3.getDate()).padStart(2, '0')}/${String(date3.getMonth() + 1).padStart(2, '0')}/${date3.getFullYear()} - ${String(date3.getHours()+1).padStart(2, '0')}:${String(date3.getMinutes()).padStart(2, '0')}`;
+        const articleConferenceName = article.conferenceName || "Neznáma konferencia";
+        const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
+        /*const today = new Date();
+        && article.conferenceEnd < today*/
 
-        if (article.state.name === "Ohodnotené") {
+        if (article.state.name === "Ohodnotené" && article.conferenceState !== "Otvorena") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -488,19 +560,22 @@ export default function MyWorks() {
                         </div>
                         <div className="flex flex-column align-items-center gap-3 py-5">
                             <div className="text-2xl font-bold">{article.name}</div>
-                            <div className="font-semibold">{article.name}</div>
-                            <div className="font-bold">Termín: <i className="font-semibold">{formattedDate}</i></div>
+                            <div className="font-semibold">{articleConferenceName}</div>
+                            <div className="font-bold">Termín: <i className="font-semibold">{articleConferenceDate}</i></div>
                             <div className="font-bold">Škola: <i className="font-semibold">{article.users[0].school.name}</i></div>
                             <div className="font-bold">Fakulta: <i className="font-semibold">{article.users[0].faculty.name}</i></div>
-                            <Rating value={article.reviews[0].rating} readOnly cancel={false}></Rating>
+                            <div className="font-bold ">Kategória: <i className="font-semibold">{article.categories[0].name}</i></div>
+                            <Rating value={ratingTest(article)} readOnly cancel={false}></Rating>
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                        </div>
+                        <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                onClick={() => onOpenClick(article)} />
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                                    onClick={() => onOpenClick(article)} />
                         </div>
                         {fileHistories[article.id] && (
                         <div className="file-history">
@@ -553,8 +628,8 @@ export default function MyWorks() {
                     <TabPanel header="Aktuálne práce" rightIcon="pi pi-calendar-clock">
                         <DataView value={Articles} listTemplate={ArticleTemplate} />
                         {conferences.some(isUploadPeriodActive) && (
-                            <Button className="workuploadbtn large-icon up-down" label="Upload" icon="pi pi-upload"
-                                onClick={() => onUploadClick()} />
+                            <Button className="workuploadbtn large-icon up-down" label="Nahrať Prácu" icon="pi pi-upload"
+                                    onClick={() => onUploadClick()} />
                         )}
                     </TabPanel>
                     <TabPanel header="Hodnotenie" rightIcon="pi pi-check">
@@ -599,6 +674,9 @@ export default function MyWorks() {
                 update={workUpdate}
                 onUpdateArticleNameClick={onUpdateArticleNameClick}
                 onUpdateFilesClick={onUpdateFilesClick}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                optCategory={optCategory}
             />
         </div>
     )
