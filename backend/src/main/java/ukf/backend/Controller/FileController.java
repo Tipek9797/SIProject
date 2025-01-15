@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/files")
@@ -139,6 +140,29 @@ public class FileController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                 .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION)
                 .body(new ByteArrayResource(data));
+    }
+
+    @GetMapping("/history/{articleId}")
+    public ResponseEntity<List<FileDTO>> getFileHistory(@PathVariable Long articleId) {
+        Optional<Article> article = articleRepository.findById(articleId);
+        if (article.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        List<File> files = fileRepository.findByArticle(article.get());
+        List<FileDTO> fileDTOs = files.stream()
+                .map(file -> new FileDTO(
+                        file.getId(),
+                        file.getFileNameDocx(),
+                        file.getFileTypeDocx(),
+                        file.getFileNamePdf(),
+                        file.getFileTypePdf(),
+                        file.getUser().getId(),
+                        file.getUploadDate()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(fileDTOs);
     }
 
     @GetMapping
