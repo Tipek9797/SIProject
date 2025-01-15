@@ -36,20 +36,20 @@
     margin-left: 10px;
 }
 
-.p-button-secondary {
+.eventButton-secondary {
     background-color: mediumseagreen;
     color: white;
 }
 
-.p-button-success {
+.eventButton-success {
     background-color: dodgerblue;
     color: white;
 }
 
-.p-button-secondary:hover {
+.eventButton-secondary:hover {
     background-color: seagreen;
 }
 
-.p-button-success:hover {
+.eventButton-success:hover {
     background-color: dodgerblue;
 }
