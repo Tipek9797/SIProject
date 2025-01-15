@@ -130,14 +130,14 @@ const Event = () => {
                                         e.stopPropagation();
                                         handleJoinConference(conference);
                                     }}
-                                    className="p-button-success"
+                                    className="eventButton-success"
                                 />
                             )}
                             {user && conference.userJoined && (
                                 <Button
                                     label="Prejsť na konferenciu"
                                     icon="pi pi-sign-in"
-                                    className="p-button-secondary"
+                                    className="eventButton-secondary"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleGoToConference();
@@ -152,7 +152,7 @@ const Event = () => {
                                     setSelectedConference(conference);
                                     setVisible(true);
                                 }}
-                                className="p-button-secondary"
+                                className="eventButton-secondary"
                                 style={{ marginLeft: '10px' }}
                             />
                         </div>
@@ -193,7 +193,7 @@ const Event = () => {
                         <Button
                             label="Prejsť na konferenciu"
                             icon="pi pi-sign-in"
-                            className="p-button-secondary"
+                            className="eventButton-secondary"
                             onClick={handleGoToConference}
                         />
                     ) : user ? (
@@ -201,7 +201,7 @@ const Event = () => {
                             label="Pridať sa"
                             icon="pi pi-user-plus"
                             onClick={() => handleJoinConference(selectedConference)}
-                            className="p-button-success"
+                            className="eventButton-success"
                         />
                     ) : null}
                 </Dialog>
