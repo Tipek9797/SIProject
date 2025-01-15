@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface FileRepository extends JpaRepository<File, Long> {
     Optional<List<File>> findFilesByUser(User user);
     File findTopByArticleOrderByUploadDateDesc(Article article);
+    List<File> findByArticle(Article article);
 }
