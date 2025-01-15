@@ -119,8 +119,40 @@ export default function MyWorks() {
     const onUpdateClick = (WorkDetails) => {
         setName(WorkDetails.name);
         setSelectedConference(optConference[2]);
+        setSelectedArticle(WorkDetails);
         setWorkUploadVisible(true);
         setWorkUpdate(true);
+    };
+
+    const onUpdateArticleNameClick = async () => {
+        try {
+            const articleData = {
+                name: name,
+                date: selectedArticle.date,
+                reviewerId: user.id,
+                conferenceId: selectedConference?.id,
+                userIds: [user.id],
+                stateId: selectedArticle.state.id
+            };
+
+            await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData);
+            setWorkUploadVisible(false);
+            setWorkUpdate(false);
+        } catch (error) {
+            console.error("Error updating article name:", error);
+            toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa upraviť názov článku.' });
+        }
+    };
+
+    const onUpdateFilesClick = async () => {
+        try {
+            await handleUpload(files, toast, selectedArticle.id);
+            setWorkUploadVisible(false);
+            setWorkUpdate(false);
+        } catch (error) {
+            console.error("Error uploading new files:", error);
+            toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa nahrať nové súbory.' });
+        }
     };
 
     const onDataSubmitClick = async () => {
@@ -513,6 +545,8 @@ export default function MyWorks() {
                 setSelectedConference={setSelectedConference}
                 optConference={optConference}
                 update={workUpdate}
+                onUpdateArticleNameClick={onUpdateArticleNameClick}
+                onUpdateFilesClick={onUpdateFilesClick}
             />
         </div>
     )
