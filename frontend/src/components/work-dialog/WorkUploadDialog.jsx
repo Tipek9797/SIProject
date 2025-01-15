@@ -5,6 +5,7 @@ import { InputText } from "primereact/inputtext";
 import { Tooltip } from "primereact/tooltip";
 import { FileUpload } from "primereact/fileupload";
 import { Dropdown } from 'primereact/dropdown';
+import { Button } from 'primereact/button';
 
 export default function WorkUploadDialog({
     visible,
@@ -27,19 +28,22 @@ export default function WorkUploadDialog({
     selectedConference,
     setSelectedConference,
     optConference,
+    onUpdateArticleNameClick,
+    onUpdateFilesClick,
     update,
 }) {
     const chooseFooter = () => {
-        switch (update) {
-            case true:
-                return uploadFooter;
-
-            case false:
-                return footer;
-
-            default:
-                return footer;
+        if (update) {
+            return (
+                <div className="flex align-items-center justify-content-center">
+                    <Button label="Upraviť Článok" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
+                        onClick={onUpdateArticleNameClick} />
+                    <Button label="Upraviť Súbory" icon="pi pi-upload" severity="warning" className="p-button-rounded custom-width"
+                        onClick={onUpdateFilesClick} />
+                </div>
+            );
         }
+        return footer;
     };
 
     return (

@@ -32,14 +32,18 @@ export default function WorkInfoDialog({ visible, onHide, data, ratings}) {
                 <div className="work-details-row">
                     <h2>Hodnotenie</h2><i className="pi pi-angle-right"></i>
                     <Divider layout="vertical"/>
-                    <Rating value={data.reviews[0].rating} readOnly cancel={false}/>
+                    {data.reviews && data.reviews[0] && (
+                        <Rating value={data.reviews[0].rating} readOnly cancel={false} />
+                    )}
                 </div>
                 <div className="work-details-row">
                     <h2>Posudok</h2><i className="pi pi-angle-down"></i>
                     <Divider layout="vertical"/>
                 </div>
                 <ScrollPanel className="scrollP">
-                    <InputTextarea className="inpTextArea font-bold" disabled autoResize value={data.reviews[0].comment}/>
+                    {data.reviews && data.reviews[0] && (
+                        <InputTextarea className="inpTextArea font-bold" disabled autoResize value={data.reviews[0].comment}/>
+                    )}
                 </ScrollPanel>
             </div>
             <div className="rating-table-container">
