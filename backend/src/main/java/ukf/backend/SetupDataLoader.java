@@ -120,9 +120,9 @@ public class SetupDataLoader implements
         School school = schoolRepository.findByName("ukf").orElseThrow();
         Faculty faculty = facultyRepository.findByNameAndSchool("inf", school).orElseThrow();
         Form form = createFormIfNotFound("Formular");
-        Conference conference = createConferenceIfNotFound("Konferencia Test", "Otvorena", LocalDateTime.now(),
-                LocalDateTime.now().plusDays(30), LocalDateTime.now().plusDays(40), LocalDateTime.now().plusDays(50),
-                form);
+        Conference conference = createConferenceIfNotFound("Konferencia Test", "Otvorena", LocalDateTime.now().plusDays(5),
+                LocalDateTime.now().plusDays(10), LocalDateTime.now().plusDays(11), LocalDateTime.now().plusDays(29),
+                LocalDateTime.now(), LocalDateTime.now().plusDays(30), form);
         ArticleCategory articleCategory = createCategoryIfNotFound("Kategoria 1");
         ArticleState stateSubmitted = articleStateRepository.findByName("Odoslané").orElseThrow();
         User user = createUserIfNotFound("Test", "Test", "test", "test@student.ukf.sk", adminRole, school, faculty);
@@ -235,7 +235,7 @@ public class SetupDataLoader implements
 
     @Transactional
     Conference createConferenceIfNotFound(String name, String state, LocalDateTime startUpload,
-            LocalDateTime closeUpload, LocalDateTime startReview, LocalDateTime closeReview, Form form) {
+            LocalDateTime closeUpload, LocalDateTime startReview, LocalDateTime closeReview, LocalDateTime conferenceStart, LocalDateTime conferenceEnd, Form form) {
         Optional<Conference> conferenceOptional = conferenceRepository.findByName(name);
         if (conferenceOptional.isEmpty()) {
             Conference conference = new Conference();
@@ -245,6 +245,8 @@ public class SetupDataLoader implements
             conference.setCloseUpload(closeUpload);
             conference.setStartReview(startReview);
             conference.setCloseReview(closeReview);
+            conference.setConferenceStart(conferenceStart);
+            conference.setConferenceEnd(conferenceEnd);
             conference.setForm(form);
             conferenceRepository.save(conference);
             return conference;

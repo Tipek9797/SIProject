@@ -45,6 +45,8 @@ public class ConferenceController {
             conferenceDTO.setCloseReview(conference.getCloseReview());
             conferenceDTO.setFormId(conference.getForm().getId());
             conferenceDTO.setDescription(conference.getDescription());
+            conferenceDTO.setConferenceStart(conference.getConferenceStart());
+            conferenceDTO.setConferenceEnd(conference.getConferenceEnd());
             return conferenceDTO;
         }).collect(Collectors.toList());
     }
@@ -59,6 +61,8 @@ public class ConferenceController {
         conference.setStartReview(conferenceDTO.getStartReview());
         conference.setCloseReview(conferenceDTO.getCloseReview());
         conference.setDescription(conferenceDTO.getDescription());
+        conference.setConferenceStart(conferenceDTO.getConferenceStart());
+        conference.setConferenceEnd(conferenceDTO.getConferenceEnd());
         if (conferenceDTO.getFormId() != null) {
             Form form = formRepository.findById(conferenceDTO.getFormId()).orElseThrow(() -> new IllegalArgumentException("Invalid form ID"));
             conference.setForm(form);
@@ -82,6 +86,8 @@ public class ConferenceController {
             conference.setStartReview(conferenceDTO.getStartReview());
             conference.setCloseReview(conferenceDTO.getCloseReview());
             conference.setDescription(conferenceDTO.getDescription());
+            conference.setConferenceStart(conferenceDTO.getConferenceStart());
+            conference.setConferenceEnd(conferenceDTO.getConferenceEnd());
             if (conferenceDTO.getFormId() != null) {
                 Form form = formRepository.findById(conferenceDTO.getFormId()).orElseThrow(() -> new IllegalArgumentException("Invalid form ID"));
                 conference.setForm(form);
