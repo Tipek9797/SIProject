@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.zip.ZipOutputStream;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/files")
@@ -197,5 +199,16 @@ public class FileController {
         fileRepository.deleteAll(files.get());
 
         return ResponseEntity.ok("Files deleted successfully.");
+    }
+
+    @GetMapping("/download/zip")
+    public ResponseEntity<Resource> downloadAllMostRecentFilesAsZip() throws IOException {
+        List<Article> articles = articleRepository.findAll();
+        byte[] zipData = fileService.createZipWithMostRecentFiles(articles);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"most_recent_files.zip\"")
+                .body(new ByteArrayResource(zipData));
     }
 }
