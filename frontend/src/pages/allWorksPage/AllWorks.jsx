@@ -4,6 +4,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
 import { FilterMatchMode } from 'primereact/api';
+import { Button } from 'primereact/button';
 import './AllWorks.css';
 
 export default function AllWorks() {
@@ -228,8 +229,23 @@ export default function AllWorks() {
         );
     };
 
+    const downloadAllMostRecentFilesAsZip = () => {
+        axios.get('http://localhost:8080/api/files/download/zip', { responseType: 'blob' })
+            .then(response => {
+                const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/zip' }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'most_recent_files.zip');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            })
+            .catch(error => console.error('Error downloading ZIP file:', error));
+    };
+
     return (
         <div className="all-works-page">
+            <Button label="Download All Most Recent Files" icon="pi pi-download" onClick={downloadAllMostRecentFilesAsZip} />
             <DataTable
                 value={articles}
                 paginator

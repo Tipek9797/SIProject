@@ -26,6 +26,9 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.zip.ZipOutputStream;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/files")
@@ -141,6 +144,29 @@ public class FileController {
                 .body(new ByteArrayResource(data));
     }
 
+    @GetMapping("/history/{articleId}")
+    public ResponseEntity<List<FileDTO>> getFileHistory(@PathVariable Long articleId) {
+        Optional<Article> article = articleRepository.findById(articleId);
+        if (article.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        List<File> files = fileRepository.findByArticle(article.get());
+        List<FileDTO> fileDTOs = files.stream()
+                .map(file -> new FileDTO(
+                        file.getId(),
+                        file.getFileNameDocx(),
+                        file.getFileTypeDocx(),
+                        file.getFileNamePdf(),
+                        file.getFileTypePdf(),
+                        file.getUser().getId(),
+                        file.getUploadDate()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(fileDTOs);
+    }
+
     @GetMapping
     public List<FileDTO> getAllFiles() {
         return fileService.getAllFiles();
@@ -173,5 +199,16 @@ public class FileController {
         fileRepository.deleteAll(files.get());
 
         return ResponseEntity.ok("Files deleted successfully.");
+    }
+
+    @GetMapping("/download/zip")
+    public ResponseEntity<Resource> downloadAllMostRecentFilesAsZip() throws IOException {
+        List<Article> articles = articleRepository.findAll();
+        byte[] zipData = fileService.createZipWithMostRecentFiles(articles);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"most_recent_files.zip\"")
+                .body(new ByteArrayResource(zipData));
     }
 }

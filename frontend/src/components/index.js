@@ -18,3 +18,4 @@ export { Button } from 'primereact/button';
 export { Dialog } from 'primereact/dialog';
 export { Toast } from 'primereact/toast';
 export { Tag } from 'primereact/tag';
+export { Tree } from 'primereact/tree';

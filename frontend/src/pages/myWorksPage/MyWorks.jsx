@@ -6,7 +6,8 @@ import {
     Button,
     Rating,
     Toast,
-    Tag
+    Tag,
+    Tree
 } from "../../components/index";
 import WorkUploadDialog from "../../components/work-dialog/WorkUploadDialog";
 import WorkInfoDialog from "../../components/work-dialog/WorkInfoDialog";
@@ -19,6 +20,7 @@ export default function MyWorks() {
     const [Articles, setArticles] = useState([]);
     const [conferences, setConferences] = useState([]);
     const [Category, setCategory] = useState([]);
+    const [fileHistories, setFileHistories] = useState({});
 
     const getUserFromLocalStorage = () => {
         try {
@@ -75,8 +77,23 @@ export default function MyWorks() {
                 setConferences(loadedConferences); // Nastaviť konferencie
                 setArticles(filteredArticles); // Nastaviť články
                 console.log("Filtered Articles with Conference Names:", filteredArticles);
+
+                const fileHistories = {};
+                for (const article of loadedArticles) {
+                    const fileHistoryResponse = await axios.get(`http://localhost:8080/api/files/history/${article.id}`);
+                    fileHistories[article.id] = fileHistoryResponse.data.map(file => ({
+                        key: file.id,
+                        label: `${file.fileNameDocx} / ${file.fileNamePdf} - ${new Date(file.uploadDate).toLocaleString()}`,
+                        data: file,
+                        children: [
+                            { key: `${file.id}-docx`, label: `DOCX: ${file.fileNameDocx}`, icon: "pi pi-file", data: file },
+                            { key: `${file.id}-pdf`, label: `PDF: ${file.fileNamePdf}`, icon: "pi pi-file", data: file }
+                        ]
+                    }));
+                }
+                setFileHistories(fileHistories);
             } catch (error) {
-                console.error("Erro r during fetchData:", error);
+                console.error("Error during fetchData:", error);
             }
         };
 
@@ -84,6 +101,30 @@ export default function MyWorks() {
         fetchCategory();
     }, []);
 
+    const downloadFile = (fileId, fileType) => {
+        axios.get(`http://localhost:8080/api/files/download/${fileId}/${fileType}`, { responseType: 'blob' })
+            .then(response => {
+                const contentDisposition = response.headers['content-disposition'];
+                const fileName = contentDisposition ? contentDisposition.split('filename=')[1].replace(/"/g, '') : 'file';
+                const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            })
+            .catch(error => console.error(error));
+    };
+
+    const renderFileNodeTemplate = (node, options) => {
+        return (
+            <div className="file-node">
+                <span >{node.label}</span>
+                <Button icon="pi pi-download" className="p-button-rounded p-button-text p-button-plain" onClick={() => downloadFile(node.data.id, node.key.includes('docx') ? 'docx' : 'pdf')} />
+            </div>
+        );
+    };
 
     // Dialogs ---------------------------------------------------------------------------------------------------------
     const [workDetailsVisible, setWorkDetailsVisible] = useState(false);
@@ -437,11 +478,15 @@ export default function MyWorks() {
                                 <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
                                         onClick={() => onUpdateClick(article)} />
                             )}
+                    {fileHistories[article.id] && (
+                        <div className="file-history">
+                            <h3>História súborov</h3>
+                            <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate} />
                         </div>
-                    </div>
+                    )}
                 </div>
-            );
-        }
+            </div>
+        );
     };
 
     const gridRating = (article) => {
@@ -482,6 +527,12 @@ export default function MyWorks() {
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
                                     onClick={() => onOpenClick(article)} />
                         </div>
+                        {fileHistories[article.id] && (
+                        <div className="file-history">
+                            <h3>História súborov</h3>
+                            <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate} />
+                        </div>
+                    )}
                     </div>
                 </div>
             );
@@ -526,6 +577,12 @@ export default function MyWorks() {
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
                                     onClick={() => onOpenClick(article)} />
                         </div>
+                        {fileHistories[article.id] && (
+                        <div className="file-history">
+                            <h3>História súborov</h3>
+                            <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate} />
+                        </div>
+                    )}
                     </div>
                 </div>
             );

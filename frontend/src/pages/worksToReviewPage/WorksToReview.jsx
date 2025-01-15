@@ -6,7 +6,8 @@ import {
     TabView,
     Button,
     Rating,
-    Tag
+    Tag,
+    Tree
 } from "../../components/index";
 import ReviewOpenDialog from '../../components/Review-dialog/ReviewOpenDialog';
 import ReviewRateDialog from '../../components/Review-dialog/ReviewRateDialog';
@@ -14,11 +15,11 @@ import ReviewUpdateDialog from '../../components/Review-dialog/ReviewUpdateDialo
 import "./worksToReview.css";
 import axios from "axios";
 
-
 export default function WorksToReview() {
     // Databaza --------------------------------------------------------------------------------------------------------
     const [Reviews, setReviews] = useState([]);
     const [Conferences, setConferences] = useState([]);
+    const [fileHistories, setFileHistories] = useState({});
 
     const getUserFromLocalStorage = () => {
         try {
@@ -36,13 +37,32 @@ export default function WorksToReview() {
             .then(response => {
                 const filteredReviews = response.data.filter(article => article.reviewerId === user.id);
                 setReviews(filteredReviews);
+
+                const fileHistories = {};
+                filteredReviews.forEach(async (review) => {
+                    const fileHistoryResponse = await axios.get(`http://localhost:8080/api/files/history/${review.id}`);
+                    fileHistories[review.id] = [{
+                        key: 'history',
+                        label: 'História',
+                        children: fileHistoryResponse.data.map(file => ({
+                            key: file.id,
+                            label: `${file.fileNameDocx} / ${file.fileNamePdf} - ${new Date(file.uploadDate).toLocaleString()}`,
+                            data: file,
+                            children: [
+                                { key: `${file.id}-docx`, label: `DOCX: ${file.fileNameDocx}`, icon: "pi pi-file", data: file },
+                                { key: `${file.id}-pdf`, label: `PDF: ${file.fileNamePdf}`, icon: "pi pi-file", data: file }
+                            ]
+                        }))
+                    }];
+                });
+                setFileHistories(fileHistories);
             })
             .catch(error => console.error(error));
     };
 
     const fetchConferences = () => {
         axios.get('http://localhost:8080/api/conferences')
-            .then(response => { setConferences(response.data)})
+            .then(response => { setConferences(response.data) })
             .catch(error => console.error(error));
     };
 
@@ -84,6 +104,47 @@ export default function WorksToReview() {
         return now >= new Date(conference.startReview) && now <= new Date(conference.closeReview);
     };
 
+    const downloadFile = (fileId, fileType) => {
+        axios.get(`http://localhost:8080/api/files/download/${fileId}/${fileType}`, { responseType: 'blob' })
+            .then(response => {
+                const contentDisposition = response.headers['content-disposition'];
+                const fileName = contentDisposition ? contentDisposition.split('filename=')[1].replace(/"/g, '') : 'file';
+                const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            })
+            .catch(error => console.error(error));
+    };
+
+    const downloadMostRecentFile = (articleId, fileType) => {
+        axios.get(`http://localhost:8080/api/files/download/recent/${articleId}/${fileType}`, { responseType: 'blob' })
+            .then(response => {
+                const contentDisposition = response.headers['content-disposition'];
+                const fileName = contentDisposition ? contentDisposition.split('filename=')[1].replace(/"/g, '') : 'file';
+                const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            })
+            .catch(error => console.error(error));
+    };
+
+    const renderFileNodeTemplate = (node, options) => {
+        return (
+            <div className="file-node">
+                <span >{node.label}</span>
+                <Button icon="pi pi-download" className="p-button-rounded p-button-text p-button-plain" onClick={() => downloadFile(node.data.id, node.key.includes('docx') ? 'docx' : 'pdf')} />
+            </div>
+        );
+    };
+
     // Dialog ----------------------------------------------------------------------------------------------------------
     const [archiveVisible, setArchiveVisible] = useState(false);
     const [ratingVisible, setRatingVisible] = useState(false);
@@ -94,7 +155,6 @@ export default function WorksToReview() {
     const [selectedConference, setSelectedConference] = useState(null);
     const [reviewID, setReviewID] = useState(null);
     const [proConID, setProConID] = useState(null);
-
 
     const [ratings, setRatings] = useState([]);
     const [editVisible, setEditVisible] = useState(false);
@@ -153,9 +213,9 @@ export default function WorksToReview() {
     const ratingFooterContent = (
         <div className="flex justify-content-center">
             <Button label="Ohodnotiť"
-                    icon="pi pi-star-fill"
-                    className="p-button-rounded custom-width"
-                    onClick={() => onRatingSendClick()}
+                icon="pi pi-star-fill"
+                className="p-button-rounded custom-width"
+                onClick={() => onRatingSendClick()}
             />
         </div>
     );
@@ -164,10 +224,10 @@ export default function WorksToReview() {
     const editFooterContent = (
         <div className="flex justify-content-center">
             <Button label="Upraviť"
-                    icon="pi pi-user-edit"
-                    severity="warning"
-                    className="p-button-rounded custom-width"
-                    onClick={() => onUpdateSendClick()}/>
+                icon="pi pi-user-edit"
+                severity="warning"
+                className="p-button-rounded custom-width"
+                onClick={() => onUpdateSendClick()} />
         </div>
     );
 
@@ -199,7 +259,7 @@ export default function WorksToReview() {
             articleId: selectedArticle2.id,
         };
         axios.post('http://localhost:8080/api/reviews', newReview)
-            .then(response => {fetchArticles()})
+            .then(response => { fetchArticles() })
             .catch(error => console.error(error));
 
         plusList.forEach((newProText) => {
@@ -209,7 +269,7 @@ export default function WorksToReview() {
                 categoryId: 1,
             };
             axios.post('http://localhost:8080/api/pros-and-cons', newPro)
-                .then(response => {fetchArticles()})
+                .then(response => { fetchArticles() })
                 .catch(error => console.error(error));
         });
 
@@ -220,7 +280,7 @@ export default function WorksToReview() {
                 categoryId: 2,
             };
             axios.post('http://localhost:8080/api/pros-and-cons', newCon)
-                .then(response => {fetchArticles()})
+                .then(response => { fetchArticles() })
                 .catch(error => console.error(error));
         });
     };
@@ -250,8 +310,8 @@ export default function WorksToReview() {
         console.log("Logged-in user:", reviewID);
         console.log("Pro-Con:", proConID);
         axios.delete(`http://localhost:8080/api/reviews/${reviewID}`)
-            .then(response => {fetchArticles()})
-            .catch(error => {console.error(error);});
+            .then(response => { fetchArticles() })
+            .catch(error => { console.error(error); });
         const newReview = {
             rating: starValue,
             comment: inputTextValue,
@@ -259,13 +319,13 @@ export default function WorksToReview() {
             articleId: selectedArticle3.id,
         };
         axios.post('http://localhost:8080/api/reviews', newReview)
-            .then(response => {fetchArticles()})
+            .then(response => { fetchArticles() })
             .catch(error => console.error(error));
 
         proConID.forEach(ProCon => {
             axios.delete(`http://localhost:8080/api/pros-and-cons/${ProCon.id}`)
-                .then(response => {fetchArticles()})
-                .catch(error => {console.error(error);});
+                .then(response => { fetchArticles() })
+                .catch(error => { console.error(error); });
         });
         plusList.forEach((newProText) => {
             const newPro = {
@@ -274,7 +334,7 @@ export default function WorksToReview() {
                 categoryId: 1,
             };
             axios.post('http://localhost:8080/api/pros-and-cons', newPro)
-                .then(response => {fetchArticles()})
+                .then(response => { fetchArticles() })
                 .catch(error => console.error(error));
         });
         minusList.forEach((newConText) => {
@@ -284,7 +344,7 @@ export default function WorksToReview() {
                 categoryId: 2,
             };
             axios.post('http://localhost:8080/api/pros-and-cons', newCon)
-                .then(response => {fetchArticles()})
+                .then(response => { fetchArticles() })
                 .catch(error => console.error(error));
         });
     };
@@ -324,12 +384,12 @@ export default function WorksToReview() {
     };
 
     const getState = (state) => {
-        if (!state.reviews || state.reviews.length === 0){
+        if (!state.reviews || state.reviews.length === 0) {
             return 'NEOHODNOTENÉ';
-        }else{
-            if (state.state.name === "Ohodnotené"){
+        } else {
+            if (state.state.name === "Ohodnotené") {
                 return 'ODOSLANÉ';
-            }else {
+            } else {
                 return 'NEODOSLANÉ';
             }
         }
@@ -359,10 +419,21 @@ export default function WorksToReview() {
                         </div>
                         <div className="align-items-center justify-content-between">
                             {isReviewPeriodActive(conferenceDetails) && (
-                                <Button label="Ohodnotiť" icon="pi pi-star-fill" className="p-button-rounded custom-width"
-                                    onClick={() => onRatingClick(review, conferenceDetails)}/>
+                                <div>
+                                    <Button label="Ohodnotiť" icon="pi pi-star-fill" className="p-button-rounded custom-width"
+                                        onClick={() => onRatingClick(review, conferenceDetails)} />
+
+                                    <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'docx')} />
+                                    <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
+                                </div>
                             )}
                         </div>
+                        {fileHistories[review.id] && (
+                            <div className="file-history">
+                                <h3>História súborov</h3>
+                                <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate} />
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -396,16 +467,23 @@ export default function WorksToReview() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary"
-                                    className="p-button-rounded custom-width"
-                                    onClick={() => onOpenClick(review, conferenceDetails)}/>
+                                className="p-button-rounded custom-width"
+                                onClick={() => onOpenClick(review, conferenceDetails)} />
                             <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                                    onClick={() => onUpdateClick(review, conferenceDetails)}/>
+                                onClick={() => onUpdateClick(review, conferenceDetails)} />
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Odoslať" icon="pi pi-send" className="p-button-rounded custom-width"
-                                    onClick={() => onSendClick(review)}/>
-                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"/>
+                                onClick={() => onSendClick(review)} />
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'docx')} />
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
                         </div>
+                        {fileHistories[review.id] && (
+                            <div className="file-history">
+                                <h3>História súborov</h3>
+                                <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate} />
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -434,9 +512,16 @@ export default function WorksToReview() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                    onClick={() => onOpenClick(review, conferenceDetails)}/>
-                            <Button label="Sťiahnuť" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"/>
+                                onClick={() => onOpenClick(review, conferenceDetails)} />
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'docx')} />
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
                         </div>
+                        {fileHistories[review.id] && (
+                            <div className="file-history">
+                                <h3>História súborov</h3>
+                                <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate} />
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -471,13 +556,13 @@ export default function WorksToReview() {
             <Fieldset legend="Recenzent" className="recenzent" style={Reviews.length === 0 ? { height: '75vh', } : {}}>
                 <TabView scrollable>
                     <TabPanel header="Na Ohodnotenie" rightIcon="pi pi-calendar-clock mr-2">
-                        <DataView value={Reviews} listTemplate={ReviewTemplate}/>
+                        <DataView value={Reviews} listTemplate={ReviewTemplate} />
                     </TabPanel>
                     <TabPanel header="Ohodnotené/Upraviť" rightIcon="pi pi-pencil ml-2">
-                        <DataView value={Reviews} listTemplate={UpdateTemplate}/>
+                        <DataView value={Reviews} listTemplate={UpdateTemplate} />
                     </TabPanel>
                     <TabPanel header="Archív" rightIcon="pi pi-building-columns ml-2">
-                        <DataView value={Reviews} listTemplate={ArchiveTemplate}/>
+                        <DataView value={Reviews} listTemplate={ArchiveTemplate} />
                     </TabPanel>
                 </TabView>
             </Fieldset>
