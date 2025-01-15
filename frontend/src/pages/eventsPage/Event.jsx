@@ -95,6 +95,11 @@ const Event = () => {
         navigate('/my-works');
     };
 
+    const isConferenceActive = (conference) => {
+        const now = new Date();
+        return now >= new Date(conference.conferenceStart) && now <= new Date(conference.conferenceEnd);
+    };
+
     return (
         <div className="event-container">
             {error && <div className="error-message">{error}</div>}
@@ -105,41 +110,40 @@ const Event = () => {
                     key={conference.id}
                     onClick={() => setSelectedConference(conference)}
                 >
-                    <Card title={conference.name} subTitle={`Stav: ${conference.state}`}>
+                    <Card title={conference.name} subTitle={`Stav: ${isConferenceActive(conference) ? 'Otvorená' : 'Zatvorená'}`}>
                         <div className="event-dates">
                             <p>
                                 <strong>Začiatok konferencie:</strong>{' '}
-                                {new Date(conference.startUpload).toLocaleDateString()}
+                                {new Date(conference.conferenceStart).toLocaleDateString()}
                             </p>
                             <p>
                                 <strong>Koniec konferencie:</strong>{' '}
-                                {new Date(conference.closeUpload).toLocaleDateString()}
+                                {new Date(conference.conferenceEnd).toLocaleDateString()}
                             </p>
                         </div>
                         <div className="event-actions">
-                            {user ? (
-                                conference.userJoined ? (
-                                    <Button
-                                        label="Prejsť na konferenciu"
-                                        icon="pi pi-sign-in"
-                                        className="p-button-secondary"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleGoToConference();
-                                        }}
-                                    />
-                                ) : (
-                                    <Button
-                                        label="Pridať sa"
-                                        icon="pi pi-user-plus"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleJoinConference(conference);
-                                        }}
-                                        className="p-button-success"
-                                    />
-                                )
-                            ) : null}
+                            {user && isConferenceActive(conference) && !conference.userJoined && (
+                                <Button
+                                    label="Pridať sa"
+                                    icon="pi pi-user-plus"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleJoinConference(conference);
+                                    }}
+                                    className="p-button-success"
+                                />
+                            )}
+                            {user && conference.userJoined && (
+                                <Button
+                                    label="Prejsť na konferenciu"
+                                    icon="pi pi-sign-in"
+                                    className="p-button-secondary"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleGoToConference();
+                                    }}
+                                />
+                            )}
                             <Button
                                 label="Zobraziť detaily"
                                 icon="pi pi-info-circle"

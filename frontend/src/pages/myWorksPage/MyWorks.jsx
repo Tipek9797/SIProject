@@ -311,10 +311,16 @@ export default function MyWorks() {
             .catch(error => console.error(error));
     };
 
+    const isUploadPeriodActive = (conference) => {
+        const now = new Date();
+        return now >= new Date(conference.startUpload) && now <= new Date(conference.closeUpload);
+    };
+
     const gridArticles = (article) => {
         const date1 = new Date(article.date);
         const formattedDate = `${String(date1.getDate()).padStart(2, '0')}/${String(date1.getMonth() + 1).padStart(2, '0')}/${date1.getFullYear()} - ${String(date1.getHours()).padStart(2, '0')}:${String(date1.getMinutes()).padStart(2, '0')}`;
         const articleConferenceName = article.conferenceName || "Neznáma konferencia";
+        const relatedConference = conferences.find(conf => conf.name === articleConferenceName);
 
         if (article.state.name === "Odoslané") {
             return (
@@ -339,8 +345,10 @@ export default function MyWorks() {
                                 onClick={() => downloadMostRecentFile(article.id, 'docx')} />
                             <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width"
                                 onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
-                            <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
+                            {relatedConference && isUploadPeriodActive(relatedConference) && (
+                                <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
                                     onClick={() => onUpdateClick(article)} />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -460,8 +468,10 @@ export default function MyWorks() {
                 <TabView scrollable>
                     <TabPanel header="Aktuálne práce" rightIcon="pi pi-calendar-clock">
                         <DataView value={Articles} listTemplate={ArticleTemplate} />
-                        <Button className="workuploadbtn large-icon up-down" label="Upload" icon="pi pi-upload"
+                        {conferences.some(isUploadPeriodActive) && (
+                            <Button className="workuploadbtn large-icon up-down" label="Upload" icon="pi pi-upload"
                                 onClick={() => onUploadClick()} />
+                        )}
                     </TabPanel>
                     <TabPanel header="Hodnotenie" rightIcon="pi pi-check">
                         <DataView value={Articles} listTemplate={RatingTemplate} />

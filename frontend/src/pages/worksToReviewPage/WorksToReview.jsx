@@ -66,8 +66,8 @@ export default function WorksToReview() {
             // Return relevant conference details
             return {
                 name: matchingConference.name,
-                startReview: formatDate(matchingConference.startReview),
-                closeReview: formatDate(matchingConference.closeReview)
+                startReview: matchingConference.startReview,
+                closeReview: matchingConference.closeReview
             };
         } else {
             // Return default values if no match is found
@@ -77,6 +77,11 @@ export default function WorksToReview() {
                 closeReview: null
             };
         }
+    };
+
+    const isReviewPeriodActive = (conference) => {
+        const now = new Date();
+        return now >= new Date(conference.startReview) && now <= new Date(conference.closeReview);
     };
 
     // Dialog ----------------------------------------------------------------------------------------------------------
@@ -332,7 +337,7 @@ export default function WorksToReview() {
 
     const gridItemToReview = (review) => {
         const conferenceDetails = filterReviewConference(review, Conferences);
-        if (!review.reviews || review.reviews.length === 0){
+        if (!review.reviews || review.reviews.length === 0) {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={review.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -349,12 +354,14 @@ export default function WorksToReview() {
                             <div className="font-bold">Škola: <i className="font-semibold">{review.users[0].school.name}</i></div>
                             <div className="font-bold">Fakulta: <i className="font-semibold">{review.users[0].faculty.name}</i></div>
                             <div className="font-bold ">Termín: <i className="text-2xl">
-                                {conferenceDetails.startReview ? `${conferenceDetails.startReview} - ${conferenceDetails.closeReview}` : "No review period"}
+                                {conferenceDetails.startReview ? `${formatDate(conferenceDetails.startReview)} - ${formatDate(conferenceDetails.closeReview)}` : "No review period"}
                             </i></div>
                         </div>
                         <div className="align-items-center justify-content-between">
-                            <Button label="Ohodnotiť" icon="pi pi-star-fill" className="p-button-rounded custom-width"
-                                onClick={() => onRatingClick(review, conferenceDetails)}/>
+                            {isReviewPeriodActive(conferenceDetails) && (
+                                <Button label="Ohodnotiť" icon="pi pi-star-fill" className="p-button-rounded custom-width"
+                                    onClick={() => onRatingClick(review, conferenceDetails)}/>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -364,7 +371,7 @@ export default function WorksToReview() {
 
     const gridItemUpdate = (review) => {
         const conferenceDetails = filterReviewConference(review, Conferences);
-        if (review.state.name !== 'Ohodnotené' && review.reviews.length !== 0){
+        if (review.state.name !== 'Ohodnotené' && review.reviews.length !== 0 && isReviewPeriodActive(conferenceDetails)) {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={review.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -407,7 +414,7 @@ export default function WorksToReview() {
 
     const gridItemArchive = (review) => {
         const conferenceDetails = filterReviewConference(review, Conferences);
-        if (review.state.name === 'Ohodnotené'){
+        if (review.state.name === 'Ohodnotené' && isReviewPeriodActive(conferenceDetails)) {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={review.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">

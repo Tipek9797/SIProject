@@ -1,4 +1,3 @@
-
 package ukf.backend.dtos;
 
 import java.time.LocalDateTime;
@@ -21,4 +20,6 @@ public class ConferenceDTO {
     private LocalDateTime startReview;
     private LocalDateTime closeReview;
     private Long formId;
+    private LocalDateTime conferenceStart;
+    private LocalDateTime conferenceEnd;
 }

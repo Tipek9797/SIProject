@@ -23,6 +23,8 @@ public class Conference {
     private LocalDateTime closeUpload;
     private LocalDateTime startReview;
     private LocalDateTime closeReview;
+    private LocalDateTime conferenceStart;
+    private LocalDateTime conferenceEnd;
 
     @ManyToOne
     @JoinColumn(name = "form_id", nullable = false)
