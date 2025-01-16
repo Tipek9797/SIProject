@@ -1,6 +1,5 @@
 package ukf.backend.Security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,20 +20,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import ukf.backend.Model.User.UserService;
 
-import lombok.AllArgsConstructor;
-
 import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    /*@Autowired
-    private final UserService appUserService;
-
-    //@Autowired
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;*/
 
     private final UserService appUserService;
     private final JwtService jwtService;
@@ -86,7 +77,6 @@ public class SecurityConfig {
                         .requestMatchers("/my-works").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/works-to-review").hasAnyRole("REVIEWER", "ADMIN")
                         .requestMatchers("/manage-users", "/all-works","/settings","/settings/**").hasRole("ADMIN")
-                        //.requestMatchers("/api/files/upload/**").hasAuthority("ROLE_USER")
                         //.requestMatchers("/api/schools").hasRole("USER")
                         .anyRequest().authenticated()
 

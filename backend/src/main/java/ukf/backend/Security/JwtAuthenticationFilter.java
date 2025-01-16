@@ -5,6 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,8 +17,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -52,9 +57,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 var userDetails = this.userDetailsService.loadUserByUsername(email); // Now using email to load user
 
                 String roles = jwtService.extractClaim(jwt, claims -> claims.get("roles", String.class));
-                var authorities = Arrays.asList(roles.split(",")).stream()
-                        .map(role -> new SimpleGrantedAuthority(role))
-                        .collect(Collectors.toList());
+                String regex = "ROLE_\\w+"; // Matches words starting with ROLE_
+
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(roles);
+
+                Collection<GrantedAuthority> authorities = new ArrayList<>();
+                while (matcher.find()) {
+                    System.out.println(matcher.group());
+                    authorities.add(new SimpleGrantedAuthority(matcher.group()));
+                }
 
                 if (jwtService.validateToken(jwt, userDetails.getUsername())) {
                     UsernamePasswordAuthenticationToken authenticationToken =
