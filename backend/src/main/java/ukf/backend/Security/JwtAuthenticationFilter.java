@@ -64,7 +64,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 Collection<GrantedAuthority> authorities = new ArrayList<>();
                 while (matcher.find()) {
-                    System.out.println(matcher.group());
                     authorities.add(new SimpleGrantedAuthority(matcher.group()));
                 }
 
