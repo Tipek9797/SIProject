@@ -47,7 +47,6 @@ export default function ManageUsers() {
         }
     };
 
-
     const fetchSchools = async () => {
         try {
             const response = await axios.get("http://localhost:8080/api/schools");
@@ -88,7 +87,6 @@ export default function ManageUsers() {
             return "N/A";
         }
     };
-
 
     const patchUser = async (id, updatedFields) => {
         try {
@@ -148,6 +146,13 @@ export default function ManageUsers() {
 
     const clearFilters = () => {
         initFilters();
+    };
+
+    const onGlobalFilterChange = (e) => {
+        const value = e.target.value;
+        const updatedFilters = { ...filters, global: { value, matchMode: FilterMatchMode.CONTAINS } };
+        setGlobalFilterValue(value);
+        setFilters(updatedFilters);
     };
 
     const roleEditor = (options) => (
@@ -212,7 +217,7 @@ export default function ManageUsers() {
                 <InputText
                     className="global-search"
                     value={globalFilterValue}
-                    onChange={(e) => setGlobalFilterValue(e.target.value)}
+                    onChange={onGlobalFilterChange}
                     placeholder="Hľadať"
                 />
             </div>
