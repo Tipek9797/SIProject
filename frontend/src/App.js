@@ -15,7 +15,6 @@ import './App.css';
 import Settings from './pages/settingsPage/Settings';
 import ArticleCategoryPage from './pages/settingsPage/ArticleCategoryPage';
 import SchoolPage from './pages/settingsPage/SchoolPage';
-import FormPage from './pages/settingsPage/FormPage';
 import FacultyPage from './pages/settingsPage/FacultyPage';
 import ConferencePage from './pages/settingsPage/ConferencePage';
 import ArticleStatePage from './pages/settingsPage/ArticleStatePage';
@@ -42,7 +41,6 @@ function App() {
                         <Route path="/settings" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<Settings />} />} />
                         <Route path="/settings/article-category" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ArticleCategoryPage />} />} />
                         <Route path="/settings/school" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<SchoolPage />} />} />
-                        <Route path="/settings/form" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<FormPage />} />} />
                         <Route path="/settings/faculty" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<FacultyPage />} />} />
                         <Route path="/settings/conference" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ConferencePage />} />} />
                         <Route path="/settings/article-state" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ArticleStatePage />} />} />
