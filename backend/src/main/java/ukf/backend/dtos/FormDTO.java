@@ -1,20 +1,10 @@
-package ukf.backend.Model.Form;
+package ukf.backend.dtos;
 
-import jakarta.persistence.*;
-import lombok.*;
-import ukf.backend.Model.Conference.Conference;
-
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 @Data
-@Entity
-public class Form {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+public class FormDTO {
     private Long id;
-
     private String review;
     private Integer aktualnostNarocnostPrace;
     private String orientovanieStudentaProblematike;
@@ -32,12 +22,8 @@ public class Form {
     private Boolean chybajuKlucoveSlova;
     private Boolean chybajuUvodVysledkyDiskusia;
     private Boolean nieSuUvedeneZdroje;
-    private Boolean obrazkomChybaPopis;
     private Boolean chybaRef;
     private Boolean chybaRefObr;
+    private Boolean obrazkomChybaPopis;
     private String prinos;
-
-    @OneToMany(mappedBy = "form", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<Conference> conferences;
 }
