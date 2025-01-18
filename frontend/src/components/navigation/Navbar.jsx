@@ -88,6 +88,7 @@ export default function Navbar() {
     }
 
     const handleLogout = () => {
+        setShowMenu(false);
         localStorage.removeItem('user');
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('tokenExpiration');
@@ -101,6 +102,7 @@ export default function Navbar() {
     const handleEditProfile = () => {
         const userId = user?.id;
         if (userId) {
+            setShowMenu(false);
             navigate(`/edit-user/${userId}`);
         } else {
             console.error("User ID is not available.");
@@ -127,24 +129,23 @@ export default function Navbar() {
             {token ? (
                 <>
                     <div className="user-dropdown">
-                        <span
-                            className="user-name"
+                        <Button
+                            label={`${user.name} ${user.surname}`}
+                            icon="pi pi-user"
+                            className="user-button"
                             onClick={toggleMenu}
-                        >
-                            {`${user.name} ${user.surname}`}
-                        </span>
+                        />
                         {showMenu && (
                             <div className="dropdown-menu">
-                                <button onClick={handleEditProfile}>Upraviť profil</button>
+                                <button onClick={handleEditProfile} className="dropdown-item">
+                                    Upraviť profil
+                                </button>
+                                <button onClick={handleLogout} className="dropdown-item">
+                                    Odhlásiť sa
+                                </button>
                             </div>
                         )}
                     </div>
-                    <Button
-                        label="Odhlásiť Sa"
-                        icon="pi pi-sign-out"
-                        className="p-button-danger logout-button"
-                        onClick={handleLogout}
-                    />
                 </>
             ) : (
                 <Button
