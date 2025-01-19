@@ -8,6 +8,7 @@ export { DataTable } from "primereact/datatable";
 export { Fieldset } from 'primereact/fieldset';
 export { DataView } from 'primereact/dataview';
 export { Dropdown } from 'primereact/dropdown';
+export { Checkbox } from "primereact/checkbox";
 export { Tooltip } from 'primereact/tooltip';
 export { Divider } from 'primereact/divider';
 export { ListBox } from 'primereact/listbox';

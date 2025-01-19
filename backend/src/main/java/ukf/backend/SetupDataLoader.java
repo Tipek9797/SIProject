@@ -119,7 +119,7 @@ public class SetupDataLoader implements
 
         School school = schoolRepository.findByName("ukf").orElseThrow();
         Faculty faculty = facultyRepository.findByNameAndSchool("inf", school).orElseThrow();
-        Form form = createFormIfNotFound("Formular");
+        Form form = createFormIfNotFound(1L);
         Conference conference = createConferenceIfNotFound("Konferencia Test", "Otvorena", LocalDateTime.now().plusDays(5),
                 LocalDateTime.now().plusDays(10), LocalDateTime.now().plusDays(11), LocalDateTime.now().plusDays(29),
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30), form);
@@ -222,15 +222,36 @@ public class SetupDataLoader implements
     }
 
     @Transactional
-    Form createFormIfNotFound(String review) {
-        Optional<Form> formOptional = formRepository.findByReview(review);
-        if (formOptional.isEmpty()) {
+    Form createFormIfNotFound(Long reviewId) {
+        List<Form> formList = formRepository.findByReviewId(reviewId);
+        if (formList.isEmpty()) {
             Form form = new Form();
-            form.setReview(review);
+            form.setReviewId(reviewId);
+            form.setAktualnostNarocnostPrace("Default value");
+            form.setOrientovanieStudentaProblematike("Default value");
+            form.setVhodnostZvolenychMetod("Default value");
+            form.setRozsahUrovenDosiahnutychVysledkov("Default value");
+            form.setAnalyzaInterpretaciaVysledkov("Default value");
+            form.setPrehladnostLogickaStrukturaPrace("Default value");
+            form.setFormalnaJazykovaStylistickaUrovenPrace("Default value");
+            form.setPracaZodpovedaSablone("Default value");
+            form.setChybaNazovPrace(false);
+            form.setChybaMenoAutora(false);
+            form.setChybaPracovnaEmailovaAdresa(false);
+            form.setChybaAbstrakt(false);
+            form.setAbstraktNesplnaRozsah(false);
+            form.setChybajuKlucoveSlova(false);
+            form.setChybajuUvodVysledkyDiskusia(false);
+            form.setNieSuUvedeneZdroje(false);
+            form.setChybaRef(false);
+            form.setChybaRefObr(false);
+            form.setObrazkomChybaPopis(false);
+            form.setPrinos("Default value");
+            form.setNedostatky("Default value");
             formRepository.save(form);
             return form;
         }
-        return formOptional.get();
+        return formList.get(0);
     }
 
     @Transactional

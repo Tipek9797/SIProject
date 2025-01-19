@@ -3,6 +3,7 @@ import {
     TabPanel, TabView,
     Fieldset,
     DataView,
+    Checkbox,
     Button,
     Rating,
     Toast,
@@ -11,6 +12,7 @@ import {
 } from "../../components/index";
 import WorkUploadDialog from "../../components/work-dialog/WorkUploadDialog";
 import WorkInfoDialog from "../../components/work-dialog/WorkInfoDialog";
+import {ReviewService} from "../worksToReviewPage/service/ReviewService";
 import "./myWorks.css";
 import axios from "axios";
 import { handleUpload } from "../../services/handleUpload";
@@ -21,6 +23,7 @@ export default function MyWorks() {
     const [conferences, setConferences] = useState([]);
     const [Category, setCategory] = useState([]);
     const [fileHistories, setFileHistories] = useState({});
+    const [form, setForm] = useState([]);
 
     const getUserFromLocalStorage = () => {
         try {
@@ -45,12 +48,9 @@ export default function MyWorks() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                console.log("Fetching conferences...");
                 const conferencesResponse = await axios.get('http://localhost:8080/api/conferences');
                 const loadedConferences = conferencesResponse.data;
-                console.log("Conferences fetched:", loadedConferences);
 
-                console.log("Fetching articles...");
                 const articlesResponse = await axios.get('http://localhost:8080/api/articles');
                 const loadedArticles = articlesResponse.data;
 
@@ -59,8 +59,6 @@ export default function MyWorks() {
                     const relatedConference = loadedConferences.find(conf =>
                         conf.articleId.some(a => a.id === article.id)
                     );
-                    console.log("Processing article:", article);
-                    console.log("Related conference:", relatedConference);
 
                     return {
                         ...article,
@@ -76,7 +74,6 @@ export default function MyWorks() {
 
                 setConferences(loadedConferences); // Nastaviť konferencie
                 setArticles(filteredArticles); // Nastaviť články
-                console.log("Filtered Articles with Conference Names:", filteredArticles);
 
                 const fileHistories = {};
                 for (const article of loadedArticles) {
@@ -96,7 +93,7 @@ export default function MyWorks() {
                 console.error("Error during fetchData:", error);
             }
         };
-
+        ReviewService.getProducts().then((data) => setForm(data));
         fetchData();
         fetchCategory();
     }, []);
@@ -117,13 +114,30 @@ export default function MyWorks() {
             .catch(error => console.error(error));
     };
 
-    const renderFileNodeTemplate = (node, options) => {
+    const renderFileNodeTemplate = (node) => {
         return (
             <div className="file-node">
                 <span >{node.label}</span>
                 <Button icon="pi pi-download" className="p-button-rounded p-button-text p-button-plain" onClick={() => downloadFile(node.data.id, node.key.includes('docx') ? 'docx' : 'pdf')} />
             </div>
         );
+    };
+
+    // Dialog - Formular -----------------------------------------------------------------------------------------------
+    const columns = [
+        { field: 'code', header: 'Formulár' },
+        { field: 'name', header: 'Hodnotenie' },
+    ];
+
+    const boldCodeBodyTemplate = (rowData) => {
+        return <span style={{ fontWeight: 'bold' }}>{rowData.code}</span>;
+    };
+
+    const disabledCheckboxTemplate = (rowData) => {
+        if (typeof rowData.name === 'boolean') {
+            return <Checkbox checked={rowData.name} disabled />;
+        }
+        return rowData.name;
     };
 
     // Dialogs ---------------------------------------------------------------------------------------------------------
@@ -155,7 +169,7 @@ export default function MyWorks() {
     };
 
     const ratingTest = (data) => {
-        if (data.state.name === "Prebieha Hodnotenie" || data.state.name === "Ohodnotené") {
+        if (data.state.name === "Prebieha Hodnotenie") {
             return 0
         } else {
             return data.reviews[0].rating
@@ -166,14 +180,20 @@ export default function MyWorks() {
         setSelectedArticle(WorkDetails);
         processRatings(WorkDetails);
         setWorkDetailsVisible(true);
+
+        //Here set name to values from database according to id from ReviewService.jsx !!!!!!!!!!!!!!!!!!!!!!!
+        setForm((prevForm) =>
+            prevForm.map((Form) => ({
+                ...Form,
+                name: "",
+            }))
+        );
     };
 
     const [name, setName] = useState('');                //Upload Dialog
     const [workUpdate, setWorkUpdate] = useState(false);
     const [optConference, setOptConference] = useState([]);
     const [optCategory, setOptCategory] = useState([]);
-    const [optConferenceID, setOptConferenceID] = useState([]);
-    const [optCategoryID, setOptCategoryID] = useState([]);
 
     const Options = () => {
         const filteredConferenceOpt = conferences
@@ -182,23 +202,16 @@ export default function MyWorks() {
 
         const filteredCategoryOpt = Category.map(category => ({ label: category.name, value: category.name }));
 
-        setOptCategory(filteredCategoryOpt);
         setOptConference(filteredConferenceOpt);
+        setOptCategory(filteredCategoryOpt);
     };
 
-    const onUploadClick = () => {
-        Options();
-        setName("");
-        setSelectedConference(null);
-        setSelectedCategory(null);
-        setWorkUploadVisible(true);
-    };
-
+    // Update buttons --------------------------------------------------------------------------------------------------
     const onUpdateClick = (WorkDetails) => {
         Options();
         setName(WorkDetails.name);
-        setSelectedConference(optConference[1]);                    // Zatial nejde
-        setSelectedCategory(null);                          // Zatial nejde
+        setSelectedConference(WorkDetails.conferenceName);
+        setSelectedCategory(WorkDetails.categories[0].name);
         setSelectedArticle(WorkDetails);
         setWorkUploadVisible(true);
         setWorkUpdate(true);
@@ -207,22 +220,20 @@ export default function MyWorks() {
     const onUpdateArticleNameClick = async () => {
         try {
             const matchingConference = conferences.find(conference => conference.name === selectedConference);
-            setOptConferenceID(matchingConference.id);
-
             const matchingCategory = Category.find(category => category.name === selectedCategory);
-            setOptCategoryID(matchingCategory.id);
 
             const articleData = {
                 name: name,
                 date: selectedArticle.date,
                 reviewerId: user.id,
-                conferenceId: optConferenceID,
-                categoryIds: [optCategoryID],
+                conferenceId: matchingConference.id,
+                categoryIds: [matchingCategory.id],
                 userIds: [user.id],
                 stateId: selectedArticle.state.id
             };
 
-            await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData);
+            await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData)
+                .finally(() => window.location.reload());
             setWorkUploadVisible(false);
             setWorkUpdate(false);
         } catch (error) {
@@ -242,26 +253,32 @@ export default function MyWorks() {
         }
     };
 
+    // Submit Button ---------------------------------------------------------------------------------------------------
+    const onUploadClick = () => {
+        Options();
+        setName("");
+        setSelectedConference(null);
+        setSelectedCategory(null);
+        setWorkUploadVisible(true);
+    };
+
     const onDataSubmitClick = async () => {
         try {
             const matchingConference = conferences.find(conference => conference.name === selectedConference);
-            setOptConferenceID(matchingConference.id);
-
             const matchingCategory = Category.find(category => category.name === selectedCategory);
-            setOptCategoryID(matchingCategory.id);
 
             const articleData = {
                 name: name,
                 date: new Date(),
                 reviewerId: user.id,
-                conferenceId: optConferenceID,
-                categoryIds: [optCategoryID],
+                conferenceId: matchingConference.id,
+                categoryIds: [matchingCategory.id],
                 userIds: [user.id],
                 stateId: 1
             };
 
-
-            const response = await axios.post('http://localhost:8080/api/articles', articleData);
+            const response = await axios.post('http://localhost:8080/api/articles', articleData)
+                .finally(() => window.location.reload());
             const articleId = response.data.id;
 
 
@@ -272,11 +289,6 @@ export default function MyWorks() {
             console.error("Error creating article or uploading file:", error);
             toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa vytvoriť článok alebo nahrať súbory.' });
         }
-    };
-
-    const onDataUpdateClick = () => {
-        setWorkUploadVisible(false);
-        setWorkUpdate(false);
     };
 
     const toast = useRef(null);
@@ -383,14 +395,7 @@ export default function MyWorks() {
     const uploadFooterContent = (
         <div className="flex align-items-center justify-content-center">
             <Button label="Odoslať" icon="pi pi-check" className="p-button-rounded custom-width"
-                onClick={onDataSubmitClick} autoFocus />
-        </div>
-    );
-
-    const updateFooterContent = (
-        <div className="flex align-items-center justify-content-center">
-            <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                onClick={() => onDataUpdateClick()} />
+                    onClick={onDataSubmitClick} autoFocus />
         </div>
     );
 
@@ -469,14 +474,14 @@ export default function MyWorks() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
                             <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
                         </div>
                         <div className="botombutton align-items-center justify-content-between">
                             {relatedConference && isUploadPeriodActive(relatedConference) && (
                                 <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                                    onClick={() => onUpdateClick(article)} />
+                                        onClick={() => onUpdateClick(article)} />
                             )}
                         </div>
                         {fileHistories[article.id] && (
@@ -488,7 +493,7 @@ export default function MyWorks() {
                     </div>
                 </div>
             );
-        } 
+        }
     };
 
     const gridRating = (article) => {
@@ -497,7 +502,6 @@ export default function MyWorks() {
         const articleConferenceName = article.conferenceName || "Neznáma konferencia";
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
 
-        //console.log("Data", article);
         if (article.state.name !== "Odoslané" && article.conferenceState === "Otvorena") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
@@ -521,13 +525,13 @@ export default function MyWorks() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
                             <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
                         </div>
                         <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                onClick={() => onOpenClick(article)} />
+                                    onClick={() => onOpenClick(article)} />
                         </div>
                         {fileHistories[article.id] && (
                             <div className="file-history">
@@ -571,13 +575,13 @@ export default function MyWorks() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
                             <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
                         </div>
                         <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                onClick={() => onOpenClick(article)} />
+                                    onClick={() => onOpenClick(article)} />
                         </div>
                         {fileHistories[article.id] && (
                             <div className="file-history">
@@ -631,7 +635,7 @@ export default function MyWorks() {
                         <DataView value={Articles} listTemplate={ArticleTemplate} />
                         {conferences.some(isUploadPeriodActive) && (
                             <Button className="workuploadbtn large-icon up-down" label="Nahrať Prácu" icon="pi pi-upload"
-                                onClick={() => onUploadClick()} />
+                                    onClick={() => onUploadClick()} />
                         )}
                     </TabPanel>
                     <TabPanel header="Hodnotenie" rightIcon="pi pi-check">
@@ -649,6 +653,11 @@ export default function MyWorks() {
                     onHide={() => setWorkDetailsVisible(false)}
                     data={selectedArticle}
                     ratings={ratings}
+                    columns={columns}
+                    boldCodeBodyTemplate={boldCodeBodyTemplate}
+                    disabledCheckboxTemplate={disabledCheckboxTemplate}
+                    form={form}
+                    setForm={setForm}
                 />
             )}
 
@@ -669,7 +678,6 @@ export default function MyWorks() {
                 chooseOptions={chooseOptions}
                 cancelOptions={cancelOptions}
                 footer={uploadFooterContent}
-                uploadFooter={updateFooterContent}
                 selectedConference={selectedConference}
                 setSelectedConference={setSelectedConference}
                 optConference={optConference}

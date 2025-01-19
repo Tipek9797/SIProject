@@ -7,6 +7,7 @@ import ukf.backend.Model.Form.FormRepository;
 import ukf.backend.dtos.FormDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/forms")
@@ -25,10 +26,15 @@ public class FormController {
         return formRepository.findById(id).orElse(null);
     }
 
+    @GetMapping("/review/{reviewId}")
+    public List<Form> getFormsByReviewId(@PathVariable Long reviewId) {
+        return formRepository.findByReviewId(reviewId);
+    }
+
     @PostMapping
     public Form createForm(@RequestBody FormDTO formDTO) {
         Form form = new Form();
-        form.setReview(formDTO.getReview());
+        form.setReviewId(formDTO.getReviewId());
         form.setAktualnostNarocnostPrace(formDTO.getAktualnostNarocnostPrace());
         form.setOrientovanieStudentaProblematike(formDTO.getOrientovanieStudentaProblematike());
         form.setVhodnostZvolenychMetod(formDTO.getVhodnostZvolenychMetod());
@@ -48,6 +54,7 @@ public class FormController {
         form.setChybaRef(formDTO.getChybaRef());
         form.setChybaRefObr(formDTO.getChybaRefObr());
         form.setObrazkomChybaPopis(formDTO.getObrazkomChybaPopis());
+        form.setNedostatky(formDTO.getNedostatky());
         form.setPrinos(formDTO.getPrinos());
         return formRepository.save(form);
     }
@@ -56,8 +63,8 @@ public class FormController {
     public Form patchForm(@PathVariable Long id, @RequestBody FormDTO formDTO) {
         Form form = formRepository.findById(id).orElse(null);
         if (form != null) {
-            if (formDTO.getReview() != null) {
-                form.setReview(formDTO.getReview());
+            if (formDTO.getReviewId() != null) {
+                form.setReviewId(formDTO.getReviewId());
             }
             if (formDTO.getAktualnostNarocnostPrace() != null) {
                 form.setAktualnostNarocnostPrace(formDTO.getAktualnostNarocnostPrace());
@@ -118,6 +125,9 @@ public class FormController {
             }
             if (formDTO.getPrinos() != null) {
                 form.setPrinos(formDTO.getPrinos());
+            }
+            if (formDTO.getNedostatky() != null) {
+                form.setNedostatky(formDTO.getNedostatky());
             }
             return formRepository.save(form);
         }

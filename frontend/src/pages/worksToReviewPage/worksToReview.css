@@ -283,3 +283,25 @@
     padding-top: .5rem;
     padding-bottom: .5rem;
 }
+
+/* Dialog Formular -------------------------------------------------------------------*/
+
+.rating-table-container {
+    margin-top: 1rem;
+}
+
+.rating-table-container .p-column-title{
+    font-size: 20px;
+}
+
+.rating-table-container .p-inputtext{
+    width: 100%;
+}
+
+.rating-table-container .p-dropdown{
+    width: 100%;
+}
+
+.rating-colum{
+    width: 30rem;
+}
