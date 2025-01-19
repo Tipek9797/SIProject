@@ -24,6 +24,15 @@ const Event = () => {
         fetchUser();
     }, []);
 
+    const filterRecentConferences = (conferences) => {
+        const now = new Date();
+        return conferences.filter(conference => {
+            const conferenceEnd = new Date(conference.conferenceEnd);
+            const oneDayAfterEnd = new Date(conferenceEnd.getTime() + 24 * 60 * 60 * 1000);
+            return now <= oneDayAfterEnd;
+        });
+    };
+
     useEffect(() => {
         const fetchConferences = async () => {
             try {
@@ -34,11 +43,11 @@ const Event = () => {
                 const updatedConferences = await Promise.all(
                     data.map(async (conference) => {
                         const isUserJoined = user ? await checkUserInConference(conference.id, user.id) : false;
-                        return { ...conference, userJoined: isUserJoined };
+                        return { ...conference, userJoined: isUserJoined, state: getConferenceState(conference) };
                     })
                 );
 
-                setConferences(updatedConferences);
+                setConferences(filterRecentConferences(updatedConferences));
             } catch (error) {
                 setError(error.message);
             }
@@ -46,6 +55,57 @@ const Event = () => {
 
         fetchConferences();
     }, [user]);
+
+    const updateConferenceStateInDatabase = async (conferenceId, newState) => {
+        try {
+            const token = localStorage.getItem('jwtToken');
+            console.log(`Updating state for conference with ID: ${conferenceId} to ${newState}`);
+            const response = await fetch(`http://localhost:8080/api/conferences/${conferenceId}/updateState`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ state: newState }),
+            });
+
+            if (!response.ok) throw new Error('Nepodarilo sa aktualizovať stav konferencie');
+        } catch (error) {
+            console.error('Error updating conference state:', error);
+        }
+    };
+
+    const getConferenceState = (conference) => {
+        const now = new Date();
+        if (now >= new Date(conference.conferenceStart) && now <= new Date(conference.conferenceEnd)) {
+            updateConferenceStateInDatabase(conference.id, 'Otvorená');
+            return 'Otvorená';
+        } else {
+            updateConferenceStateInDatabase(conference.id, 'Zatvorená');
+            return 'Zatvorená';
+        }
+    };
+
+    useEffect(() => {
+        const updateConferenceStates = async () => {
+            console.log("Checking conference states...");
+            const updatedConferences = await Promise.all(
+                conferences.map(async (conference) => {
+                    const newState = getConferenceState(conference);
+                    if (conference.state !== newState) {
+                        await updateConferenceStateInDatabase(conference.id, newState);
+                        return { ...conference, state: newState };
+                    }
+                    return conference;
+                })
+            );
+            setConferences(updatedConferences);
+        };
+
+        const interval = setInterval(updateConferenceStates, 20000);
+
+        return () => clearInterval(interval);
+    }, [conferences]);
 
     const checkUserInConference = async (conferenceId, userId) => {
         try {
@@ -110,7 +170,7 @@ const Event = () => {
                     key={conference.id}
                     onClick={() => setSelectedConference(conference)}
                 >
-                    <Card title={conference.name} subTitle={`Stav: ${isConferenceActive(conference) ? 'Otvorená' : 'Zatvorená'}`}>
+                    <Card title={conference.name} subTitle={`Stav: ${conference.state}`}>
                         <div className="event-dates">
                             <p>
                                 <strong>Začiatok konferencie:</strong>{' '}
@@ -122,7 +182,7 @@ const Event = () => {
                             </p>
                         </div>
                         <div className="event-actions">
-                            {user && isConferenceActive(conference) && !conference.userJoined && (
+                            {user && conference.state === 'Otvorená' && !conference.userJoined && (
                                 <Button
                                     label="Pridať sa"
                                     icon="pi pi-user-plus"
@@ -133,7 +193,7 @@ const Event = () => {
                                     className="eventButton-success"
                                 />
                             )}
-                            {user && conference.userJoined && (
+                            {user && conference.userJoined && isConferenceActive(conference) && (
                                 <Button
                                     label="Prejsť na konferenciu"
                                     icon="pi pi-sign-in"
@@ -189,7 +249,7 @@ const Event = () => {
                     <p>
                         <strong>Popis:</strong> {selectedConference.description}
                     </p>
-                    {user && selectedConference.userJoined ? (
+                    {user && selectedConference.userJoined && isConferenceActive(selectedConference) ? (
                         <Button
                             label="Prejsť na konferenciu"
                             icon="pi pi-sign-in"

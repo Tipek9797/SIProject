@@ -45,12 +45,9 @@ export default function MyWorks() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                console.log("Fetching conferences...");
                 const conferencesResponse = await axios.get('http://localhost:8080/api/conferences');
                 const loadedConferences = conferencesResponse.data;
-                console.log("Conferences fetched:", loadedConferences);
 
-                console.log("Fetching articles...");
                 const articlesResponse = await axios.get('http://localhost:8080/api/articles');
                 const loadedArticles = articlesResponse.data;
 
@@ -59,8 +56,6 @@ export default function MyWorks() {
                     const relatedConference = loadedConferences.find(conf =>
                         conf.articleId.some(a => a.id === article.id)
                     );
-                    console.log("Processing article:", article);
-                    console.log("Related conference:", relatedConference);
 
                     return {
                         ...article,
@@ -76,7 +71,6 @@ export default function MyWorks() {
 
                 setConferences(loadedConferences); // Nastaviť konferencie
                 setArticles(filteredArticles); // Nastaviť články
-                console.log("Filtered Articles with Conference Names:", filteredArticles);
 
                 const fileHistories = {};
                 for (const article of loadedArticles) {
@@ -177,7 +171,7 @@ export default function MyWorks() {
 
     const Options = () => {
         const filteredConferenceOpt = conferences
-            .filter(conference => conference.state === "Otvorena")
+            .filter(conference => conference.state === "Otvorená")
             .map(conference => ({ label: conference.name, value: conference.name }));
 
         const filteredCategoryOpt = Category.map(category => ({ label: category.name, value: category.name }));
@@ -197,27 +191,41 @@ export default function MyWorks() {
     const onUpdateClick = (WorkDetails) => {
         Options();
         setName(WorkDetails.name);
-        setSelectedConference(optConference[1]);                    // Zatial nejde
-        setSelectedCategory(null);                          // Zatial nejde
-        setSelectedArticle(WorkDetails);
+        setSelectedArticle({
+            ...WorkDetails,
+            conference: conferences.find(conf => conf.name === WorkDetails.conferenceName)
+        });
         setWorkUploadVisible(true);
         setWorkUpdate(true);
     };
 
+    useEffect(() => {
+        if (workUpdate && selectedArticle) {
+            const conferenceName = selectedArticle.conference ? selectedArticle.conference.name : null;
+            const categoryName = selectedArticle.categories && selectedArticle.categories.length > 0 ? selectedArticle.categories[0].name : null;
+            setSelectedConference(conferenceName);
+            setSelectedCategory(categoryName);
+        }
+    }, [optConference, optCategory, workUpdate, selectedArticle]);
+
     const onUpdateArticleNameClick = async () => {
         try {
             const matchingConference = conferences.find(conference => conference.name === selectedConference);
-            setOptConferenceID(matchingConference.id);
+            if (!matchingConference) {
+                throw new Error("Selected conference not found");
+            }
 
             const matchingCategory = Category.find(category => category.name === selectedCategory);
-            setOptCategoryID(matchingCategory.id);
+            if (!matchingCategory) {
+                throw new Error("Selected category not found");
+            }
 
             const articleData = {
                 name: name,
                 date: selectedArticle.date,
                 reviewerId: user.id,
-                conferenceId: optConferenceID,
-                categoryIds: [optCategoryID],
+                conferenceId: matchingConference.id,
+                categoryIds: [matchingCategory.id],
                 userIds: [user.id],
                 stateId: selectedArticle.state.id
             };
@@ -245,25 +253,20 @@ export default function MyWorks() {
     const onDataSubmitClick = async () => {
         try {
             const matchingConference = conferences.find(conference => conference.name === selectedConference);
-            setOptConferenceID(matchingConference.id);
-
             const matchingCategory = Category.find(category => category.name === selectedCategory);
-            setOptCategoryID(matchingCategory.id);
 
             const articleData = {
                 name: name,
                 date: new Date(),
                 reviewerId: user.id,
-                conferenceId: optConferenceID,
-                categoryIds: [optCategoryID],
+                conferenceId: matchingConference.id,
+                categoryIds: [matchingCategory.id],
                 userIds: [user.id],
                 stateId: 1
             };
 
-
             const response = await axios.post('http://localhost:8080/api/articles', articleData);
             const articleId = response.data.id;
-
 
             await handleUpload(files, toast, articleId);
 
@@ -447,6 +450,7 @@ export default function MyWorks() {
         const articleConferenceName = article.conferenceName || "Neznáma konferencia";
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
         const relatedConference = conferences.find(conf => conf.name === articleConferenceName);
+        const hasFiles = fileHistories[article.id] && fileHistories[article.id].length > 0;
 
         if (article.state.name === "Odoslané") {
             return (
@@ -467,12 +471,14 @@ export default function MyWorks() {
                             <div className="font-bold ">Kategória: <i className="font-semibold">{article.categories[0].name}</i></div>
                             <div className="font-bold ">Termín: <i className="text-2xl">{articleConferenceDate}</i></div>
                         </div>
-                        <div className="flex botombutton align-items-center justify-content-between">
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
-                        </div>
+                        {hasFiles && (
+                            <div className="flex botombutton align-items-center justify-content-between">
+                                <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                            </div>
+                        )}
                         <div className="botombutton align-items-center justify-content-between">
                             {relatedConference && isUploadPeriodActive(relatedConference) && (
                                 <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
@@ -488,7 +494,7 @@ export default function MyWorks() {
                     </div>
                 </div>
             );
-        } 
+        }
     };
 
     const gridRating = (article) => {
@@ -496,8 +502,8 @@ export default function MyWorks() {
         const formattedDate = `${String(date2.getDate()).padStart(2, '0')}/${String(date2.getMonth() + 1).padStart(2, '0')}/${date2.getFullYear()} - ${String(date2.getHours() + 1).padStart(2, '0')}:${String(date2.getMinutes()).padStart(2, '0')}`;
         const articleConferenceName = article.conferenceName || "Neznáma konferencia";
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
+        const hasFiles = fileHistories[article.id] && fileHistories[article.id].length > 0;
 
-        //console.log("Data", article);
         if (article.state.name !== "Odoslané" && article.conferenceState === "Otvorena") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
@@ -519,12 +525,14 @@ export default function MyWorks() {
                             <div className="font-bold ">Termín: <i className="text-2xl">{articleConferenceDate}</i>
                             </div>
                         </div>
-                        <div className="flex botombutton align-items-center justify-content-between">
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
-                        </div>
+                        {hasFiles && (
+                            <div className="flex botombutton align-items-center justify-content-between">
+                                <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                            </div>
+                        )}
                         <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
                                 onClick={() => onOpenClick(article)} />
@@ -546,6 +554,7 @@ export default function MyWorks() {
         const formattedDate = `${String(date3.getDate()).padStart(2, '0')}/${String(date3.getMonth() + 1).padStart(2, '0')}/${date3.getFullYear()} - ${String(date3.getHours() + 1).padStart(2, '0')}:${String(date3.getMinutes()).padStart(2, '0')}`;
         const articleConferenceName = article.conferenceName || "Neznáma konferencia";
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
+        const hasFiles = fileHistories[article.id] && fileHistories[article.id].length > 0;
         /*const today = new Date();
         && article.conferenceEnd < today*/
 
@@ -569,12 +578,14 @@ export default function MyWorks() {
                             <div className="font-bold ">Kategória: <i className="font-semibold">{article.categories[0].name}</i></div>
                             <Rating value={ratingTest(article)} readOnly cancel={false}></Rating>
                         </div>
-                        <div className="flex botombutton align-items-center justify-content-between">
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
-                        </div>
+                        {hasFiles && (
+                            <div className="flex botombutton align-items-center justify-content-between">
+                                <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                            </div>
+                        )}
                         <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
                                 onClick={() => onOpenClick(article)} />
@@ -629,10 +640,8 @@ export default function MyWorks() {
                 <TabView scrollable>
                     <TabPanel header="Aktuálne práce" rightIcon="pi pi-calendar-clock">
                         <DataView value={Articles} listTemplate={ArticleTemplate} />
-                        {conferences.some(isUploadPeriodActive) && (
-                            <Button className="workuploadbtn large-icon up-down" label="Nahrať Prácu" icon="pi pi-upload"
-                                onClick={() => onUploadClick()} />
-                        )}
+                        <Button className="workuploadbtn large-icon up-down" label="Nahrať Prácu" icon="pi pi-upload"
+                            onClick={() => onUploadClick()} />
                     </TabPanel>
                     <TabPanel header="Hodnotenie" rightIcon="pi pi-check">
                         <DataView value={Articles} listTemplate={RatingTemplate} />

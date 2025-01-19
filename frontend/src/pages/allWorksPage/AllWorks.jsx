@@ -12,6 +12,7 @@ export default function AllWorks() {
     const [states, setStates] = useState([]);
     const [categories, setCategories] = useState([]);
     const [users, setUsers] = useState([]);
+    const [conferences, setConferences] = useState([]);
     const [filters, setFilters] = useState({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         id: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -19,12 +20,24 @@ export default function AllWorks() {
         date: { value: null, matchMode: FilterMatchMode.CONTAINS },
         reviewerId: { value: null, matchMode: FilterMatchMode.CONTAINS },
         'state.id': { value: null, matchMode: FilterMatchMode.EQUALS },
-        categories: { value: null, matchMode: FilterMatchMode.CONTAINS }
+        categories: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        conferenceId: { value: null, matchMode: FilterMatchMode.EQUALS }
     });
 
     const fetchArticles = () => {
-        axios.get('http://localhost:8080/api/articles')
-            .then(response => { setArticles(response.data); console.log("articles --- ", response.data); })
+        axios.get('http://localhost:8080/api/conferences')
+            .then(response => {
+                const articlesWithConferences = response.data.flatMap(conference => 
+                    conference.articles.map(article => ({
+                        ...article,
+                        conferenceName: conference.name,
+                        conferenceId: conference.id
+                    }))
+                );
+                setArticles(articlesWithConferences);
+                setConferences(response.data.map(conference => ({ label: conference.name, value: conference.id })));
+                console.log("articles --- ", articlesWithConferences);
+            })
             .catch(error => console.error(error));
     };
 
@@ -48,10 +61,19 @@ export default function AllWorks() {
             .catch(error => console.error(error));
     };
 
+    const fetchConferences = () => {
+        axios.get('http://localhost:8080/api/conferences')
+            .then(response => {
+                setConferences(response.data.map(conference => ({ label: conference.name, value: conference.id })));
+            })
+            .catch(error => console.error(error));
+    };
+
     useEffect(() => {
         fetchArticles();
         fetchStatesAndCategories();
         fetchReviewers();
+        fetchConferences();
     }, []);
 
     const onRowEditComplete = (e) => {
@@ -118,7 +140,7 @@ export default function AllWorks() {
                     options.editorCallback(e.value);
                     console.log(e.value);
                 }}
-                placeholder="Vyberte kategóriu"
+                placeholder="Vyberte"
             />
         );
     };
@@ -138,7 +160,7 @@ export default function AllWorks() {
                         options.filterApplyCallback(null);
                     }
                 }}
-                placeholder="Vyberte stav"
+                placeholder="Vyberte"
                 className="p-column-filter"
                 showClear
             />
@@ -153,7 +175,7 @@ export default function AllWorks() {
                 optionLabel={(user) => `${user.id} - ${user.name}`}
                 optionValue="id"
                 onChange={(e) => options.editorCallback(e.value)}
-                placeholder="Vyberte recenzenta"
+                placeholder="Vyberte"
             />
         );
     };
@@ -214,19 +236,17 @@ export default function AllWorks() {
     };
 
     const downloadDocxButtonTemplate = (rowData) => {
-        return (
-            <button onClick={() => downloadMostRecentFile(rowData.id, 'docx')}>
-                Stiahnut Docx
-            </button>
-        );
+        const hasDocxFiles = rowData.files && rowData.files.some(file => file.fileTypeDocx);
+        return hasDocxFiles ? (
+            <Button label="Stiahnut Docx" icon="pi pi-download" onClick={() => downloadMostRecentFile(rowData.id, 'docx')} />
+        ) : null;
     };
 
     const downloadPdfButtonTemplate = (rowData) => {
-        return (
-            <button onClick={() => downloadMostRecentFile(rowData.id, 'pdf')}>
-                Stiahnut Pdf
-            </button>
-        );
+        const hasPdfFiles = rowData.files && rowData.files.some(file => file.fileTypePdf);
+        return hasPdfFiles ? (
+            <Button label="Stiahnut Pdf" icon="pi pi-download" onClick={() => downloadMostRecentFile(rowData.id, 'pdf')} />
+        ) : null;
     };
 
     const downloadAllMostRecentFilesAsZip = () => {
@@ -235,7 +255,7 @@ export default function AllWorks() {
                 const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/zip' }));
                 const link = document.createElement('a');
                 link.href = url;
-                link.setAttribute('download', 'most_recent_files.zip');
+                link.setAttribute('download', 'VsetkyNajnovsiePrace.zip');
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -243,9 +263,28 @@ export default function AllWorks() {
             .catch(error => console.error('Error downloading ZIP file:', error));
     };
 
+    const conferenceBodyTemplate = (rowData) => {
+        return rowData.conferenceName;
+    };
+
+    const conferenceFilterTemplate = (options) => {
+        return (
+            <Dropdown
+                value={options.value || null}
+                options={conferences}
+                optionLabel="label"
+                optionValue="value"
+                onChange={(e) => options.filterApplyCallback(e.value)}
+                placeholder="Vyberte"
+                className="p-column-filter"
+                showClear
+            />
+        );
+    };
+
     return (
         <div className="all-works-page">
-            <Button label="Download All Most Recent Files" icon="pi pi-download" onClick={downloadAllMostRecentFilesAsZip} />
+            <Button label="Stiahnuť všetky najnovšie súbory" icon="pi pi-download" onClick={downloadAllMostRecentFilesAsZip} />
             <DataTable
                 value={articles}
                 paginator
@@ -301,6 +340,13 @@ export default function AllWorks() {
                     header="Kategórie"
                     body={(rowData) => getCategoryNames(rowData.categories)}
                     editor={categoriesEditor}
+                    sortable />
+                <Column
+                    field="conferenceId"
+                    header="Konferencia"
+                    body={conferenceBodyTemplate}
+                    filter
+                    filterElement={conferenceFilterTemplate}
                     sortable />
                 <Column
                     field="reviews"
