@@ -16,9 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/conferences")
 public class ConferenceController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConferenceController.class);
 
     @Autowired
     private ConferenceRepository conferenceRepository;
@@ -186,5 +191,14 @@ public class ConferenceController {
             dto.setName(conference.getName());
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    @PutMapping("/{id}/updateState")
+    public Conference updateConferenceState(@PathVariable Long id, @RequestBody ConferenceDTO conferenceDTO) {
+        Conference conference = conferenceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conference not found"));
+        conference.setState(conferenceDTO.getState());
+        Conference updatedConference = conferenceRepository.save(conference);
+        return updatedConference;
     }
 }

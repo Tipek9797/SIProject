@@ -16,7 +16,7 @@ export default function ConferencePage() {
     const [conferences, setConferences] = useState([]);
     const [forms, setForms] = useState([]);
     const [displayDialog, setDisplayDialog] = useState(false);
-    const [addConference, setAddConference] = useState({ name: '', state: '', startUpload: null, closeUpload: null, startReview: null, closeReview: null, formId: null, description: '', conferenceStart: null, conferenceEnd: null });
+    const [addConference, setAddConference] = useState({ name: '', state: 'Zatvorená', startUpload: null, closeUpload: null, startReview: null, closeReview: null, formId: null, description: '', conferenceStart: null, conferenceEnd: null });
     const [selectedConferences, setSelectedConferences] = useState([]);
     const [editingConference, setEditingConference] = useState(null);
     const [filters, setFilters] = useState({
@@ -41,7 +41,7 @@ export default function ConferencePage() {
     }, []);
 
     const openNewConferenceDialog = () => {
-        setAddConference({ name: '', state: '', startUpload: null, closeUpload: null, startReview: null, closeReview: null, formId: null, description: '', conferenceStart: null, conferenceEnd: null });
+        setAddConference({ name: '', state: 'Zatvorená', startUpload: null, closeUpload: null, startReview: null, closeReview: null, formId: null, description: '', conferenceStart: null, conferenceEnd: null });
         setEditingConference(null);
         setDisplayDialog(true);
     };
@@ -152,7 +152,7 @@ export default function ConferencePage() {
                 <Column selectionMode="multiple" headerStyle={{ width: '3em' }} />
                 <Column field="id" header="ID" sortable />
                 <Column field="name" header="Názov" filter filterPlaceholder="Vyhľadať" editor={(options) => <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />} sortable />
-                <Column field="state" header="Stav" filter filterPlaceholder="Vyhľadať" editor={(options) => <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />} sortable />
+                <Column field="state" header="Stav" filter filterPlaceholder="Vyhľadať" sortable />
                 <Column field="conferenceStart" header="Začiatok Konferencie" body={(rowData) => displayDate(rowData.conferenceStart)} editor={(options) => <Calendar value={new Date(options.value)} onChange={(e) => options.editorCallback(e.value)} showIcon showTime />} sortable />
                 <Column field="conferenceEnd" header="Koniec Konferencie" body={(rowData) => displayDate(rowData.conferenceEnd)} editor={(options) => <Calendar value={new Date(options.value)} onChange={(e) => options.editorCallback(e.value)} showIcon showTime />} sortable />
                 <Column field="startUpload" header="Začiatok Nahrávania" body={(rowData) => displayDate(rowData.startUpload)} editor={(options) => <Calendar value={new Date(options.value)} onChange={(e) => options.editorCallback(e.value)} showIcon showTime />} sortable />
@@ -168,10 +168,6 @@ export default function ConferencePage() {
                     <div className="p-field">
                         <label htmlFor="name">Názov</label>
                         <InputText id="name" value={addConference.name} onChange={(e) => setAddConference({ ...addConference, name: e.target.value })} />
-                    </div>
-                    <div className="p-field">
-                        <label htmlFor="state">Stav</label>
-                        <InputText id="state" value={addConference.state} onChange={(e) => setAddConference({ ...addConference, state: e.target.value })} />
                     </div>
                     <div className="p-field">
                         <label htmlFor="conferenceStart">Začiatok Konferencie</label>
