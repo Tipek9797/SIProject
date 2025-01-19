@@ -6,7 +6,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import {InputTextarea, ScrollPanel} from "../index";
 
-export default function WorkInfoDialog({ visible, onHide, data, ratings}) {
+export default function WorkInfoDialog({ visible, onHide, data, ratings, columns, boldCodeBodyTemplate, disabledCheckboxTemplate, form }) {
     return (
         <Dialog
             header={data.name}
@@ -18,7 +18,7 @@ export default function WorkInfoDialog({ visible, onHide, data, ratings}) {
         >
             <Divider/>
             <div className="work-details-text">
-                <label>Názov Konferencie Názov Konferencie Názov Konferencie Názov Konferencie</label><br/>
+                <label>{data.conferenceName}</label><br/>
                 <div className="work-details-row">
                     <h2>Škola</h2><i className="pi pi-angle-right"></i>
                     <Divider layout="vertical"/>
@@ -29,11 +29,17 @@ export default function WorkInfoDialog({ visible, onHide, data, ratings}) {
                     <Divider layout="vertical"/>
                     <label htmlFor="department">{data.users[0].faculty.name}</label>
                 </div>
+                <div className="review-details-row">
+                    <h2>Kategória</h2>
+                    <i className="pi pi-angle-right"></i>
+                    <Divider layout="vertical"/>
+                    <label htmlFor="category">{data.categories[0].name}</label>
+                </div>
                 <div className="work-details-row">
                     <h2>Hodnotenie</h2><i className="pi pi-angle-right"></i>
                     <Divider layout="vertical"/>
-                    {data.reviews && data.reviews[0] && (
-                        <Rating value={data.reviews[0].rating} readOnly cancel={false} />
+                    {data.state.name === "Ohodnotené" && (
+                        <Rating value={data.reviews[0].rating} readOnly cancel={false}/>
                     )}
                 </div>
                 <div className="work-details-row">
@@ -41,16 +47,37 @@ export default function WorkInfoDialog({ visible, onHide, data, ratings}) {
                     <Divider layout="vertical"/>
                 </div>
                 <ScrollPanel className="scrollP">
-                    {data.reviews && data.reviews[0] && (
-                        <InputTextarea className="inpTextArea font-bold" disabled autoResize value={data.reviews[0].comment}/>
+                    {data.state.name === "Ohodnotené" && (
+                        <InputTextarea className="inpTextArea font-bold" disabled autoResize
+                                       value={data.reviews[0].comment}/>
                     )}
                 </ScrollPanel>
             </div>
             <div className="rating-table-container">
-                <DataTable value={ratings} className="p-datatable-sm" showGridlines>
-                    <Column className="rating-column" field="PRO" header="Pozitíva +"/>
-                    <Column className="rating-column" field="CON" header="Negatíva -"/>
-                </DataTable>
+                {data.state.name === "Ohodnotené" && (
+                    <DataTable value={form} size={'small'} showGridlines
+                               editMode="cell">
+                        {columns.map(({field, header}) => {
+                            return (
+                                <Column
+                                    key={field}
+                                    field={field}
+                                    header={header}
+                                    className="rating-colum"
+                                    body={field === 'name' ? disabledCheckboxTemplate : (field === 'code' ? boldCodeBodyTemplate : null)}
+                                />
+                            );
+                        })}
+                    </DataTable>
+                )}
+            </div>
+            <div className="rating-table-container">
+                {data.state.name === "Ohodnotené" && (
+                    <DataTable value={ratings} className="p-datatable-sm" showGridlines>
+                        <Column className="rating-column" field="PRO" header="Pozitíva +"/>
+                        <Column className="rating-column" field="CON" header="Negatíva -"/>
+                    </DataTable>
+                )}
             </div>
         </Dialog>
     );

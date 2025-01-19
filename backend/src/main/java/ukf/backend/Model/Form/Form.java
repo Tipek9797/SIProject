@@ -15,15 +15,14 @@ public class Form {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String review;
-    private Integer aktualnostNarocnostPrace;
+    private String aktualnostNarocnostPrace;
     private String orientovanieStudentaProblematike;
     private String vhodnostZvolenychMetod;
     private String rozsahUrovenDosiahnutychVysledkov;
     private String analyzaInterpretaciaVysledkov;
-    private Character prehladnostLogickaStrukturaPrace;
-    private Character formalnaJazykovaStylistickaUrovenPrace;
-    private Boolean pracaZodpovedaSablone;
+    private String prehladnostLogickaStrukturaPrace;
+    private String formalnaJazykovaStylistickaUrovenPrace;
+    private String pracaZodpovedaSablone;
     private Boolean chybaNazovPrace;
     private Boolean chybaMenoAutora;
     private Boolean chybaPracovnaEmailovaAdresa;
@@ -36,6 +35,7 @@ public class Form {
     private Boolean chybaRef;
     private Boolean chybaRefObr;
     private String prinos;
+    private String nedostatky;
 
     @OneToMany(mappedBy = "form", cascade = CascadeType.ALL)
     @JsonIgnore

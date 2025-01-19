@@ -5,15 +5,14 @@ import lombok.Data;
 @Data
 public class FormDTO {
     private Long id;
-    private String review;
-    private Integer aktualnostNarocnostPrace;
+    private String aktualnostNarocnostPrace;
     private String orientovanieStudentaProblematike;
     private String vhodnostZvolenychMetod;
     private String rozsahUrovenDosiahnutychVysledkov;
     private String analyzaInterpretaciaVysledkov;
-    private Character prehladnostLogickaStrukturaPrace;
-    private Character formalnaJazykovaStylistickaUrovenPrace;
-    private Boolean pracaZodpovedaSablone;
+    private String prehladnostLogickaStrukturaPrace;
+    private String formalnaJazykovaStylistickaUrovenPrace;
+    private String pracaZodpovedaSablone;
     private Boolean chybaNazovPrace;
     private Boolean chybaMenoAutora;
     private Boolean chybaPracovnaEmailovaAdresa;
@@ -26,4 +25,5 @@ public class FormDTO {
     private Boolean chybaRefObr;
     private Boolean obrazkomChybaPopis;
     private String prinos;
+    private String nedostatky;
 }
