@@ -114,13 +114,15 @@ export default function Navbar() {
                 if (new Date() >= expDate) {
                     handleLogout();
                 }
+                console.log("doin some stuff")
             }
         };
 
-        const interval = setInterval(checkTokenExpiration, 300000);
-
-        return () => clearInterval(interval);
-    }, []);
+        if (token) {
+            const interval = setInterval(checkTokenExpiration, 300000);
+            return () => clearInterval(interval);
+        }
+    }, [token]);
 
     const end = (
         <div className="user-info">
