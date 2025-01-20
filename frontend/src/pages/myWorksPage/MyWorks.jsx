@@ -24,6 +24,7 @@ export default function MyWorks() {
     const [Category, setCategory] = useState([]);
     const [fileHistories, setFileHistories] = useState({});
     const [form, setForm] = useState([]);
+    const [error, setError] = useState(null);
 
     const getUserFromLocalStorage = () => {
         try {
@@ -54,9 +55,19 @@ export default function MyWorks() {
                 const articlesResponse = await axios.get('http://localhost:8080/api/articles');
                 const loadedArticles = articlesResponse.data;
 
+                const userConferences = await Promise.all(
+                    loadedConferences.map(async (conference) => {
+                        const isUserJoined = user ? await checkUserInConference(conference.id, user.id) : false;
+                        return isUserJoined ? conference : null;
+                    })
+                );
+
+                const filteredConferences = userConferences.filter(conference => conference !== null);
+
+                setConferences(filteredConferences);
 
                 const articlesWithConferenceNames = loadedArticles.map(article => {
-                    const relatedConference = loadedConferences.find(conf =>
+                    const relatedConference = filteredConferences.find(conf =>
                         conf.articleId.some(a => a.id === article.id)
                     );
 
@@ -97,6 +108,46 @@ export default function MyWorks() {
         fetchData();
         fetchCategory();
     }, []);
+
+    const checkUserInConference = async (conferenceId, userId) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/conferences/${conferenceId}/isUserIn?userId=${userId}`);
+
+            if (!response.ok) throw new Error('Chyba pri overovaní účasti používateľa');
+
+            return await response.json();
+        } catch (error) {
+            setError(error.message);
+            return false;
+        }
+    };
+
+    useEffect(() => {
+        const fetchConferences = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/api/conferences');
+                if (!response.ok) throw new Error('Nepodarilo sa načítať konferencie');
+                const data = await response.json();
+
+                const joinedConferences = await Promise.all(
+                    data.map(async (conference) => {
+                        const isUserJoined = user ? await checkUserInConference(conference.id, user.id) : false;
+                        return isUserJoined ? conference : null;
+                    })
+                );
+
+                const filteredConferences = joinedConferences.filter(conference => conference !== null);
+
+                setConferences(filteredConferences);
+            } catch (error) {
+                setError(error.message);
+            }
+        };
+
+        fetchConferences();
+    }, [user]);
+
+
 
     const downloadFile = (fileId, fileType) => {
         axios.get(`http://localhost:8080/api/files/download/${fileId}/${fileType}`, { responseType: 'blob' })
@@ -190,14 +241,14 @@ export default function MyWorks() {
         );
     };
 
-    const [name, setName] = useState('');                //Upload Dialog
+    const [name, setName] = useState('');
     const [workUpdate, setWorkUpdate] = useState(false);
     const [optConference, setOptConference] = useState([]);
     const [optCategory, setOptCategory] = useState([]);
 
     const Options = () => {
         const filteredConferenceOpt = conferences
-            .filter(conference => conference.state === "Otvorena")
+            .filter(conference => conference.state === "Otvorená")
             .map(conference => ({ label: conference.name, value: conference.name }));
 
         const filteredCategoryOpt = Category.map(category => ({ label: category.name, value: category.name }));
@@ -210,17 +261,35 @@ export default function MyWorks() {
     const onUpdateClick = (WorkDetails) => {
         Options();
         setName(WorkDetails.name);
-        setSelectedConference(WorkDetails.conferenceName);
-        setSelectedCategory(WorkDetails.categories[0].name);
-        setSelectedArticle(WorkDetails);
+        setSelectedArticle({
+            ...WorkDetails,
+            conference: conferences.find(conf => conf.name === WorkDetails.conferenceName)
+        });
         setWorkUploadVisible(true);
         setWorkUpdate(true);
     };
 
+    useEffect(() => {
+        if (workUpdate && selectedArticle) {
+            const conferenceName = selectedArticle.conference ? selectedArticle.conference.name : null;
+            const categoryName = selectedArticle.categories && selectedArticle.categories.length > 0 ? selectedArticle.categories[0].name : null;
+            setSelectedConference(conferenceName);
+            setSelectedCategory(categoryName);
+        }
+    }, [optConference, optCategory, workUpdate, selectedArticle]);
+
     const onUpdateArticleNameClick = async () => {
         try {
             const matchingConference = conferences.find(conference => conference.name === selectedConference);
+
+            if (!matchingConference) {
+                throw new Error("Selected conference not found");
+            }
+
             const matchingCategory = Category.find(category => category.name === selectedCategory);
+            if (!matchingCategory) {
+                throw new Error("Selected category not found");
+            }
 
             const articleData = {
                 name: name,
@@ -279,8 +348,8 @@ export default function MyWorks() {
 
             const response = await axios.post('http://localhost:8080/api/articles', articleData)
                 .finally(() => window.location.reload());
-            const articleId = response.data.id;
 
+            const articleId = response.data.id;
 
             await handleUpload(files, toast, articleId);
 
@@ -452,6 +521,7 @@ export default function MyWorks() {
         const articleConferenceName = article.conferenceName || "Neznáma konferencia";
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
         const relatedConference = conferences.find(conf => conf.name === articleConferenceName);
+        const hasFiles = fileHistories[article.id] && fileHistories[article.id].length > 0;
 
         if (article.state.name === "Odoslané") {
             return (
@@ -472,12 +542,15 @@ export default function MyWorks() {
                             <div className="font-bold ">Kategória: <i className="font-semibold">{article.categories[0].name}</i></div>
                             <div className="font-bold ">Termín: <i className="text-2xl">{articleConferenceDate}</i></div>
                         </div>
-                        <div className="flex botombutton align-items-center justify-content-between">
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+
+                        {hasFiles && (
+                            <div className="flex botombutton align-items-center justify-content-between">
+                                <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
                                     onClick={() => downloadMostRecentFile(article.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
                                     onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
-                        </div>
+                            </div>
+                        )}
                         <div className="botombutton align-items-center justify-content-between">
                             {relatedConference && isUploadPeriodActive(relatedConference) && (
                                 <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
@@ -501,6 +574,7 @@ export default function MyWorks() {
         const formattedDate = `${String(date2.getDate()).padStart(2, '0')}/${String(date2.getMonth() + 1).padStart(2, '0')}/${date2.getFullYear()} - ${String(date2.getHours() + 1).padStart(2, '0')}:${String(date2.getMinutes()).padStart(2, '0')}`;
         const articleConferenceName = article.conferenceName || "Neznáma konferencia";
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
+        const hasFiles = fileHistories[article.id] && fileHistories[article.id].length > 0;
 
         if (article.state.name !== "Odoslané" && article.conferenceState === "Otvorena") {
             return (
@@ -523,12 +597,14 @@ export default function MyWorks() {
                             <div className="font-bold ">Termín: <i className="text-2xl">{articleConferenceDate}</i>
                             </div>
                         </div>
-                        <div className="flex botombutton align-items-center justify-content-between">
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                        {hasFiles && (
+                            <div className="flex botombutton align-items-center justify-content-between">
+                                <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
                                     onClick={() => downloadMostRecentFile(article.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
                                     onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
-                        </div>
+                            </div>
+                        )}
                         <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
                                     onClick={() => onOpenClick(article)} />
@@ -550,6 +626,7 @@ export default function MyWorks() {
         const formattedDate = `${String(date3.getDate()).padStart(2, '0')}/${String(date3.getMonth() + 1).padStart(2, '0')}/${date3.getFullYear()} - ${String(date3.getHours() + 1).padStart(2, '0')}:${String(date3.getMinutes()).padStart(2, '0')}`;
         const articleConferenceName = article.conferenceName || "Neznáma konferencia";
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
+        const hasFiles = fileHistories[article.id] && fileHistories[article.id].length > 0;
         /*const today = new Date();
         && article.conferenceEnd < today*/
 
@@ -573,12 +650,14 @@ export default function MyWorks() {
                             <div className="font-bold ">Kategória: <i className="font-semibold">{article.categories[0].name}</i></div>
                             <Rating value={ratingTest(article)} readOnly cancel={false}></Rating>
                         </div>
-                        <div className="flex botombutton align-items-center justify-content-between">
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                        {hasFiles && (
+                            <div className="flex botombutton align-items-center justify-content-between">
+                                <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
                                     onClick={() => downloadMostRecentFile(article.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
                                     onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
-                        </div>
+                            </div>
+                        )}
                         <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
                                     onClick={() => onOpenClick(article)} />
@@ -633,10 +712,8 @@ export default function MyWorks() {
                 <TabView scrollable>
                     <TabPanel header="Aktuálne práce" rightIcon="pi pi-calendar-clock">
                         <DataView value={Articles} listTemplate={ArticleTemplate} />
-                        {conferences.some(isUploadPeriodActive) && (
-                            <Button className="workuploadbtn large-icon up-down" label="Nahrať Prácu" icon="pi pi-upload"
-                                    onClick={() => onUploadClick()} />
-                        )}
+                        <Button className="workuploadbtn large-icon up-down" label="Nahrať Prácu" icon="pi pi-upload"
+                            onClick={() => onUploadClick()} />
                     </TabPanel>
                     <TabPanel header="Hodnotenie" rightIcon="pi pi-check">
                         <DataView value={Articles} listTemplate={RatingTemplate} />
