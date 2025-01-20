@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
+    InputText,
     Fieldset,
     TabPanel,
     DataView,
+    Checkbox,
+    Dropdown,
     TabView,
     Button,
     Rating,
@@ -12,6 +15,7 @@ import {
 import ReviewOpenDialog from '../../components/Review-dialog/ReviewOpenDialog';
 import ReviewRateDialog from '../../components/Review-dialog/ReviewRateDialog';
 import ReviewUpdateDialog from '../../components/Review-dialog/ReviewUpdateDialog';
+import { ReviewService } from './service/ReviewService';
 import "./worksToReview.css";
 import axios from "axios";
 
@@ -20,6 +24,7 @@ export default function WorksToReview() {
     const [Reviews, setReviews] = useState([]);
     const [Conferences, setConferences] = useState([]);
     const [fileHistories, setFileHistories] = useState({});
+    const [form, setForm] = useState([]);
 
     const getUserFromLocalStorage = () => {
         try {
@@ -32,14 +37,19 @@ export default function WorksToReview() {
     };
     const user = getUserFromLocalStorage();
 
-    const fetchArticles = () => {
-        axios.get('http://localhost:8080/api/articles')
-            .then(response => {
-                const filteredReviews = response.data.filter(article => article.reviewerId === user.id);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const articlesResponse = await axios.get('http://localhost:8080/api/articles');
+                const filteredReviews = articlesResponse.data.filter(article => article.reviewerId === user.id);
                 setReviews(filteredReviews);
 
+                const conferencesResponse = await axios.get('http://localhost:8080/api/conferences');
+                const loadedConferences = conferencesResponse.data;
+                setConferences(loadedConferences);
+
                 const fileHistories = {};
-                filteredReviews.forEach(async (review) => {
+                await Promise.all(filteredReviews.map(async (review) => {
                     const fileHistoryResponse = await axios.get(`http://localhost:8080/api/files/history/${review.id}`);
                     fileHistories[review.id] = [{
                         key: 'history',
@@ -54,21 +64,16 @@ export default function WorksToReview() {
                             ]
                         }))
                     }];
-                });
+                }));
                 setFileHistories(fileHistories);
-            })
-            .catch(error => console.error(error));
-    };
 
-    const fetchConferences = () => {
-        axios.get('http://localhost:8080/api/conferences')
-            .then(response => { setConferences(response.data) })
-            .catch(error => console.error(error));
-    };
+            } catch (error) {
+                console.error("Error during fetchData:", error);
+            }
+        };
 
-    useEffect(() => {
-        fetchArticles();
-        fetchConferences();
+        ReviewService.getProducts().then((data) => setForm(data));
+        fetchData();
     }, []);
 
     const formatDate = (dateString) => {
@@ -136,7 +141,7 @@ export default function WorksToReview() {
             .catch(error => console.error(error));
     };
 
-    const renderFileNodeTemplate = (node, options) => {
+    const renderFileNodeTemplate = (node) => {
         return (
             <div className="file-node">
                 <span >{node.label}</span>
@@ -148,7 +153,7 @@ export default function WorksToReview() {
     // Dialog ----------------------------------------------------------------------------------------------------------
     const [archiveVisible, setArchiveVisible] = useState(false);
     const [ratingVisible, setRatingVisible] = useState(false);
-    //const [selectedArticle, setSelectedArticle] = useState(null);
+
     const [selectedArticle1, setSelectedArticle1] = useState(null);
     const [selectedArticle2, setSelectedArticle2] = useState(null);
     const [selectedArticle3, setSelectedArticle3] = useState(null);
@@ -213,9 +218,9 @@ export default function WorksToReview() {
     const ratingFooterContent = (
         <div className="flex justify-content-center">
             <Button label="Ohodnotiť"
-                icon="pi pi-star-fill"
-                className="p-button-rounded custom-width"
-                onClick={() => onRatingSendClick()}
+                    icon="pi pi-star-fill"
+                    className="p-button-rounded custom-width"
+                    onClick={() => onRatingSendClick()}
             />
         </div>
     );
@@ -224,12 +229,96 @@ export default function WorksToReview() {
     const editFooterContent = (
         <div className="flex justify-content-center">
             <Button label="Upraviť"
-                icon="pi pi-user-edit"
-                severity="warning"
-                className="p-button-rounded custom-width"
-                onClick={() => onUpdateSendClick()} />
+                    icon="pi pi-user-edit"
+                    severity="warning"
+                    className="p-button-rounded custom-width"
+                    onClick={() => onUpdateSendClick()} />
         </div>
     );
+
+    // Dialog - Formular -----------------------------------------------------------------------------------------------
+    const columns = [
+        { field: 'code', header: 'Formulár' },
+        { field: 'name', header: 'Hodnotenie' },
+    ];
+    const grade1 = [
+        "6: (A)",
+        "5: (B)",
+        "4: (C)",
+        "3: (D)",
+        "2: (E)",
+        "1: (Fx)",
+    ];
+    const grade2 = [
+        "2: (Áno)",
+        "0: (Nie)",
+    ];
+    const onCellEditComplete = (e) => {
+        let { rowData, newValue, field, originalEvent: event } = e;
+
+        if (typeof newValue === 'string' && newValue.trim().length > 0) {
+            rowData[field] = newValue;
+        }
+        else if (typeof newValue === 'boolean') {
+            rowData[field] = newValue;
+        }
+        else {
+            event.preventDefault();
+        }
+        setForm((prevForm) =>
+            prevForm.map((form) =>
+                form === rowData ? { ...rowData } : form
+            )
+        );
+    };
+    const cellEditor = (options) => {
+        switch (options.rowData.type) {
+            case 'bool':
+                return (
+                    <Checkbox
+                        checked={options.value === true}
+                        onChange={(e) => options.editorCallback(e.checked)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
+                );
+            case 'drop1':
+                return (
+                    <Dropdown
+                        value={options.value}
+                        options={grade1}
+                        onChange={(e) => options.editorCallback(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
+                );
+            case 'drop2':
+                return (
+                    <Dropdown
+                        value={options.value}
+                        options={grade2}
+                        onChange={(e) => options.editorCallback(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
+                );
+            default: return (
+                <InputText
+                    type="text"
+                    value={options.value}
+                    onChange={(e) => options.editorCallback(e.target.value)}
+                    onKeyDown={(e) => e.stopPropagation()}
+                />
+            );
+        }
+    };
+    const boldCodeBodyTemplate = (rowData) => {
+        return <span style={{ fontWeight: 'bold' }}>{rowData.code}</span>;
+    };
+
+    const disabledCheckboxTemplate = (rowData) => {
+        if (typeof rowData.name === 'boolean') {
+            return <Checkbox checked={rowData.name} disabled />;
+        }
+        return rowData.name;
+    };
 
     // Buttons ---------------------------------------------------------------------------------------------------------
     const onOpenClick = (ReviewDetails, ConferenceName) => {
@@ -237,6 +326,14 @@ export default function WorksToReview() {
         setSelectedConference(ConferenceName);
         processRatings(ReviewDetails);
         setArchiveVisible(true);
+
+        //Here set name to values from database according to id from ReviewService.jsx !!!!!!!!!!!!!!!!!!!!!!!
+        setForm((prevForm) =>
+            prevForm.map((Form) => ({
+                ...Form,
+                name: "",
+            }))
+        );
     };
 
     const onRatingClick = (ReviewDetails, ConferenceName) => {
@@ -248,6 +345,13 @@ export default function WorksToReview() {
         setPlusList([]);
         setMinusList([]);
         setRatingVisible(true);
+
+        setForm((prevForm) =>
+            prevForm.map((formItem) => ({
+                ...formItem,
+                name: formItem.value,
+            }))
+        );
     };
 
     const onRatingSendClick = () => {
@@ -259,8 +363,8 @@ export default function WorksToReview() {
             articleId: selectedArticle2.id,
         };
         axios.post('http://localhost:8080/api/reviews', newReview)
-            .then(response => { fetchArticles() })
-            .catch(error => console.error(error));
+            .catch(error => console.error(error))
+            .finally(() => window.location.reload());
 
         plusList.forEach((newProText) => {
             const newPro = {
@@ -269,7 +373,6 @@ export default function WorksToReview() {
                 categoryId: 1,
             };
             axios.post('http://localhost:8080/api/pros-and-cons', newPro)
-                .then(response => { fetchArticles() })
                 .catch(error => console.error(error));
         });
 
@@ -280,7 +383,6 @@ export default function WorksToReview() {
                 categoryId: 2,
             };
             axios.post('http://localhost:8080/api/pros-and-cons', newCon)
-                .then(response => { fetchArticles() })
                 .catch(error => console.error(error));
         });
     };
@@ -295,6 +397,14 @@ export default function WorksToReview() {
         setStarValue(ReviewDetails.reviews[0].rating);
         setInputTextValue(ReviewDetails.reviews[0].comment);
 
+        //Here set name to values from database according to id from ReviewService.jsx !!!!!!!!!!!!!!!!!!!!!!!
+        setForm((prevForm) =>
+            prevForm.map((Form) => ({
+                ...Form,
+                name: "",
+            }))
+        );
+
         const pros = ReviewDetails.prosAndConsList
             .filter(item => item.category.name === "PRO")
             .map(item => item.description);
@@ -307,11 +417,9 @@ export default function WorksToReview() {
 
     const onUpdateSendClick = () => {
         setEditVisible(false);
-        console.log("Logged-in user:", reviewID);
-        console.log("Pro-Con:", proConID);
         axios.delete(`http://localhost:8080/api/reviews/${reviewID}`)
-            .then(response => { fetchArticles() })
-            .catch(error => { console.error(error); });
+            .catch(error => { console.error(error); })
+            .finally(() => window.location.reload());
         const newReview = {
             rating: starValue,
             comment: inputTextValue,
@@ -319,12 +427,10 @@ export default function WorksToReview() {
             articleId: selectedArticle3.id,
         };
         axios.post('http://localhost:8080/api/reviews', newReview)
-            .then(response => { fetchArticles() })
             .catch(error => console.error(error));
 
         proConID.forEach(ProCon => {
             axios.delete(`http://localhost:8080/api/pros-and-cons/${ProCon.id}`)
-                .then(response => { fetchArticles() })
                 .catch(error => { console.error(error); });
         });
         plusList.forEach((newProText) => {
@@ -334,7 +440,6 @@ export default function WorksToReview() {
                 categoryId: 1,
             };
             axios.post('http://localhost:8080/api/pros-and-cons', newPro)
-                .then(response => { fetchArticles() })
                 .catch(error => console.error(error));
         });
         minusList.forEach((newConText) => {
@@ -344,7 +449,6 @@ export default function WorksToReview() {
                 categoryId: 2,
             };
             axios.post('http://localhost:8080/api/pros-and-cons', newCon)
-                .then(response => { fetchArticles() })
                 .catch(error => console.error(error));
         });
     };
@@ -354,14 +458,13 @@ export default function WorksToReview() {
             stateId: 3,
         };
         axios.patch(`http://localhost:8080/api/articles/${ReviewDetails.id}`, changeState)
-            .then(response => fetchArticles())
-            .catch(error => console.error(error));
+            .catch(error => console.error(error))
+            .finally(() => window.location.reload());
 
         /*const changeAccepted = {
             isAccepted: true,
         };
         axios.patch(`http://localhost:8080/api/reviews/${ReviewDetails.reviews[0].id}`, changeAccepted)
-            .then(response => fetchArticles())
             .catch(error => console.error(error));*/
     };
 
@@ -413,25 +516,29 @@ export default function WorksToReview() {
                             <div className="font-semibold">{conferenceDetails.name}</div>
                             <div className="font-bold">Škola: <i className="font-semibold">{review.users[0].school.name}</i></div>
                             <div className="font-bold">Fakulta: <i className="font-semibold">{review.users[0].faculty.name}</i></div>
+                            <div className="font-bold ">Kategória: <i className="font-semibold">{review.categories[0].name}</i></div>
                             <div className="font-bold ">Termín: <i className="text-2xl">
-                                {conferenceDetails.startReview ? `${formatDate(conferenceDetails.startReview)} - ${formatDate(conferenceDetails.closeReview)}` : "No review period"}
-                            </i></div>
+                                {conferenceDetails.startReview ? `${formatDate(conferenceDetails.startReview)} - ${formatDate(conferenceDetails.closeReview)}` : "No review period"}</i></div>
                         </div>
-                        <div className="align-items-center justify-content-between">
-                            {isReviewPeriodActive(conferenceDetails) && (
-                                <div>
-                                    <Button label="Ohodnotiť" icon="pi pi-star-fill" className="p-button-rounded custom-width"
-                                        onClick={() => onRatingClick(review, conferenceDetails)} />
-
-                                    <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'docx')} />
-                                    <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
+                        {isReviewPeriodActive(conferenceDetails) && fileHistories[review.id] && (
+                            <div>
+                                <div className="flex botombutton align-items-center justify-content-between">
+                                    <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success"
+                                            className="pdfR custom-width"
+                                            onClick={() => downloadMostRecentFile(review.id, 'docx')}/>
+                                    <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success"
+                                            className="docxL custom-width"
+                                            onClick={() => downloadMostRecentFile(review.id, 'pdf')}/>
                                 </div>
-                            )}
-                        </div>
-                        {fileHistories[review.id] && (
-                            <div className="file-history">
-                                <h3>História súborov</h3>
-                                <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate} />
+                                <div className="botombutton align-items-center justify-content-between">
+                                    <Button label="Ohodnotiť" icon="pi pi-star-fill"
+                                            className="p-button-rounded custom-width"
+                                            onClick={() => onRatingClick(review, conferenceDetails)}/>
+                                </div>
+                                <div className="file-history">
+                                    <h3>História súborov</h3>
+                                    <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate}/>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -456,32 +563,35 @@ export default function WorksToReview() {
                         <div className="flex flex-column align-items-center gap-3 py-5">
                             <div className="text-2xl font-bold">{review.name}</div>
                             <div className="font-semibold">{conferenceDetails.name}</div>
-                            <div className="font-bold">Škola: <i
-                                className="font-semibold">{review.users[0].school.name}</i></div>
-                            <div className="font-bold">Fakulta: <i
-                                className="font-semibold">{review.users[0].faculty.name}</i></div>
+                            <div className="font-bold">Škola: <i className="font-semibold">{review.users[0].school.name}</i></div>
+                            <div className="font-bold">Fakulta: <i className="font-semibold">{review.users[0].faculty.name}</i></div>
+                            <div className="font-bold ">Kategória: <i className="font-semibold">{review.categories[0].name}</i></div>
                             <Rating value={review.reviews[0].rating} readOnly cancel={false}></Rating>
                             <div className="font-bold ">Termín: <i className="text-2xl">
-                                {conferenceDetails.startReview ? `${conferenceDetails.startReview} - ${conferenceDetails.closeReview}` : "No review period"}
-                            </i></div>
+                                {conferenceDetails.startReview ? `${formatDate(conferenceDetails.startReview)} - ${formatDate(conferenceDetails.closeReview)}` : "No review period"}</i>
+                            </div>
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
-                            <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary"
-                                className="p-button-rounded custom-width"
-                                onClick={() => onOpenClick(review, conferenceDetails)} />
-                            <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                                onClick={() => onUpdateClick(review, conferenceDetails)} />
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                                    onClick={() => downloadMostRecentFile(review.id, 'docx')}/>
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success"
+                                    className="docxL custom-width"
+                                    onClick={() => downloadMostRecentFile(review.id, 'pdf')}/>
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
+                            <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="pdfR custom-width"
+                                    onClick={() => onOpenClick(review, conferenceDetails)}/>
+                            <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="docxL custom-width"
+                                    onClick={() => onUpdateClick(review, conferenceDetails)}/>
+                        </div>
+                        <div className="botombutton align-items-center justify-content-between">
                             <Button label="Odoslať" icon="pi pi-send" className="p-button-rounded custom-width"
-                                onClick={() => onSendClick(review)} />
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
+                                    onClick={() => onSendClick(review)}/>
                         </div>
                         {fileHistories[review.id] && (
                             <div className="file-history">
                                 <h3>História súborov</h3>
-                                <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate} />
+                                <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate}/>
                             </div>
                         )}
                     </div>
@@ -508,13 +618,18 @@ export default function WorksToReview() {
                             <div className="font-semibold">{conferenceDetails.name}</div>
                             <div className="font-bold">Škola: <i className="font-semibold">{review.users[0].school.name}</i></div>
                             <div className="font-bold">Fakulta: <i className="font-semibold">{review.users[0].faculty.name}</i></div>
+                            <div className="font-bold ">Kategória: <i className="font-semibold">{review.categories[0].name}</i></div>
                             <Rating value={review.reviews[0].rating} readOnly cancel={false}></Rating>
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
+                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
+                                    onClick={() => downloadMostRecentFile(review.id, 'docx')} />
+                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
+                                    onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
+                        </div>
+                        <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                onClick={() => onOpenClick(review, conferenceDetails)} />
-                            <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'docx')} />
-                            <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="p-button-rounded custom-width" onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
+                                    onClick={() => onOpenClick(review, conferenceDetails)} />
                         </div>
                         {fileHistories[review.id] && (
                             <div className="file-history">
@@ -573,6 +688,11 @@ export default function WorksToReview() {
                 selectedArticle={selectedArticle1}
                 selectedConference={selectedConference}
                 ratings={ratings}
+                columns={columns}
+                boldCodeBodyTemplate={boldCodeBodyTemplate}
+                disabledCheckboxTemplate={disabledCheckboxTemplate}
+                form={form}
+                setForm={setForm}
             />;
 
             <ReviewRateDialog
@@ -597,6 +717,13 @@ export default function WorksToReview() {
                 selectedMinusItem={selectedMinusItem}
                 setSelectedMinusItem={setSelectedMinusItem}
                 deleteFromMinusList={deleteFromMinusList}
+                columns={columns}
+                onCellEditComplete={onCellEditComplete}
+                cellEditor={cellEditor}
+                boldCodeBodyTemplate={boldCodeBodyTemplate}
+                disabledCheckboxTemplate={disabledCheckboxTemplate}
+                form={form}
+                setForm={setForm}
             />;
 
             <ReviewUpdateDialog
@@ -621,6 +748,13 @@ export default function WorksToReview() {
                 setSelectedMinusItem={setSelectedMinusItem}
                 deleteFromPlusList={deleteFromPlusList}
                 deleteFromMinusList={deleteFromMinusList}
+                columns={columns}
+                onCellEditComplete={onCellEditComplete}
+                cellEditor={cellEditor}
+                boldCodeBodyTemplate={boldCodeBodyTemplate}
+                disabledCheckboxTemplate={disabledCheckboxTemplate}
+                form={form}
+                setForm={setForm}
             />
         </div>
     )
