@@ -21,6 +21,7 @@ export default function MyWorks() {
     const [conferences, setConferences] = useState([]);
     const [Category, setCategory] = useState([]);
     const [fileHistories, setFileHistories] = useState({});
+    const [error, setError] = useState(null);
 
     const getUserFromLocalStorage = () => {
         try {
@@ -51,9 +52,19 @@ export default function MyWorks() {
                 const articlesResponse = await axios.get('http://localhost:8080/api/articles');
                 const loadedArticles = articlesResponse.data;
 
+                const userConferences = await Promise.all(
+                    loadedConferences.map(async (conference) => {
+                        const isUserJoined = user ? await checkUserInConference(conference.id, user.id) : false;
+                        return isUserJoined ? conference : null;
+                    })
+                );
+
+                const filteredConferences = userConferences.filter(conference => conference !== null);
+
+                setConferences(filteredConferences);
 
                 const articlesWithConferenceNames = loadedArticles.map(article => {
-                    const relatedConference = loadedConferences.find(conf =>
+                    const relatedConference = filteredConferences.find(conf =>
                         conf.articleId.some(a => a.id === article.id)
                     );
 
@@ -69,8 +80,8 @@ export default function MyWorks() {
                 const filteredArticles = articlesWithConferenceNames.filter(article =>
                     article.users.some(u => u.id === user.id));
 
-                setConferences(loadedConferences); // Nastaviť konferencie
-                setArticles(filteredArticles); // Nastaviť články
+                setArticles(filteredArticles);
+
 
                 const fileHistories = {};
                 for (const article of loadedArticles) {
@@ -94,6 +105,46 @@ export default function MyWorks() {
         fetchData();
         fetchCategory();
     }, []);
+
+    const checkUserInConference = async (conferenceId, userId) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/conferences/${conferenceId}/isUserIn?userId=${userId}`);
+
+            if (!response.ok) throw new Error('Chyba pri overovaní účasti používateľa');
+
+            return await response.json();
+        } catch (error) {
+            setError(error.message);
+            return false;
+        }
+    };
+
+    useEffect(() => {
+        const fetchConferences = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/api/conferences');
+                if (!response.ok) throw new Error('Nepodarilo sa načítať konferencie');
+                const data = await response.json();
+
+                const joinedConferences = await Promise.all(
+                    data.map(async (conference) => {
+                        const isUserJoined = user ? await checkUserInConference(conference.id, user.id) : false;
+                        return isUserJoined ? conference : null;
+                    })
+                );
+
+                const filteredConferences = joinedConferences.filter(conference => conference !== null);
+
+                setConferences(filteredConferences);
+            } catch (error) {
+                setError(error.message);
+            }
+        };
+
+        fetchConferences();
+    }, [user]);
+
+
 
     const downloadFile = (fileId, fileType) => {
         axios.get(`http://localhost:8080/api/files/download/${fileId}/${fileType}`, { responseType: 'blob' })
@@ -162,7 +213,7 @@ export default function MyWorks() {
         setWorkDetailsVisible(true);
     };
 
-    const [name, setName] = useState('');                //Upload Dialog
+    const [name, setName] = useState('');
     const [workUpdate, setWorkUpdate] = useState(false);
     const [optConference, setOptConference] = useState([]);
     const [optCategory, setOptCategory] = useState([]);
