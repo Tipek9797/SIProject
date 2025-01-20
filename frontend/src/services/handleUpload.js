@@ -24,11 +24,13 @@ export const handleUpload = async (files, toast, articleId) => {
         //await axios.post(`http://localhost:8080/api/files/upload/${userID}/${articleId}`, formData);
 
 
-        const jwtToken = localStorage.getItem('jwtToken');
+        /*const jwtToken = localStorage.getItem('jwtToken');
         const config = {
             headers: { Authorization: `Bearer ${jwtToken}` }
-        };
-        await axios.post(`http://localhost:8080/api/files/upload/${articleId}`, formData, config);
+        };*/
+        //await axios.post(`http://localhost:8080/api/files/upload/${articleId}`, formData, config);
+
+        await axios.post(`http://localhost:8080/api/files/upload/${articleId}`, formData);
 
         toast.current.show({ severity: 'success', summary: 'Úspech', detail: 'Úspešne ste nahrali súbory.' });
 

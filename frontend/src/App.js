@@ -20,9 +20,15 @@ import ConferencePage from './pages/settingsPage/ConferencePage';
 import ArticleStatePage from './pages/settingsPage/ArticleStatePage';
 import RolePage from './pages/settingsPage/RolePage';
 import ProsAndConsCategoryPage from './pages/settingsPage/ProsAndConsCategoryPage';
-import EditUserDialog from './components/editUser/EditUserDialog';  //Tu som len pridal routing na tú EditPage
+import EditUserDialog from './components/editUser/EditUserDialog'; //Tu som len pridal routing na tú EditPage
+import axios from "axios";
 
 function App() {
+    const jwtToken = localStorage.getItem('jwtToken');
+    if (jwtToken){
+        axios.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+    }
+
     return (
         <div className="App">
             <Router>
