@@ -10,6 +10,7 @@ import ukf.backend.Model.Review.Review;
 import ukf.backend.Model.User.User;
 import ukf.backend.Model.ArticleState.ArticleState;
 import ukf.backend.Model.ProsAndCons.ProsAndCons;
+import ukf.backend.Model.File.File;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,7 +24,6 @@ public class Article {
     private Long id;
     private String name;
     private LocalDateTime date;
-    private String filePath;
     private Long reviewerId;
 
     @ManyToOne
@@ -38,6 +38,10 @@ public class Article {
     @ManyToOne
     @JoinColumn(name = "state_id")
     private ArticleState state;
+
+    @OneToMany
+    @JoinColumn(name = "article_id")
+    private List<File> files;
 
     @ManyToMany
     @JoinTable(

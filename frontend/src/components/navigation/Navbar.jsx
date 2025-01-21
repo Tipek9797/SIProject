@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
@@ -6,23 +6,24 @@ import './navbar.css';
 
 export default function Navbar() {
     const navigate = useNavigate();
+    const [showMenu, setShowMenu] = useState(false);
 
     const getUserFromLocalStorage = () => {
         try {
             const user = JSON.parse(localStorage.getItem('user'));
-            return user ? user : null;
+            return user && user.roles ? user : { roles: [] };
         } catch (error) {
-            console.error(error);
-            return null;
+            console.error("Error reading user from localStorage:", error);
+            return { roles: [] };
         }
     };
 
     const extractRoleNames = (roles) => {
+        if (!roles || !Array.isArray(roles)) return [];
         return roles.map(role => role.name);
     };
 
     const user = getUserFromLocalStorage();
-
     const token = localStorage.getItem('jwtToken');
     const roleNames = user ? extractRoleNames(user.roles) : [];
 
@@ -87,10 +88,25 @@ export default function Navbar() {
     }
 
     const handleLogout = () => {
+        setShowMenu(false);
         localStorage.removeItem('user');
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('tokenExpiration');
         navigate('/api/login');
+    };
+
+    const toggleMenu = () => {
+        setShowMenu((prevState) => !prevState);
+    };
+
+    const handleEditProfile = () => {
+        const userId = user?.id;
+        if (userId) {
+            setShowMenu(false);
+            navigate(`/edit-user/${userId}`);
+        } else {
+            console.error("User ID is not available.");
+        }
     };
 
     useEffect(() => {
@@ -102,23 +118,35 @@ export default function Navbar() {
                 }
             }
         };
-    
-        const interval = setInterval(checkTokenExpiration, 300000);
-    
-        return () => clearInterval(interval);
-    }, []);
+
+        if (token) {
+            const interval = setInterval(checkTokenExpiration, 300000);
+            return () => clearInterval(interval);
+        }
+    }, [token]);
 
     const end = (
         <div className="user-info">
             {token ? (
                 <>
-                    <span className="user-name">{`${user.name} ${user.surname}`}</span>
-                    <Button 
-                        label="Odhlásiť Sa"
-                        icon="pi pi-sign-out"
-                        className="p-button-danger"
-                        onClick={handleLogout}
-                    />
+                    <div className="user-dropdown">
+                        <Button
+                            label={`${user.name} ${user.surname}`}
+                            icon="pi pi-user"
+                            className="user-button"
+                            onClick={toggleMenu}
+                        />
+                        {showMenu && (
+                            <div className="dropdown-menu">
+                                <button onClick={handleEditProfile} className="dropdown-item">
+                                    Upraviť profil
+                                </button>
+                                <button onClick={handleLogout} className="dropdown-item">
+                                    Odhlásiť sa
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </>
             ) : (
                 <Button

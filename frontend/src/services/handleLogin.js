@@ -18,6 +18,8 @@ export const handleLogin = async ({ email, password, toast, navigate }) => {
         const expirationDate = new Date(decodedToken.exp * 1000);
         localStorage.setItem('tokenExpiration', expirationDate.toString());
 
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
         navigate('/home');
     } catch (error) {
         toast.current.show({ severity: 'error', summary: 'Chyba', detail: error.response?.data?.message ?? 'Prihlásenie sa nepodarilo' });

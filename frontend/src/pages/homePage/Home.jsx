@@ -1,17 +1,39 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from 'primereact/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Messages } from 'primereact/messages';
 import './home.css';
 
 const Home = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const messages = useRef(null);
+
 
     const handleButtonClick = () => {
         navigate('/events');
     };
 
+    useEffect(() => {
+        if (location.state?.message && !sessionStorage.getItem('messageShown')) {
+            messages.current.show({
+                severity: location.state.type || 'info',
+                summary: location.state.message,
+            });
+            sessionStorage.setItem('messageShown', 'true');
+        }
+
+        return () => {
+            sessionStorage.removeItem('messageShown');
+        };
+    }, [location.state]);
+
+
+
+
     return (
         <div>
+            <Messages ref={messages} />
             <div className="background">
                 <div className="transparent-box">
                     <h1>ŠTUDENTSKÁ VEDECKÁ KONFERENCIA</h1>
@@ -28,6 +50,10 @@ const Home = () => {
                         <li>Možnosť získať ocenenie</li>
                         <li>Výstupom je publikácia príspevku</li>
                         <li>Získať nové kontakty</li>
+                        <li>Získanie cenných skúseností</li>
+                        <li>Možnosť rozšíriť svoje portfólio</li>
+                        <li>Príležitosť konzultovať svoju prácu so skúsenými odborníkmi</li>
+                        <li>Podpora osobného rastu a rozvoja kritického myslenia</li>
                     </ul>
                 </div>
 

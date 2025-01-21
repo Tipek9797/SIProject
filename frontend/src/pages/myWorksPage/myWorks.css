@@ -1,24 +1,24 @@
-/*html {
-    font-size: 14px;
-}*/
+.cardWork {
+    padding: 1rem;
+}
 
 .workbox {
-    font-weight: normal;
+    font-weight: bold;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
-    margin-inline: 0.5rem;
-    margin-block: 1rem;
     border-radius: 20px;
     font-size: 50px;
-    padding: 0.5rem;
+    padding: 0;
+    height: auto;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .workcard {
     padding: 0.5rem;
     border-radius: 10px;
     text-align: left;
-    background-color: #61dafb;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .workcard p{
@@ -52,17 +52,6 @@
     border-width: 0.5rem;
 }
 
-.workdialog {
-    text-align: center;
-}
-
-.worktext{
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-}
-
 .work-details-text{
     display: flex;
     flex-direction: column;
@@ -94,7 +83,7 @@
 }
 
 .work-dialog-details{
-    background-color: #02925f;
+    background-color: rgba(0, 0, 0, 0.5);
     padding: 1rem;
 }
 
@@ -104,7 +93,7 @@
 }
 
 .work-dialog-upload{
-    background-color: #02925f;
+    background-color: rgba(0, 0, 0, 0.5);
     padding: 1rem;
 }
 
@@ -123,4 +112,22 @@
 
 .rating-table-container .p-column-title{
     font-size: 20px;
+}
+
+.up-down{
+    margin-top: 2rem;
+}
+
+.uppercase-label {
+    text-transform: uppercase;
+}
+
+.pdfR{
+    border-radius: 30px 0 0 30px;
+    border: 1px solid darkgray;
+}
+
+.docxL{
+    border-radius: 0 30px 30px 0;
+    border: 1px solid darkgray;
 }

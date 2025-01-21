@@ -1,0 +1,55 @@
+.event-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    padding: 20px;
+}
+
+.event-card {
+    width: 400px;
+    cursor: pointer;
+}
+
+.event-dates p {
+    margin: 5px 0;
+}
+
+.event-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.event-card .pi-sign-in,
+.event-card .pi-user-plus {
+    margin-right: 10px;
+}
+
+.event-actions button {
+    margin-left: 10px;
+}
+
+.eventButton-secondary {
+    background-color: mediumseagreen;
+    color: white;
+}
+
+.eventButton-success {
+    background-color: dodgerblue;
+    color: white;
+}
+
+.eventButton-secondary:hover {
+    background-color: seagreen;
+}
+
+.eventButton-success:hover {
+    background-color: dodgerblue;
+}

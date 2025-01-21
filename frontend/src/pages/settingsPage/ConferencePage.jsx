@@ -16,7 +16,7 @@ export default function ConferencePage() {
     const [conferences, setConferences] = useState([]);
     const [forms, setForms] = useState([]);
     const [displayDialog, setDisplayDialog] = useState(false);
-    const [addConference, setAddConference] = useState({ name: '', state: '', startUpload: null, closeUpload: null, startReview: null, closeReview: null, formId: null });
+    const [addConference, setAddConference] = useState({ name: '', state: 'Zatvorená', startUpload: null, closeUpload: null, startReview: null, closeReview: null, formId: null, description: '', conferenceStart: null, conferenceEnd: null });
     const [selectedConferences, setSelectedConferences] = useState([]);
     const [editingConference, setEditingConference] = useState(null);
     const [filters, setFilters] = useState({
@@ -41,7 +41,7 @@ export default function ConferencePage() {
     }, []);
 
     const openNewConferenceDialog = () => {
-        setAddConference({ name: '', state: '', startUpload: null, closeUpload: null, startReview: null, closeReview: null, formId: null });
+        setAddConference({ name: '', state: 'Zatvorená', startUpload: null, closeUpload: null, startReview: null, closeReview: null, formId: null, description: '', conferenceStart: null, conferenceEnd: null });
         setEditingConference(null);
         setDisplayDialog(true);
     };
@@ -81,7 +81,9 @@ export default function ConferencePage() {
             closeUpload: dateFormat(addConference.closeUpload),
             startReview: dateFormat(addConference.startReview),
             closeReview: dateFormat(addConference.closeReview),
-            formId: addConference.formId
+            conferenceStart: dateFormat(addConference.conferenceStart),
+            conferenceEnd: dateFormat(addConference.conferenceEnd),
+            formId: 1
         };
         axios.post('http://localhost:8080/api/conferences', formattedConference)
             .then(response => {
@@ -98,7 +100,9 @@ export default function ConferencePage() {
             closeUpload: dateFormat(conference.closeUpload),
             startReview: dateFormat(conference.startReview),
             closeReview: dateFormat(conference.closeReview),
-            formId: conference.formId
+            conferenceStart: dateFormat(conference.conferenceStart),
+            conferenceEnd: dateFormat(conference.conferenceEnd),
+            formId: 1
         };
         axios.put(`http://localhost:8080/api/conferences/${conference.id}`, formattedConference)
             .then(response => {
@@ -148,12 +152,14 @@ export default function ConferencePage() {
                 <Column selectionMode="multiple" headerStyle={{ width: '3em' }} />
                 <Column field="id" header="ID" sortable />
                 <Column field="name" header="Názov" filter filterPlaceholder="Vyhľadať" editor={(options) => <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />} sortable />
-                <Column field="state" header="Stav" filter filterPlaceholder="Vyhľadať" editor={(options) => <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />} sortable />
+                <Column field="state" header="Stav" filter filterPlaceholder="Vyhľadať" sortable />
+                <Column field="conferenceStart" header="Začiatok Konferencie" body={(rowData) => displayDate(rowData.conferenceStart)} editor={(options) => <Calendar value={new Date(options.value)} onChange={(e) => options.editorCallback(e.value)} showIcon showTime />} sortable />
+                <Column field="conferenceEnd" header="Koniec Konferencie" body={(rowData) => displayDate(rowData.conferenceEnd)} editor={(options) => <Calendar value={new Date(options.value)} onChange={(e) => options.editorCallback(e.value)} showIcon showTime />} sortable />
                 <Column field="startUpload" header="Začiatok Nahrávania" body={(rowData) => displayDate(rowData.startUpload)} editor={(options) => <Calendar value={new Date(options.value)} onChange={(e) => options.editorCallback(e.value)} showIcon showTime />} sortable />
                 <Column field="closeUpload" header="Koniec Nahrávania" body={(rowData) => displayDate(rowData.closeUpload)} editor={(options) => <Calendar value={new Date(options.value)} onChange={(e) => options.editorCallback(e.value)} showIcon showTime />} sortable />
                 <Column field="startReview" header="Začiatok Hodnotenia" body={(rowData) => displayDate(rowData.startReview)} editor={(options) => <Calendar value={new Date(options.value)} onChange={(e) => options.editorCallback(e.value)} showIcon showTime />} sortable />
                 <Column field="closeReview" header="Koniec Hodnotenia" body={(rowData) => displayDate(rowData.closeReview)} editor={(options) => <Calendar value={new Date(options.value)} onChange={(e) => options.editorCallback(e.value)} showIcon showTime />} sortable />
-                <Column field="formId" header="Id Formulára" filter filterPlaceholder="Vyhľadať" editor={(options) => <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />} sortable />
+                <Column field="description" header="Popis" filter filterPlaceholder="Vyhľadať" editor={(options) => <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />} sortable />
                 <Column rowEditor headerStyle={{ width: '7rem' }} bodyStyle={{ textAlign: 'center' }} />
             </DataTable>
 
@@ -164,8 +170,12 @@ export default function ConferencePage() {
                         <InputText id="name" value={addConference.name} onChange={(e) => setAddConference({ ...addConference, name: e.target.value })} />
                     </div>
                     <div className="p-field">
-                        <label htmlFor="state">Stav</label>
-                        <InputText id="state" value={addConference.state} onChange={(e) => setAddConference({ ...addConference, state: e.target.value })} />
+                        <label htmlFor="conferenceStart">Začiatok Konferencie</label>
+                        <Calendar id="conferenceStart" value={addConference.conferenceStart} onChange={(e) => setAddConference({ ...addConference, conferenceStart: e.value })} showIcon showTime />
+                    </div>
+                    <div className="p-field">
+                        <label htmlFor="conferenceEnd">Koniec Konferencie</label>
+                        <Calendar id="conferenceEnd" value={addConference.conferenceEnd} onChange={(e) => setAddConference({ ...addConference, conferenceEnd: e.value })} showIcon showTime />
                     </div>
                     <div className="p-field">
                         <label htmlFor="startUpload">Začiatok Nahrávania</label>
@@ -183,9 +193,9 @@ export default function ConferencePage() {
                         <label htmlFor="closeReview">Koniec Hodnotenia</label>
                         <Calendar id="closeReview" value={addConference.closeReview} onChange={(e) => setAddConference({ ...addConference, closeReview: e.value })} showIcon showTime />
                     </div>
-                    <div className="p-field">
-                        <label htmlFor="formId">Id Formulára</label>
-                        <InputText id="formId" value={addConference.formId} onChange={(e) => setAddConference({ ...addConference, formId: e.target.value })} />
+                    <div className="field">
+                        <label htmlFor="description">Popis</label>
+                        <InputText id="description" value={addConference.description} onChange={(e) => setAddConference({ ...addConference, description: e.target.value })} />
                     </div>
                     <Button label="Pridať" icon="pi pi-check" onClick={saveNewConference} />
                 </Dialog>
