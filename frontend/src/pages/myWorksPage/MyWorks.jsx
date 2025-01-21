@@ -294,15 +294,16 @@ export default function MyWorks() {
             const articleData = {
                 name: name,
                 date: selectedArticle.date,
-                reviewerId: user.id,
+                reviewerId: selectedArticle.reviewerId ? selectedArticle.reviewerId : null,
                 conferenceId: matchingConference.id,
                 categoryIds: [matchingCategory.id],
                 userIds: [user.id],
                 stateId: selectedArticle.state.id
             };
 
-            await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData)
-                .finally(() => window.location.reload());
+            await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData);
+            console.log("Article updated successfully.");
+            fetchData();
             setWorkUploadVisible(false);
             setWorkUpdate(false);
         } catch (error) {
@@ -339,7 +340,7 @@ export default function MyWorks() {
             const articleData = {
                 name: name,
                 date: new Date(),
-                reviewerId: user.id,
+                reviewerId: null,
                 conferenceId: matchingConference.id,
                 categoryIds: [matchingCategory.id],
                 userIds: [user.id],
@@ -447,7 +448,7 @@ export default function MyWorks() {
                     }}></i>
                 </div>
                 <span style={{ fontSize: '1.2em', color: 'var(--text-color-secondary)' }} className="my-5">
-                    <br />Drag and Drop Files Here
+                    <br />Potiahnite súbory sem alebo kliknite na tlačidlo
                 </span>
             </div>
         );
@@ -576,7 +577,7 @@ export default function MyWorks() {
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
         const hasFiles = fileHistories[article.id] && fileHistories[article.id].length > 0;
 
-        if (article.state.name !== "Odoslané" && article.conferenceState === "Otvorena") {
+        if (article.state.name !== "Odoslané" && article.conferenceState === "Otvorená") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -630,7 +631,7 @@ export default function MyWorks() {
         /*const today = new Date();
         && article.conferenceEnd < today*/
 
-        if (article.state.name === "Ohodnotené" && article.conferenceState !== "Otvorena") {
+        if (article.state.name === "Ohodnotené" && article.conferenceState !== "Otvorená") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
