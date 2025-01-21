@@ -228,22 +228,30 @@ const Event = () => {
                     onHide={() => setVisible(false)}
                 >
                     <p>
-                        <strong>Stav:</strong> {selectedConference.state}
+                        <strong>Stav: </strong> {selectedConference.state}
                     </p>
                     <p>
-                        <strong>Začiatok konferencie:</strong>{' '}
+                        <strong>Začiatok konferencie: </strong>
+                        {new Date(selectedConference.conferenceStart).toLocaleString()}
+                    </p>
+                    <p>
+                        <strong>Koniec konferencie: </strong>
+                        {new Date(selectedConference.conferenceEnd).toLocaleString()}
+                    </p>
+                    <p>
+                        <strong>Začiatok nahrávania: </strong>
                         {new Date(selectedConference.startUpload).toLocaleString()}
                     </p>
                     <p>
-                        <strong>Koniec konferencie:</strong>{' '}
+                        <strong>Koniec nahrávania: </strong>
                         {new Date(selectedConference.closeUpload).toLocaleString()}
                     </p>
                     <p>
-                        <strong>Začiatok hodnotenia:</strong>{' '}
+                        <strong>Začiatok hodnotenia: </strong>
                         {new Date(selectedConference.startReview).toLocaleString()}
                     </p>
                     <p>
-                        <strong>Koniec hodnotenia:</strong>{' '}
+                        <strong>Koniec hodnotenia: </strong>
                         {new Date(selectedConference.closeReview).toLocaleString()}
                     </p>
                     <p>
