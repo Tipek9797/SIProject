@@ -257,6 +257,16 @@ export default function MyWorks() {
         setOptCategory(filteredCategoryOpt);
     };
 
+    // Send button -----------------------------------------------------------------------------------------------------
+    const onSendClick = (article) => {
+        const changeState = {
+            stateId: 2,
+        };
+        axios.patch(`http://localhost:8080/api/articles/${article.id}`, changeState)
+            .catch(error => console.error(error))
+            .finally(() => window.location.reload());
+    };
+
     // Update buttons --------------------------------------------------------------------------------------------------
     const onUpdateClick = (WorkDetails) => {
         Options();
@@ -294,15 +304,15 @@ export default function MyWorks() {
             const articleData = {
                 name: name,
                 date: selectedArticle.date,
-                reviewerId: user.id,
+                reviewerId: selectedArticle.reviewerId ? selectedArticle.reviewerId : null,
                 conferenceId: matchingConference.id,
                 categoryIds: [matchingCategory.id],
                 userIds: [user.id],
                 stateId: selectedArticle.state.id
             };
 
-            await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData)
-                .finally(() => window.location.reload());
+            await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData);
+            console.log("Article updated successfully.");
             setWorkUploadVisible(false);
             setWorkUpdate(false);
         } catch (error) {
@@ -339,7 +349,7 @@ export default function MyWorks() {
             const articleData = {
                 name: name,
                 date: new Date(),
-                reviewerId: user.id,
+                reviewerId: null,
                 conferenceId: matchingConference.id,
                 categoryIds: [matchingCategory.id],
                 userIds: [user.id],
@@ -447,7 +457,7 @@ export default function MyWorks() {
                     }}></i>
                 </div>
                 <span style={{ fontSize: '1.2em', color: 'var(--text-color-secondary)' }} className="my-5">
-                    <br />Drag and Drop Files Here
+                    <br />Potiahnite súbory sem alebo kliknite na tlačidlo
                 </span>
             </div>
         );
@@ -546,21 +556,27 @@ export default function MyWorks() {
                         {hasFiles && (
                             <div className="flex botombutton align-items-center justify-content-between">
                                 <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                        onClick={() => downloadMostRecentFile(article.id, 'docx')}/>
                                 <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                                        onClick={() => downloadMostRecentFile(article.id, 'pdf')}/>
                             </div>
                         )}
                         <div className="botombutton align-items-center justify-content-between">
                             {relatedConference && isUploadPeriodActive(relatedConference) && (
                                 <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                                        onClick={() => onUpdateClick(article)} />
+                                        onClick={() => onUpdateClick(article)}/>
+                            )}
+                        </div>
+                        <div className="botombutton align-items-center justify-content-between">
+                            {relatedConference && isUploadPeriodActive(relatedConference) && (
+                            <Button label="Poslať na hodnotenie" icon="pi pi-send" className="p-button-rounded custom-width"
+                                    onClick={() => onSendClick(article)}/>
                             )}
                         </div>
                         {fileHistories[article.id] && (
                             <div className="file-history">
                                 <h3>História súborov</h3>
-                                <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate} />
+                                <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate}/>
                             </div>
                         )}
                     </div>
@@ -576,7 +592,7 @@ export default function MyWorks() {
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
         const hasFiles = fileHistories[article.id] && fileHistories[article.id].length > 0;
 
-        if (article.state.name !== "Odoslané" && article.conferenceState === "Otvorena") {
+        if (article.state.name !== "Odoslané" && article.conferenceState === "Otvorená") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -630,7 +646,7 @@ export default function MyWorks() {
         /*const today = new Date();
         && article.conferenceEnd < today*/
 
-        if (article.state.name === "Ohodnotené" && article.conferenceState !== "Otvorena") {
+        if (article.state.name === "Ohodnotené" && article.conferenceState !== "Otvorená") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
