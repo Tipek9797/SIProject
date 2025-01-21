@@ -101,6 +101,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/schools/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,"/api/users/**").hasAnyRole("ADMIN", "REVIEWER", "USER")
                         .requestMatchers(HttpMethod.PUT,"/api/users/**").hasAnyRole("ADMIN", "REVIEWER", "USER")
+                        .requestMatchers(HttpMethod.PATCH,"/api/users/**").hasAnyRole("ADMIN", "REVIEWER", "USER")
                         .requestMatchers("/api/users/**").hasAnyRole("ADMIN")
                         .anyRequest().authenticated()
 

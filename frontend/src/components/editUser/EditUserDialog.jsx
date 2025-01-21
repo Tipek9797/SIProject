@@ -21,6 +21,7 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
                 if (!userResponse) throw new Error("Nepodarilo sa načítať údaje používateľa");
 
                 const userData = await userResponse.data;
+                
                 setUserData(userData);
                 setFirstName(userData.name || "");
                 setLastName(userData.surname || "");
@@ -37,12 +38,12 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
     const handleSave = async () => {
         try {
             const updatedUser = {
-                ...userData,
                 name: firstName,
                 surname: lastName,
+                email: email,
             };
 
-            const response = await axios.put(`http://localhost:8080/api/users/${id}`, updatedUser);
+            const response = await axios.patch(`http://localhost:8080/api/users/${id}`, updatedUser);
 
             if (!response) {
                 throw new Error("Chyba pri aktualizácii používateľa");
