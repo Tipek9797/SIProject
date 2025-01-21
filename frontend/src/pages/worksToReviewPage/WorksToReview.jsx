@@ -25,6 +25,8 @@ export default function WorksToReview() {
     const [Conferences, setConferences] = useState([]);
     const [fileHistories, setFileHistories] = useState({});
     const [form, setForm] = useState([]);
+    const [refresh, setRefresh] = useState([]);
+
 
     const getUserFromLocalStorage = () => {
         try {
@@ -74,7 +76,7 @@ export default function WorksToReview() {
 
         ReviewService.getProducts().then((data) => setForm(data));
         fetchData();
-    }, []);
+    }, [refresh]);
 
     const formatDate = (dateString) => {
         if (!dateString) return null; // Handle missing or invalid dates
@@ -374,9 +376,9 @@ export default function WorksToReview() {
         }
     }, [editVisible, selectedArticle3, setForm]);
 
-    const handleSubmitForm = async () => {
+    const handleSubmitForm = async (reviewID) => {
         const formData = {
-            reviewId: selectedArticle3.id,
+            reviewId: reviewID,
             aktualnostNarocnostPrace: form.find(f => f.id === 'aktualnost_narocnost_prace').name,
             orientovanieStudentaProblematike: form.find(f => f.id === 'orientovanie_studenta_problematike').name,
             vhodnostZvolenychMetod: form.find(f => f.id === 'vhodnost_zvolenych_metod').name,
@@ -401,13 +403,13 @@ export default function WorksToReview() {
         };
 
         try {
-            const existingFormResponse = await axios.get(`http://localhost:8080/api/forms/review/${selectedArticle3.id}`);
+            const existingFormResponse = await axios.get(`http://localhost:8080/api/forms/review/${reviewID}`);
             if (existingFormResponse.data.length > 0) {
                 await axios.patch(`http://localhost:8080/api/forms/${existingFormResponse.data[0].id}`, formData);
             } else {
                 await axios.post('http://localhost:8080/api/forms', formData);
             }
-            ReviewService.fetchFormData(selectedArticle3.id).then(data => {
+            ReviewService.fetchFormData(reviewID).then(data => {
                 setForm(data);
             });
         } catch (error) {
@@ -423,10 +425,9 @@ export default function WorksToReview() {
             isAccepted: 0,
             articleId: selectedArticle2.id,
         };
-        handleSubmitForm();
+        handleSubmitForm(selectedArticle2.id);
         axios.post('http://localhost:8080/api/reviews', newReview)
-            .catch(error => console.error(error))
-            .finally(() => window.location.reload());
+            .catch(error => console.error(error));
 
         plusList.forEach((newProText) => {
             const newPro = {
@@ -447,6 +448,7 @@ export default function WorksToReview() {
             axios.post('http://localhost:8080/api/pros-and-cons', newCon)
                 .catch(error => console.error(error));
         });
+        setRefresh(refresh+1);
     };
 
     const onUpdateClick = (ReviewDetails, ConferenceName) => {
@@ -480,14 +482,14 @@ export default function WorksToReview() {
     const onUpdateSendClick = () => {
         setEditVisible(false);
         axios.delete(`http://localhost:8080/api/reviews/${reviewID}`)
-            .catch(error => { console.error(error); })
-            .finally(() => window.location.reload());
+            .catch(error => { console.error(error); });
         const newReview = {
             rating: starValue,
             comment: inputTextValue,
             isAccepted: 0,
             articleId: selectedArticle3.id,
         };
+        handleSubmitForm(selectedArticle3.id);
         axios.post('http://localhost:8080/api/reviews', newReview)
             .catch(error => console.error(error));
 
@@ -513,6 +515,7 @@ export default function WorksToReview() {
             axios.post('http://localhost:8080/api/pros-and-cons', newCon)
                 .catch(error => console.error(error));
         });
+        setRefresh(refresh+1);
     };
 
     const onSendClick = (ReviewDetails) => {
@@ -520,14 +523,9 @@ export default function WorksToReview() {
             stateId: 3,
         };
         axios.patch(`http://localhost:8080/api/articles/${ReviewDetails.id}`, changeState)
-            .catch(error => console.error(error))
-            .finally(() => window.location.reload());
+            .catch(error => console.error(error));
 
-        /*const changeAccepted = {
-            isAccepted: true,
-        };
-        axios.patch(`http://localhost:8080/api/reviews/${ReviewDetails.reviews[0].id}`, changeAccepted)
-            .catch(error => console.error(error));*/
+        setRefresh(refresh+1);
     };
 
     // Grid Usporiadanie ------------------------------------------------------------------------------------

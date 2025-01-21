@@ -45,55 +45,6 @@ const ReviewRateDialog = ({
     setForm,
 }) => {
 
-    useEffect(() => {
-        if (visible && selectedArticle) {
-            ReviewService.fetchFormData(selectedArticle.id).then(data => {
-                setForm(data);
-            });
-        }
-    }, [visible, selectedArticle, setForm]);
-
-    const handleSubmitForm = async () => {
-        const formData = {
-            reviewId: selectedArticle.id,
-            aktualnostNarocnostPrace: form.find(f => f.id === 'aktualnost_narocnost_prace').name,
-            orientovanieStudentaProblematike: form.find(f => f.id === 'orientovanie_studenta_problematike').name,
-            vhodnostZvolenychMetod: form.find(f => f.id === 'vhodnost_zvolenych_metod').name,
-            rozsahUrovenDosiahnutychVysledkov: form.find(f => f.id === 'rozsah_uroven_dosiahnutych_vysledkov').name,
-            analyzaInterpretaciaVysledkov: form.find(f => f.id === 'analyza_interpretacia_vysledkov').name,
-            prehladnostLogickaStrukturaPrace: form.find(f => f.id === 'prehladnost_logicka_struktura_prace').name,
-            formalnaJazykovaStylistickaUrovenPrace: form.find(f => f.id === 'formalna_jazykova_stylisticka_uroven_prace').name,
-            pracaZodpovedaSablone: form.find(f => f.id === 'praca_zodpoveda_sablone').name,
-            chybaNazovPrace: form.find(f => f.id === 'chyba_nazov_prace').name,
-            chybaMenoAutora: form.find(f => f.id === 'chyba_meno_autora').name,
-            chybaPracovnaEmailovaAdresa: form.find(f => f.id === 'chyba_pracovna_emailova_adresa').name,
-            chybaAbstrakt: form.find(f => f.id === 'chyba_abstrakt').name,
-            abstraktNesplnaRozsah: form.find(f => f.id === 'abstrakt_nesplna_rozsah').name,
-            chybajuKlucoveSlova: form.find(f => f.id === 'chybaju_klucove_slova').name,
-            chybajuUvodVysledkyDiskusia: form.find(f => f.id === 'chybaju_uvod_vysledky_diskusia').name,
-            nieSuUvedeneZdroje: form.find(f => f.id === 'nie_su_uvedene_zdroje').name,
-            chybaRef: form.find(f => f.id === 'chyba_ref').name,
-            chybaRefObr: form.find(f => f.id === 'chyba_ref_obr').name,
-            obrazkomChybaPopis: form.find(f => f.id === 'obrazkom_chyba_popis').name,
-            prinos: form.find(f => f.id === 'prinos').name,
-            nedostatky: form.find(f => f.id === 'nedostatky').name,
-        };
-
-        try {
-            const existingFormResponse = await axios.get(`http://localhost:8080/api/forms/review/${selectedArticle.id}`);
-            if (existingFormResponse.data.length > 0) {
-                await axios.patch(`http://localhost:8080/api/forms/${existingFormResponse.data[0].id}`, formData);
-            } else {
-                await axios.post('http://localhost:8080/api/forms', formData);
-            }
-            ReviewService.fetchFormData(selectedArticle.id).then(data => {
-                setForm(data);
-            });
-        } catch (error) {
-            console.error('Error submitting form:', error);
-        }
-    };
-
     return (
         <>
             {selectedArticle && (
@@ -168,14 +119,6 @@ const ReviewRateDialog = ({
                                 );
                             })}
                         </DataTable>
-                        <div className="flex justify-content-center">
-                            <Button
-                                label="Odoslať formulár"
-                                icon="pi pi-send"
-                                className="p-button-rounded custom-width"
-                                onClick={handleSubmitForm}
-                            />
-                        </div>
                     </div>
                     <div>
                         <Divider />

@@ -16,6 +16,7 @@ import {ReviewService} from "../worksToReviewPage/service/ReviewService";
 import "./myWorks.css";
 import axios from "axios";
 import { handleUpload } from "../../services/handleUpload";
+
 export default function MyWorks() {
     // Databaza --------------------------------------------------------------------------------------------------------
     const [Articles, setArticles] = useState([]);
@@ -24,6 +25,7 @@ export default function MyWorks() {
     const [fileHistories, setFileHistories] = useState({});
     const [form, setForm] = useState([]);
     const [error, setError] = useState(null);
+    const [refresh, setRefresh] = useState([]);
 
     const getUserFromLocalStorage = () => {
         try {
@@ -102,7 +104,7 @@ export default function MyWorks() {
         ReviewService.getProducts().then((data) => setForm(data));
         fetchData();
         fetchCategory();
-    }, []);
+    }, [refresh]);
 
     const checkUserInConference = async (conferenceId, userId) => {
         try {
@@ -252,6 +254,17 @@ export default function MyWorks() {
         setOptCategory(filteredCategoryOpt);
     };
 
+    // Send button -----------------------------------------------------------------------------------------------------
+    const onSendClick = (article) => {
+        const changeState = {
+            stateId: 2,
+        };
+        axios.patch(`http://localhost:8080/api/articles/${article.id}`, changeState)
+            .catch(error => console.error(error));
+
+        setRefresh(refresh+1);
+    };
+
     // Update buttons --------------------------------------------------------------------------------------------------
     const onUpdateClick = (WorkDetails) => {
         Options();
@@ -299,6 +312,7 @@ export default function MyWorks() {
             await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData);
             setWorkUploadVisible(false);
             setWorkUpdate(false);
+            setRefresh(refresh+1);
         } catch (error) {
             console.error("Error updating article name:", error);
             toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa upraviť názov článku.' });
@@ -310,6 +324,7 @@ export default function MyWorks() {
             await handleUpload(files, toast, selectedArticle.id);
             setWorkUploadVisible(false);
             setWorkUpdate(false);
+            setRefresh(refresh+1);
         } catch (error) {
             console.error("Error uploading new files:", error);
             toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa nahrať nové súbory.' });
@@ -340,14 +355,14 @@ export default function MyWorks() {
                 stateId: 1
             };
 
-            const response = await axios.post('http://localhost:8080/api/articles', articleData)
-                .finally(() => window.location.reload());
+            const response = await axios.post('http://localhost:8080/api/articles', articleData);
 
             const articleId = response.data.id;
 
             await handleUpload(files, toast, articleId);
 
             setWorkUploadVisible(false);
+            setRefresh(refresh+1);
         } catch (error) {
             console.error("Error creating article or uploading file:", error);
             toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa vytvoriť článok alebo nahrať súbory.' });
@@ -540,21 +555,27 @@ export default function MyWorks() {
                         {hasFiles && (
                             <div className="flex botombutton align-items-center justify-content-between">
                                 <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                        onClick={() => downloadMostRecentFile(article.id, 'docx')}/>
                                 <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                                        onClick={() => downloadMostRecentFile(article.id, 'pdf')}/>
                             </div>
                         )}
                         <div className="botombutton align-items-center justify-content-between">
                             {relatedConference && isUploadPeriodActive(relatedConference) && (
                                 <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                                        onClick={() => onUpdateClick(article)} />
+                                        onClick={() => onUpdateClick(article)}/>
+                            )}
+                        </div>
+                        <div className="botombutton align-items-center justify-content-between">
+                            {relatedConference && isUploadPeriodActive(relatedConference) && (
+                            <Button label="Poslať na hodnotenie" icon="pi pi-send" className="p-button-rounded custom-width"
+                                    onClick={() => onSendClick(article)}/>
                             )}
                         </div>
                         {fileHistories[article.id] && (
                             <div className="file-history">
                                 <h3>História súborov</h3>
-                                <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate} />
+                                <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate}/>
                             </div>
                         )}
                     </div>
