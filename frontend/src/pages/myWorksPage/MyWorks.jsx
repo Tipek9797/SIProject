@@ -25,6 +25,7 @@ export default function MyWorks() {
     const [fileHistories, setFileHistories] = useState({});
     const [form, setForm] = useState([]);
     const [error, setError] = useState(null);
+    const [refresh, setRefresh] = useState([]);
 
     const getUserFromLocalStorage = () => {
         try {
@@ -42,10 +43,6 @@ export default function MyWorks() {
             .catch(error => console.error(error));
     };
 
-    /////////////////////////////////////////////////////////////////
-    /*!!!Toto funguje ale treba nastavit aby v article -> conference_id aby sa nastavilo automaticky lebo inak sa name
-    Konferencie neupdatuje na frontende. Treba to manualne do databazy davat aby to islo.
-     */
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -107,7 +104,7 @@ export default function MyWorks() {
         ReviewService.getProducts().then((data) => setForm(data));
         fetchData();
         fetchCategory();
-    }, []);
+    }, [refresh]);
 
     const checkUserInConference = async (conferenceId, userId) => {
         try {
@@ -257,6 +254,17 @@ export default function MyWorks() {
         setOptCategory(filteredCategoryOpt);
     };
 
+    // Send button -----------------------------------------------------------------------------------------------------
+    const onSendClick = (article) => {
+        const changeState = {
+            stateId: 2,
+        };
+        axios.patch(`http://localhost:8080/api/articles/${article.id}`, changeState)
+            .catch(error => console.error(error));
+
+        setRefresh(refresh+1);
+    };
+
     // Update buttons --------------------------------------------------------------------------------------------------
     const onUpdateClick = (WorkDetails) => {
         Options();
@@ -294,17 +302,17 @@ export default function MyWorks() {
             const articleData = {
                 name: name,
                 date: selectedArticle.date,
-                reviewerId: user.id,
+                reviewerId: selectedArticle.reviewerId ? selectedArticle.reviewerId : null,
                 conferenceId: matchingConference.id,
                 categoryIds: [matchingCategory.id],
                 userIds: [user.id],
                 stateId: selectedArticle.state.id
             };
 
-            await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData)
-                .finally(() => window.location.reload());
+            await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData);
             setWorkUploadVisible(false);
             setWorkUpdate(false);
+            setRefresh(refresh+1);
         } catch (error) {
             console.error("Error updating article name:", error);
             toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa upraviť názov článku.' });
@@ -316,6 +324,7 @@ export default function MyWorks() {
             await handleUpload(files, toast, selectedArticle.id);
             setWorkUploadVisible(false);
             setWorkUpdate(false);
+            setRefresh(refresh+1);
         } catch (error) {
             console.error("Error uploading new files:", error);
             toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa nahrať nové súbory.' });
@@ -339,21 +348,21 @@ export default function MyWorks() {
             const articleData = {
                 name: name,
                 date: new Date(),
-                reviewerId: user.id,
+                reviewerId: null,
                 conferenceId: matchingConference.id,
                 categoryIds: [matchingCategory.id],
                 userIds: [user.id],
                 stateId: 1
             };
 
-            const response = await axios.post('http://localhost:8080/api/articles', articleData)
-                .finally(() => window.location.reload());
+            const response = await axios.post('http://localhost:8080/api/articles', articleData);
 
             const articleId = response.data.id;
 
             await handleUpload(files, toast, articleId);
 
             setWorkUploadVisible(false);
+            setRefresh(refresh+1);
         } catch (error) {
             console.error("Error creating article or uploading file:", error);
             toast.current.show({ severity: 'error', summary: 'Chyba', detail: 'Nepodarilo sa vytvoriť článok alebo nahrať súbory.' });
@@ -447,7 +456,7 @@ export default function MyWorks() {
                     }}></i>
                 </div>
                 <span style={{ fontSize: '1.2em', color: 'var(--text-color-secondary)' }} className="my-5">
-                    <br />Drag and Drop Files Here
+                    <br />Potiahnite súbory sem alebo kliknite na tlačidlo
                 </span>
             </div>
         );
@@ -546,21 +555,27 @@ export default function MyWorks() {
                         {hasFiles && (
                             <div className="flex botombutton align-items-center justify-content-between">
                                 <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                        onClick={() => downloadMostRecentFile(article.id, 'docx')}/>
                                 <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                                        onClick={() => downloadMostRecentFile(article.id, 'pdf')}/>
                             </div>
                         )}
                         <div className="botombutton align-items-center justify-content-between">
                             {relatedConference && isUploadPeriodActive(relatedConference) && (
                                 <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                                        onClick={() => onUpdateClick(article)} />
+                                        onClick={() => onUpdateClick(article)}/>
+                            )}
+                        </div>
+                        <div className="botombutton align-items-center justify-content-between">
+                            {relatedConference && isUploadPeriodActive(relatedConference) && (
+                            <Button label="Poslať na hodnotenie" icon="pi pi-send" className="p-button-rounded custom-width"
+                                    onClick={() => onSendClick(article)}/>
                             )}
                         </div>
                         {fileHistories[article.id] && (
                             <div className="file-history">
                                 <h3>História súborov</h3>
-                                <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate} />
+                                <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate}/>
                             </div>
                         )}
                     </div>
@@ -576,7 +591,7 @@ export default function MyWorks() {
         const articleConferenceDate = article.conferenceStartUpload ? `${formatDate(article.conferenceStartUpload)} - ${formatDate(article.conferenceCloseUpload)}` : "Nezadaný termín";
         const hasFiles = fileHistories[article.id] && fileHistories[article.id].length > 0;
 
-        if (article.state.name !== "Odoslané" && article.conferenceState === "Otvorena") {
+        if (article.state.name !== "Odoslané" && article.conferenceState === "Otvorená") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">
@@ -630,7 +645,7 @@ export default function MyWorks() {
         /*const today = new Date();
         && article.conferenceEnd < today*/
 
-        if (article.state.name === "Ohodnotené" && article.conferenceState !== "Otvorena") {
+        if (article.state.name === "Ohodnotené" && article.conferenceState !== "Otvorená") {
             return (
                 <div className="col-12 sm:col-6 lg:col-12 xl:col-4 p-2" key={article.id}>
                     <div className="p-4 border-1 surface-border surface-card border-round">

@@ -92,9 +92,9 @@ export default function WorkUploadDialog({
                 </div>
             </div>
             <div className="rating-table-container">
-                <Tooltip target=".custom-choose-btn" content="Browse" position="bottom"/>
+                <Tooltip target=".custom-choose-btn" content="Prehľadávať" position="bottom"/>
                 {/*<Tooltip target=".custom-upload-btn" content="Upload" position="bottom" />*/}
-                <Tooltip target=".custom-cancel-btn" content="Clear" position="bottom"/>
+                <Tooltip target=".custom-cancel-btn" content="Vyčistiť" position="bottom"/>
 
                 <FileUpload
                     ref={fileUploadRef}

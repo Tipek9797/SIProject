@@ -36,7 +36,6 @@ export default function AllWorks() {
                 );
                 setArticles(articlesWithConferences);
                 setConferences(response.data.map(conference => ({ label: conference.name, value: conference.id })));
-                console.log("articles --- ", articlesWithConferences);
             })
             .catch(error => console.error(error));
     };
@@ -57,7 +56,7 @@ export default function AllWorks() {
 
     const fetchReviewers = () => {
         axios.get('http://localhost:8080/api/users/reviewers')
-            .then(response => { setUsers(response.data); console.log("reviewers --- ", response.data); })
+            .then(response => { setUsers(response.data) })
             .catch(error => console.error(error));
     };
 
@@ -92,7 +91,6 @@ export default function AllWorks() {
 
         _articles[index] = newData;
         setArticles(_articles);
-        console.log('Updated data:', updatedData);
 
         axios.patch(`http://localhost:8080/api/articles/${newData.id}`, updatedData)
             .then(response => fetchArticles())
@@ -138,7 +136,6 @@ export default function AllWorks() {
                 optionValue="id"
                 onChange={(e) => {
                     options.editorCallback(e.value);
-                    console.log(e.value);
                 }}
                 placeholder="Vyberte"
             />
@@ -213,17 +210,13 @@ export default function AllWorks() {
     };
     const onFilter = (e) => {
         setFilters(e.filters);
-        console.log('Filters:', e.filters);
     };
 
     const downloadMostRecentFile = (articleId, fileType) => {
-        console.log(`Downloading most recent ${fileType} file for article ID: ${articleId}`);
         axios.get(`http://localhost:8080/api/files/download/recent/${articleId}/${fileType}`, { responseType: 'blob' })
             .then(response => {
                 const contentDisposition = response.headers['content-disposition'];
-                console.log('Content-Disposition:', contentDisposition);
                 const fileName = contentDisposition ? contentDisposition.split('filename=')[1].replace(/"/g, '') : 'file';
-                console.log('File name:', fileName);
                 const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
                 const link = document.createElement('a');
                 link.href = url;

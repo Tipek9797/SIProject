@@ -52,7 +52,7 @@ function App() {
                         <Route path="/settings/article-state" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ArticleStatePage />} />} />
                         <Route path="/settings/role" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<RolePage />} />} />
                         <Route path="/settings/pros-and-cons-category" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ProsAndConsCategoryPage />} />} />
-                        <Route path="/edit-user/:id" element={<PrivateRoute roles={['ROLE_USER', 'ROLE_REVIEWER']} page={<EditUserDialog />} />} />
+                        <Route path="/edit-user/:id" element={<PrivateRoute roles={['ROLE_USER', 'ROLE_REVIEWER','ROLE_ADMIN']} page={<EditUserDialog />} />} />
                     </Routes>
                 </div>
                 <Footer />

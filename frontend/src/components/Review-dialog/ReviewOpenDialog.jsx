@@ -26,7 +26,6 @@ const ReviewOpenDialog = ({
     useEffect(() => {
         if (visible && selectedArticle) {
             ReviewService.fetchFormData(selectedArticle.id).then(data => {
-                console.log('Fetched form data:', data);
                 setForm(data);
             });
         }

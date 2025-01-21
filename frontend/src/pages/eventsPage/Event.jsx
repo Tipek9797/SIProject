@@ -59,7 +59,6 @@ const Event = () => {
     const updateConferenceStateInDatabase = async (conferenceId, newState) => {
         try {
             const token = localStorage.getItem('jwtToken');
-            console.log(`Updating state for conference with ID: ${conferenceId} to ${newState}`);
             const response = await fetch(`http://localhost:8080/api/conferences/${conferenceId}/updateState`, {
                 method: 'PUT',
                 headers: {
@@ -88,7 +87,6 @@ const Event = () => {
 
     useEffect(() => {
         const updateConferenceStates = async () => {
-            console.log("Checking conference states...");
             const updatedConferences = await Promise.all(
                 conferences.map(async (conference) => {
                     const newState = getConferenceState(conference);

@@ -12,7 +12,6 @@ export default function WorkInfoDialog({ visible, onHide, data, ratings, columns
     useEffect(() => {
         if (visible && data) {
             ReviewService.fetchFormData(data.id).then(fetchedData => {
-                console.log('Fetched form data:', fetchedData);
                 setForm(fetchedData);
             });
         }

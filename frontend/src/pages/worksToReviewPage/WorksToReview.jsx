@@ -25,6 +25,8 @@ export default function WorksToReview() {
     const [Conferences, setConferences] = useState([]);
     const [fileHistories, setFileHistories] = useState({});
     const [form, setForm] = useState([]);
+    const [refresh, setRefresh] = useState([]);
+
 
     const getUserFromLocalStorage = () => {
         try {
@@ -74,7 +76,7 @@ export default function WorksToReview() {
 
         ReviewService.getProducts().then((data) => setForm(data));
         fetchData();
-    }, []);
+    }, [refresh]);
 
     const formatDate = (dateString) => {
         if (!dateString) return null; // Handle missing or invalid dates
@@ -218,9 +220,9 @@ export default function WorksToReview() {
     const ratingFooterContent = (
         <div className="flex justify-content-center">
             <Button label="Ohodnotiť"
-                    icon="pi pi-star-fill"
-                    className="p-button-rounded custom-width"
-                    onClick={() => onRatingSendClick()}
+                icon="pi pi-star-fill"
+                className="p-button-rounded custom-width"
+                onClick={() => onRatingSendClick()}
             />
         </div>
     );
@@ -229,10 +231,10 @@ export default function WorksToReview() {
     const editFooterContent = (
         <div className="flex justify-content-center">
             <Button label="Upraviť"
-                    icon="pi pi-user-edit"
-                    severity="warning"
-                    className="p-button-rounded custom-width"
-                    onClick={() => onUpdateSendClick()} />
+                icon="pi pi-user-edit"
+                severity="warning"
+                className="p-button-rounded custom-width"
+                onClick={() => onUpdateSendClick()} />
         </div>
     );
 
@@ -253,6 +255,7 @@ export default function WorksToReview() {
         "2: (Áno)",
         "0: (Nie)",
     ];
+
     const onCellEditComplete = (e) => {
         let { rowData, newValue, field, originalEvent: event } = e;
 
@@ -271,6 +274,7 @@ export default function WorksToReview() {
             )
         );
     };
+
     const cellEditor = (options) => {
         switch (options.rowData.type) {
             case 'bool':
@@ -296,6 +300,16 @@ export default function WorksToReview() {
                         value={options.value}
                         options={grade2}
                         onChange={(e) => options.editorCallback(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
+                );
+            case 'str':
+                return (
+                    <InputText
+                        type="text"
+                        value={options.value}
+                        onChange={(e) => { options.editorCallback(e.target.value) }}
+
                         onKeyDown={(e) => e.stopPropagation()}
                     />
                 );
@@ -354,6 +368,55 @@ export default function WorksToReview() {
         );
     };
 
+    useEffect(() => {
+        if (editVisible && selectedArticle3) {
+            ReviewService.fetchFormData(selectedArticle3.id).then(data => {
+                setForm(data);
+            });
+        }
+    }, [editVisible, selectedArticle3, setForm]);
+
+    const handleSubmitForm = async (reviewID) => {
+        const formData = {
+            reviewId: reviewID,
+            aktualnostNarocnostPrace: form.find(f => f.id === 'aktualnost_narocnost_prace').name,
+            orientovanieStudentaProblematike: form.find(f => f.id === 'orientovanie_studenta_problematike').name,
+            vhodnostZvolenychMetod: form.find(f => f.id === 'vhodnost_zvolenych_metod').name,
+            rozsahUrovenDosiahnutychVysledkov: form.find(f => f.id === 'rozsah_uroven_dosiahnutych_vysledkov').name,
+            analyzaInterpretaciaVysledkov: form.find(f => f.id === 'analyza_interpretacia_vysledkov').name,
+            prehladnostLogickaStrukturaPrace: form.find(f => f.id === 'prehladnost_logicka_struktura_prace').name,
+            formalnaJazykovaStylistickaUrovenPrace: form.find(f => f.id === 'formalna_jazykova_stylisticka_uroven_prace').name,
+            pracaZodpovedaSablone: form.find(f => f.id === 'praca_zodpoveda_sablone').name,
+            chybaNazovPrace: form.find(f => f.id === 'chyba_nazov_prace').name,
+            chybaMenoAutora: form.find(f => f.id === 'chyba_meno_autora').name,
+            chybaPracovnaEmailovaAdresa: form.find(f => f.id === 'chyba_pracovna_emailova_adresa').name,
+            chybaAbstrakt: form.find(f => f.id === 'chyba_abstrakt').name,
+            abstraktNesplnaRozsah: form.find(f => f.id === 'abstrakt_nesplna_rozsah').name,
+            chybajuKlucoveSlova: form.find(f => f.id === 'chybaju_klucove_slova').name,
+            chybajuUvodVysledkyDiskusia: form.find(f => f.id === 'chybaju_uvod_vysledky_diskusia').name,
+            nieSuUvedeneZdroje: form.find(f => f.id === 'nie_su_uvedene_zdroje').name,
+            chybaRef: form.find(f => f.id === 'chyba_ref').name,
+            chybaRefObr: form.find(f => f.id === 'chyba_ref_obr').name,
+            obrazkomChybaPopis: form.find(f => f.id === 'obrazkom_chyba_popis').name,
+            prinos: form.find(f => f.id === 'prinos').name,
+            nedostatky: form.find(f => f.id === 'nedostatky').name,
+        };
+
+        try {
+            const existingFormResponse = await axios.get(`http://localhost:8080/api/forms/review/${reviewID}`);
+            if (existingFormResponse.data.length > 0) {
+                await axios.patch(`http://localhost:8080/api/forms/${existingFormResponse.data[0].id}`, formData);
+            } else {
+                await axios.post('http://localhost:8080/api/forms', formData);
+            }
+            ReviewService.fetchFormData(reviewID).then(data => {
+                setForm(data);
+            });
+        } catch (error) {
+            console.error('Error submitting form:', error);
+        }
+    };
+
     const onRatingSendClick = () => {
         setRatingVisible(false);
         const newReview = {
@@ -362,9 +425,9 @@ export default function WorksToReview() {
             isAccepted: 0,
             articleId: selectedArticle2.id,
         };
+        handleSubmitForm(selectedArticle2.id);
         axios.post('http://localhost:8080/api/reviews', newReview)
-            .catch(error => console.error(error))
-            .finally(() => window.location.reload());
+            .catch(error => console.error(error));
 
         plusList.forEach((newProText) => {
             const newPro = {
@@ -385,6 +448,7 @@ export default function WorksToReview() {
             axios.post('http://localhost:8080/api/pros-and-cons', newCon)
                 .catch(error => console.error(error));
         });
+        setRefresh(refresh+1);
     };
 
     const onUpdateClick = (ReviewDetails, ConferenceName) => {
@@ -418,14 +482,14 @@ export default function WorksToReview() {
     const onUpdateSendClick = () => {
         setEditVisible(false);
         axios.delete(`http://localhost:8080/api/reviews/${reviewID}`)
-            .catch(error => { console.error(error); })
-            .finally(() => window.location.reload());
+            .catch(error => { console.error(error); });
         const newReview = {
             rating: starValue,
             comment: inputTextValue,
             isAccepted: 0,
             articleId: selectedArticle3.id,
         };
+        handleSubmitForm(selectedArticle3.id);
         axios.post('http://localhost:8080/api/reviews', newReview)
             .catch(error => console.error(error));
 
@@ -451,6 +515,7 @@ export default function WorksToReview() {
             axios.post('http://localhost:8080/api/pros-and-cons', newCon)
                 .catch(error => console.error(error));
         });
+        setRefresh(refresh+1);
     };
 
     const onSendClick = (ReviewDetails) => {
@@ -458,14 +523,9 @@ export default function WorksToReview() {
             stateId: 3,
         };
         axios.patch(`http://localhost:8080/api/articles/${ReviewDetails.id}`, changeState)
-            .catch(error => console.error(error))
-            .finally(() => window.location.reload());
+            .catch(error => console.error(error));
 
-        /*const changeAccepted = {
-            isAccepted: true,
-        };
-        axios.patch(`http://localhost:8080/api/reviews/${ReviewDetails.reviews[0].id}`, changeAccepted)
-            .catch(error => console.error(error));*/
+        setRefresh(refresh+1);
     };
 
     // Grid Usporiadanie ------------------------------------------------------------------------------------
@@ -524,20 +584,20 @@ export default function WorksToReview() {
                             <div>
                                 <div className="flex botombutton align-items-center justify-content-between">
                                     <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success"
-                                            className="pdfR custom-width"
-                                            onClick={() => downloadMostRecentFile(review.id, 'docx')}/>
+                                        className="pdfR custom-width"
+                                        onClick={() => downloadMostRecentFile(review.id, 'docx')} />
                                     <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success"
-                                            className="docxL custom-width"
-                                            onClick={() => downloadMostRecentFile(review.id, 'pdf')}/>
+                                        className="docxL custom-width"
+                                        onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
                                 </div>
                                 <div className="botombutton align-items-center justify-content-between">
                                     <Button label="Ohodnotiť" icon="pi pi-star-fill"
-                                            className="p-button-rounded custom-width"
-                                            onClick={() => onRatingClick(review, conferenceDetails)}/>
+                                        className="p-button-rounded custom-width"
+                                        onClick={() => onRatingClick(review, conferenceDetails)} />
                                 </div>
                                 <div className="file-history">
                                     <h3>História súborov</h3>
-                                    <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate}/>
+                                    <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate} />
                                 </div>
                             </div>
                         )}
@@ -573,25 +633,25 @@ export default function WorksToReview() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                    onClick={() => downloadMostRecentFile(review.id, 'docx')}/>
+                                onClick={() => downloadMostRecentFile(review.id, 'docx')} />
                             <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success"
-                                    className="docxL custom-width"
-                                    onClick={() => downloadMostRecentFile(review.id, 'pdf')}/>
+                                className="docxL custom-width"
+                                onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="pdfR custom-width"
-                                    onClick={() => onOpenClick(review, conferenceDetails)}/>
+                                onClick={() => onOpenClick(review, conferenceDetails)} />
                             <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="docxL custom-width"
-                                    onClick={() => onUpdateClick(review, conferenceDetails)}/>
+                                onClick={() => onUpdateClick(review, conferenceDetails)} />
                         </div>
                         <div className="botombutton align-items-center justify-content-between">
                             <Button label="Odoslať" icon="pi pi-send" className="p-button-rounded custom-width"
-                                    onClick={() => onSendClick(review)}/>
+                                onClick={() => onSendClick(review)} />
                         </div>
                         {fileHistories[review.id] && (
                             <div className="file-history">
                                 <h3>História súborov</h3>
-                                <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate}/>
+                                <Tree value={fileHistories[review.id]} nodeTemplate={renderFileNodeTemplate} />
                             </div>
                         )}
                     </div>
@@ -623,13 +683,13 @@ export default function WorksToReview() {
                         </div>
                         <div className="flex botombutton align-items-center justify-content-between">
                             <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                    onClick={() => downloadMostRecentFile(review.id, 'docx')} />
+                                onClick={() => downloadMostRecentFile(review.id, 'docx')} />
                             <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                    onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
+                                onClick={() => downloadMostRecentFile(review.id, 'pdf')} />
                         </div>
                         <div className="botombutton align-items-center justify-content-between">
                             <Button label="Otvoriť" icon="pi pi-external-link" severity="secondary" className="p-button-rounded custom-width"
-                                    onClick={() => onOpenClick(review, conferenceDetails)} />
+                                onClick={() => onOpenClick(review, conferenceDetails)} />
                         </div>
                         {fileHistories[review.id] && (
                             <div className="file-history">
