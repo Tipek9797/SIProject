@@ -48,7 +48,6 @@ const ReviewRateDialog = ({
     useEffect(() => {
         if (visible && selectedArticle) {
             ReviewService.fetchFormData(selectedArticle.id).then(data => {
-                console.log('Fetched form data:', data);
                 setForm(data);
             });
         }
@@ -87,7 +86,9 @@ const ReviewRateDialog = ({
             } else {
                 await axios.post('http://localhost:8080/api/forms', formData);
             }
-            window.location.reload();
+            ReviewService.fetchFormData(selectedArticle.id).then(data => {
+                setForm(data);
+            });
         } catch (error) {
             console.error('Error submitting form:', error);
         }

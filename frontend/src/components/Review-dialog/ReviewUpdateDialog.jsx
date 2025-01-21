@@ -48,7 +48,6 @@ const ReviewUpdateDialog = ({
     useEffect(() => {
         if (editVisible && selectedArticle3) {
             ReviewService.fetchFormData(selectedArticle3.id).then(data => {
-                console.log('Fetched form data:', data);
                 setForm(data);
             });
         }

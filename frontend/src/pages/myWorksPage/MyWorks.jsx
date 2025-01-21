@@ -16,7 +16,6 @@ import {ReviewService} from "../worksToReviewPage/service/ReviewService";
 import "./myWorks.css";
 import axios from "axios";
 import { handleUpload } from "../../services/handleUpload";
-
 export default function MyWorks() {
     // Databaza --------------------------------------------------------------------------------------------------------
     const [Articles, setArticles] = useState([]);
@@ -42,10 +41,6 @@ export default function MyWorks() {
             .catch(error => console.error(error));
     };
 
-    /////////////////////////////////////////////////////////////////
-    /*!!!Toto funguje ale treba nastavit aby v article -> conference_id aby sa nastavilo automaticky lebo inak sa name
-    Konferencie neupdatuje na frontende. Treba to manualne do databazy davat aby to islo.
-     */
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -302,8 +297,6 @@ export default function MyWorks() {
             };
 
             await axios.patch(`http://localhost:8080/api/articles/${selectedArticle.id}`, articleData);
-            console.log("Article updated successfully.");
-            fetchData();
             setWorkUploadVisible(false);
             setWorkUpdate(false);
         } catch (error) {

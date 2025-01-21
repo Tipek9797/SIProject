@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./editUser.css";
 import { useParams, useNavigate } from "react-router-dom";
-
+import axios from "axios";
 
 const EditUserDialog = ({ onClose, onUpdate }) => {
     const { id } = useParams();
@@ -16,9 +16,11 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const userResponse = await fetch(`http://localhost:8080/api/users/${id}`);
-                if (!userResponse.ok) throw new Error("Nepodarilo sa načítať údaje používateľa");
-                const userData = await userResponse.json();
+                const userResponse = await axios.get(`http://localhost:8080/api/users/${id}`);
+
+                if (!userResponse) throw new Error("Nepodarilo sa načítať údaje používateľa");
+
+                const userData = await userResponse.data;
                 setUserData(userData);
                 setFirstName(userData.name || "");
                 setLastName(userData.surname || "");
@@ -35,20 +37,14 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
     const handleSave = async () => {
         try {
             const updatedUser = {
+                ...userData,
                 name: firstName,
                 surname: lastName,
-                email
             };
 
-            const response = await fetch(`http://localhost:8080/api/users/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(updatedUser),
-            });
+            const response = await axios.put(`http://localhost:8080/api/users/${id}`, updatedUser);
 
-            if (!response.ok) {
+            if (!response) {
                 throw new Error("Chyba pri aktualizácii používateľa");
             }
 

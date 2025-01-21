@@ -116,7 +116,6 @@ export default function Navbar() {
                 if (new Date() >= expDate) {
                     handleLogout();
                 }
-                console.log("doin some stuff")
             }
         };
 
