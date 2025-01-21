@@ -16,6 +16,7 @@ import {ReviewService} from "../worksToReviewPage/service/ReviewService";
 import "./myWorks.css";
 import axios from "axios";
 import { handleUpload } from "../../services/handleUpload";
+
 export default function MyWorks() {
     // Databaza --------------------------------------------------------------------------------------------------------
     const [Articles, setArticles] = useState([]);
@@ -250,6 +251,16 @@ export default function MyWorks() {
 
         setOptConference(filteredConferenceOpt);
         setOptCategory(filteredCategoryOpt);
+    };
+
+    // Send button -----------------------------------------------------------------------------------------------------
+    const onSendClick = (article) => {
+        const changeState = {
+            stateId: 2,
+        };
+        axios.patch(`http://localhost:8080/api/articles/${article.id}`, changeState)
+            .catch(error => console.error(error))
+            .finally(() => window.location.reload());
     };
 
     // Update buttons --------------------------------------------------------------------------------------------------
@@ -540,21 +551,27 @@ export default function MyWorks() {
                         {hasFiles && (
                             <div className="flex botombutton align-items-center justify-content-between">
                                 <Button label="Sťiahnuť DOCX" icon="pi pi-download" severity="success" className="pdfR custom-width"
-                                    onClick={() => downloadMostRecentFile(article.id, 'docx')} />
+                                        onClick={() => downloadMostRecentFile(article.id, 'docx')}/>
                                 <Button label="Sťiahnuť PDF" icon="pi pi-download" severity="success" className="docxL custom-width"
-                                    onClick={() => downloadMostRecentFile(article.id, 'pdf')} />
+                                        onClick={() => downloadMostRecentFile(article.id, 'pdf')}/>
                             </div>
                         )}
                         <div className="botombutton align-items-center justify-content-between">
                             {relatedConference && isUploadPeriodActive(relatedConference) && (
                                 <Button label="Upraviť" icon="pi pi-user-edit" severity="warning" className="p-button-rounded custom-width"
-                                        onClick={() => onUpdateClick(article)} />
+                                        onClick={() => onUpdateClick(article)}/>
+                            )}
+                        </div>
+                        <div className="botombutton align-items-center justify-content-between">
+                            {relatedConference && isUploadPeriodActive(relatedConference) && (
+                            <Button label="Poslať na hodnotenie" icon="pi pi-send" className="p-button-rounded custom-width"
+                                    onClick={() => onSendClick(article)}/>
                             )}
                         </div>
                         {fileHistories[article.id] && (
                             <div className="file-history">
                                 <h3>História súborov</h3>
-                                <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate} />
+                                <Tree value={fileHistories[article.id]} nodeTemplate={renderFileNodeTemplate}/>
                             </div>
                         )}
                     </div>
