@@ -10,9 +10,9 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState(""); // New password
-    const [confirmPassword, setConfirmPassword] = useState(""); // Confirm new password
-    const [oldPassword, setOldPassword] = useState(""); // Old password for verification
+    const [password, setPassword] = useState(""); 
+    const [confirmPassword, setConfirmPassword] = useState(""); 
+    const [oldPassword, setOldPassword] = useState(""); 
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 
@@ -49,7 +49,7 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
                 name: firstName,
                 surname: lastName,
                 email: email,
-                password: password.trim() ? password : null // Only include password if provided
+                password: password.trim() ? password : null 
             };
 
             const response = await axios.patch(`http://localhost:8080/api/users/${id}`, updatedUser);
