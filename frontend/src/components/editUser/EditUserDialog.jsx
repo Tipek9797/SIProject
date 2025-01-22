@@ -10,6 +10,9 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
+    const [password, setPassword] = useState(""); // New password
+    const [confirmPassword, setConfirmPassword] = useState(""); // Confirm new password
+    const [oldPassword, setOldPassword] = useState(""); // Old password for verification
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 
@@ -21,7 +24,7 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
                 if (!userResponse) throw new Error("Nepodarilo sa načítať údaje používateľa");
 
                 const userData = await userResponse.data;
-                
+
                 setUserData(userData);
                 setFirstName(userData.name || "");
                 setLastName(userData.surname || "");
@@ -36,11 +39,17 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
     }, [id]);
 
     const handleSave = async () => {
+        if (password && password !== confirmPassword) {
+            setError("Nové heslo a jeho potvrdenie sa nezhodujú.");
+            return;
+        }
+
         try {
             const updatedUser = {
                 name: firstName,
                 surname: lastName,
                 email: email,
+                password: password.trim() ? password : null // Only include password if provided
             };
 
             const response = await axios.patch(`http://localhost:8080/api/users/${id}`, updatedUser);
@@ -67,11 +76,8 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
     };
 
     const handleCancel = () => {
-
         onClose && onClose();
-
         navigate("/home");
-
     };
 
     return (
@@ -102,6 +108,33 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
                         type="email"
                         value={email}
                         disabled
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Staré heslo:</label>
+                    <input
+                        type="password"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        placeholder="Zadajte staré heslo"
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Nové heslo:</label>
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Zadajte nové heslo"
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Znovu zadaj nové heslo:</label>
+                    <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Znovu zadajte nové heslo"
                     />
                 </div>
                 <div className="dialog-actions">
